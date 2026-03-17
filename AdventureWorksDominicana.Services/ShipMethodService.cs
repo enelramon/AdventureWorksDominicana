@@ -11,14 +11,12 @@ namespace AdventureWorksDominicana.Services;
 
 public class ShipMethodService(IDbContextFactory<Contexto> DbFactory): IService<ShipMethod, int> 
 {
-    //Metodo listar
     public async Task<List<ShipMethod>> Listar(Expression<Func<ShipMethod, bool>> criterio)
     {
         await using var contexto = await DbFactory.CreateDbContextAsync();
         return await contexto.ShipMethods.Where(criterio).ToListAsync();
     }
 
-    //Metodo guardar
     public async Task<bool> Guardar(ShipMethod ship)
     {
         if (!await Existe(ship.ShipMethodId))
@@ -31,7 +29,6 @@ public class ShipMethodService(IDbContextFactory<Contexto> DbFactory): IService<
         }
     }
 
-    //Metodo insertar
     public async Task<bool> Insertar(ShipMethod ship)
     {
         await using var contexto = await DbFactory.CreateDbContextAsync();
@@ -39,14 +36,12 @@ public class ShipMethodService(IDbContextFactory<Contexto> DbFactory): IService<
         return await contexto.SaveChangesAsync() > 0;
     }
 
-    //Metodo existe
     public async Task<bool> Existe(int idShip)
     {
         await using var contexto = await DbFactory.CreateDbContextAsync();
         return await contexto.ShipMethods.AnyAsync(p => p.ShipMethodId == idShip);
     }
 
-    //metodo modificar
     public async Task<bool> Modificar(ShipMethod ship)
     {
         await using var contexto = await DbFactory.CreateDbContextAsync();
@@ -54,14 +49,12 @@ public class ShipMethodService(IDbContextFactory<Contexto> DbFactory): IService<
         return await contexto.SaveChangesAsync() > 0;
     }
 
-    //metodo buscar
     public async Task<ShipMethod?> Buscar(int idShip)
     {
         await using var contexto = await DbFactory.CreateDbContextAsync();
         return await contexto.ShipMethods.FirstOrDefaultAsync(p => p.ShipMethodId == idShip);
     }
 
-    //eliminar
     public async Task<bool> Eliminar(int idShip)
     {
         await using var contexto = await DbFactory.CreateDbContextAsync();
@@ -69,7 +62,6 @@ public class ShipMethodService(IDbContextFactory<Contexto> DbFactory): IService<
 
         if (ship == null) return false;
 
-        //Hard delete
         contexto.ShipMethods.Remove(ship);
         return await contexto.SaveChangesAsync() > 0;
     }
