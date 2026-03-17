@@ -1,9 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq.Expressions;
-using System.Text;
-using AdventureWorksDominicana.Data.Models;
+﻿using AdventureWorksDominicana.Data.Models;
 using Aplicada1.Core;
+using System.Linq.Expressions;
 
 namespace AdventureWorksDominicana.Services;
 

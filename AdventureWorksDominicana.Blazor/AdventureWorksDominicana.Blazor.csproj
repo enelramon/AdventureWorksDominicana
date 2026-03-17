@@ -15,16 +15,16 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\AdventureWorksDominicana.Data\AdventureWorksDominicana.Data.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
     <PackageReference Include="Aplicada1.Core" Version="1.0.0" />
   </ItemGroup>
 
   <ItemGroup>
     <Folder Include="Components\ShipMethodPages\" />
     <PackageReference Include="Blazored.Toast" Version="4.2.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\AdventureWorksDominicana.Services\AdventureWorksDominicana.Services.csproj" />
   </ItemGroup>
 
 </Project>
