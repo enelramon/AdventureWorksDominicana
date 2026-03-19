@@ -13,6 +13,9 @@ builder.Services.AddDbContextFactory<Contexto>(options =>
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 builder.Services.AddScoped<DepartmentService>();
+builder.Services.AddScoped<PersonService>();
+builder.Services.AddScoped<ShiftService>();
+builder.Services.AddScoped<EmployeeService>();
 builder.Services.AddBlazoredToast();
 var app = builder.Build();
 
