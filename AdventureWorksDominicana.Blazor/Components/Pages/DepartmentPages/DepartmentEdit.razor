@@ -19,24 +19,24 @@
         
             <div class="card-body">
                 <div>
-                    <label class="form-label">Nombre Departamento</label>
+                    <label class="form-label text-bg-info text-white">Nombre Departamento</label>
                     <InputText class="form-control" @bind-Value="Department.Name" />
                     <ValidationMessage For="() => Department.Name" />
                 </div>
-                <div>
-                    <label class="form-label">Nombre del Grupo</label>
+                <div class="mt-2">
+                    <label class="form-label text-bg-info text-white">Nombre del Grupo</label>
                     <InputText class="form-control" @bind-Value="Department.GroupName" />
                     <ValidationMessage For="() => Department.GroupName" />
                 </div>
-                <div>
-                    <label class="form-label">Fecha</label>
-                    <InputDate class="form-control" @bind-Value="Department.ModifiedDate" />
+                <div class="mt-2">
+                    <label class="form-label text-bg-info text-white">Fecha de &Uacute;ltima Modificaci&oacute;n</label>
+                    <InputDate class="form-control" @bind-Value="Department.ModifiedDate" disabled/>
                     <ValidationMessage For="() => Department.ModifiedDate" />
                 </div>
 
                 @*Lista de Detalle Empleados*@
                 <div class="mt-2">
-                    <h4>Lista de Empleados</h4>
+                    <h4 class="form-label text-bg-primary text-white">Lista de Empleados</h4>
                     <div class="row mt-2">
                         <div class="col-5">
                             <label class="form-label">Seleccione un Empleado</label>
@@ -83,17 +83,17 @@
                         <QuickGrid Items="Department.EmployeeDepartmentHistories.AsQueryable()" Class="table table-bordered">
                             <TemplateColumn Context="per" Title="Empleado" Sortable="true">
                                 @{
-                                    var person = PersonList.FirstOrDefault(p => p.BusinessEntityId == per.BusinessEntityId);
+                                    var person = PersonList?.FirstOrDefault(p => p.BusinessEntityId == per.BusinessEntityId);
                                 }
-                                @(person?.FirstName + " " + person?.LastName)
+                                @(person != null ? $"{person.FirstName}" + " " + $"{person?.LastName}" : "N/A")
                             </TemplateColumn>
                             <TemplateColumn Context="st" Title="Tanda-Horario" Sortable="true">
                                 @{
-                                    var shift = ShifList.FirstOrDefault(s => s.ShiftId == st.ShiftId);
+                                    var shift = ShifList?.FirstOrDefault(s => s.ShiftId == st.ShiftId);
                                 }
-                                @(shift?.Name + " " + shift?.StartTime + " - " + shift?.EndTime)
+                                @(shift != null ? $"{shift.Name}" + " " + $"{shift.StartTime}" + " - " + $"{shift?.EndTime}" : "N/A")
                             </TemplateColumn>
-                            <TemplateColumn Context="option" Title="Opcion">
+                            <TemplateColumn Context="option" Title="Opci&oacute;n">
                                 <button type="button" class="btn btn-outline-danger bi bi-trash" @onclick="() => Eliminar(option)"></button>
                             </TemplateColumn>
                         </QuickGrid>
@@ -134,7 +134,7 @@
 
     private async Task GuardarDetalle()
     {
-        if (Validaciones())
+        if (setValidaciones())
             return;
         var isShiftProblem = await departmentService.GetList(e => e.DepartmentId != EmployeeDepartmentHistory.DepartmentId && (e.EmployeeDepartmentHistories.Any(u => u.BusinessEntityId == EmployeeDepartmentHistory.BusinessEntityId && u.ShiftId == EmployeeDepartmentHistory.ShiftId)));
         if(isShiftProblem.Any())
@@ -182,7 +182,7 @@
         }
     }
 
-    bool Validaciones()
+    bool setValidaciones()
     {
         bool isProblem = false;
         if (EmployeeDepartmentHistory.BusinessEntityId == 0)
