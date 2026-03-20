@@ -14,6 +14,7 @@ builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
 builder.Services.AddScoped<CountryRegionsService>();
+builder.Services.AddScoped<PhoneNumberTypeService>();
 
 builder.Services.AddBlazoredToast();
 builder.Services.AddBlazorBootstrap();
