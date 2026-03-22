@@ -1,0 +1,132 @@
+﻿@page "/CountryRegions/Index";
+
+@inject CountryRegionsService countryRegionsService;
+
+<div class="container">
+    <div class="card shadow-lg">
+        <div class="card-header">
+            <div class="d-flex justify-content-between">
+                <h3>Country Regions</h3>
+                <a class="btn btn-primary bi bi-plus-square" href="/CountryRegions/Create"> Crear</a>
+            </div>
+        </div>
+        <div class="card-body">
+            @* Filtro por fechas *@
+            <div class="row">
+                <div class="col-3">
+                    <label class="form-label">Desde</label>
+                </div>
+                <div class="col-3">
+                    <label class="form-label">Hasta</label>
+                </div>
+            </div>
+            <div class="row mb-3">
+                <div class="col-3">
+                    <input class="form-control" type="datetime-local" @bind-value="FechaDesde" />
+                </div>
+                <div class="col-3">
+                    <input class="form-control" type="datetime-local" @bind-value="FechaHasta" />
+                </div>
+            </div>
+
+            @* Busqueda y filtro *@
+            <div class="row">
+                <div class="col-3">
+                    <label class="form-label">Filtro</label>
+                </div>
+                <div class="col-4">
+                    <label class="form-label">B&uacute;squeda</label>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-3">
+                    <select class="form-select" @bind="Filtro">
+                        <option value="" disabled hidden selected>Seleccione un filtro...</option>
+                        <option value="CountryRegionCode">Codigo</option>
+                        <option value="Nombre">Nombre</option>
+                    </select>
+                </div>
+                <div class="col-4">
+                    <div class="input-group">
+                        <input class="form-control" type="text" @bind-value="ValorFiltro"/>
+                        <button class="btn btn-outline-primary bi bi-search" @onclick="Filtrar"></button>
+                    </div>
+                </div>
+            </div>
+
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>C&oacute;digo del pa&iacute;s</th>
+                        <th>Nombre</th>
+                        <th>Fecha de modificaci&oacute;n</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var country in ListaCountryRegions)
+                    {
+                        <tr>
+                            <td>@country.CountryRegionCode</td>
+                            <td>@country.Name</td>
+                            <td>@country.ModifiedDate</td>
+                            <td>
+                                <a class="btn btn-outline-warning bi bi-pencil-square" href="/CountryRegions/Edit/@country.CountryRegionCode"></a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+        <div class="card-footer">
+            <strong>Cantidad:</strong> @ListaCountryRegions.Count
+        </div>
+    </div>
+</div>
+
+@code {
+    public List<CountryRegion> ListaCountryRegions { get; set; } = new List<CountryRegion>();
+    public DateTime? FechaDesde { get; set; }
+    public DateTime? FechaHasta { get; set; }
+    public string Filtro { get; set; } = "";
+    public string ValorFiltro { get; set; } = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        ListaCountryRegions = await countryRegionsService.GetList(c => !c.CountryRegionCode.Equals(""));
+    }
+
+    public async Task Filtrar()
+    {
+        Expression<Func<CountryRegion, bool>> criterio = c => !c.CountryRegionCode.Equals("");
+
+        if (FechaDesde.HasValue && FechaHasta.HasValue)
+        {
+            DateTime fechaHasta = FechaHasta.Value.Date.AddDays(1).AddTicks(-1);
+            criterio = criterio.And(c => c.ModifiedDate >= FechaDesde.Value && c.ModifiedDate <= fechaHasta);
+        }
+        else if (FechaDesde.HasValue)
+        {
+            criterio = criterio.And(c => c.ModifiedDate >= FechaDesde.Value);
+        }
+        else if (FechaHasta.HasValue)
+        {
+            var fechaHasta = FechaHasta.Value.Date.AddDays(1).AddTicks(-1);
+            criterio = criterio.And(c => c.ModifiedDate <= fechaHasta);
+        }
+        if (Filtro != "" && ValorFiltro != "")
+        {
+            if (Filtro == "CountryRegionCode")
+            {
+                Console.WriteLine("Code");
+                criterio = criterio.And(c => c.CountryRegionCode.Trim().ToLower().Contains(ValorFiltro.ToLower()));
+            }
+            if (Filtro == "Nombre")
+            {
+                Console.WriteLine("Name");
+                criterio = criterio.And(c => c.Name.Trim().ToLower().Contains(ValorFiltro.ToLower()));
+            }
+        }
+        ListaCountryRegions = await countryRegionsService.GetList(criterio);
+    }
+}

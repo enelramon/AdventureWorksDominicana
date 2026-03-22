@@ -1,0 +1,72 @@
+﻿@page "/CountryRegions/Edit/{CountryCode}";
+
+@inject CountryRegionsService countryRegionsService;
+@inject ToastService toastService;
+@inject NavigationManager navigationManager;
+
+<EditForm Model="CountryRegion" FormName="modificarCountryRegion" OnValidSubmit="Modificar">
+    <DataAnnotationsValidator />
+    <div class="container">
+        <div class="card shadow-lg">
+            <div class="card-header text-center">
+                <h3>Modificar Country Region</h3>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <label class="form-label"><strong>C&oacute;digo de pa&iacute;s</strong></label>
+                    <input class="form-control" type="text" maxlength="3" @bind-value="CountryRegion.CountryRegionCode" placeholder="Escriba el codigo del pais/region..." />
+                    <ValidationMessage For="(() => CountryRegion.CountryRegionCode)" />
+                </div>
+                <div class="mb-3">
+                    <label class="form-label"><strong>Nombre del pa&iacute;s/regi&oacute;n</strong></label>
+                    <input class="form-control" type="text" maxlength="100" @bind-value="CountryRegion.Name" placeholder="Escriba el nombre del pais/region..." />
+                    <ValidationMessage For="(() => CountryRegion.Name)" />
+                </div>
+                <div class="mb-3">
+                    <label class="form-label"><strong>Fecha de modificaci&oacute;n</strong></label>
+                    <input class="form-control" type="datetime-local" @bind-value="CountryRegion.ModifiedDate" disabled />
+                    <ValidationMessage For="(() => CountryRegion.ModifiedDate)" />
+                </div>
+            </div>
+            <div class="card-footer text-center">
+                <a class="btn btn-secondary bi bi-arrow-left" href="/CountryRegions/Index"> Volver</a>
+                <button class="btn btn-primary bi bi-floppy" type="submit"> Modificar</button>
+            </div>
+        </div>
+    </div>
+</EditForm>
+
+
+@code {
+    [Parameter]
+    public string? CountryCode { get; set; } = string.Empty;
+
+    public CountryRegion CountryRegion { get; set; } = new CountryRegion();
+
+    protected override async Task OnInitializedAsync()
+    {
+        CountryRegion = await countryRegionsService.Buscar(CountryCode);
+        CountryRegion.ModifiedDate = DateTime.Now;
+    }
+
+    public async Task Modificar()
+    {
+        var countryRepetido = await countryRegionsService.Buscar(CountryRegion.CountryRegionCode);
+        if (countryRepetido != null)
+        {
+            toastService.ShowError("Ya existe un pais/region con este codigo: " + countryRepetido.CountryRegionCode + "; " + countryRepetido.Name);
+            return;
+        }
+        Console.WriteLine("\nCodigo: " + CountryRegion.CountryRegionCode + "; Nombre: " + CountryRegion.Name + "FechaMod: " + CountryRegion.ModifiedDate.ToString() + "\n");
+        bool modificado = await countryRegionsService.Guardar(CountryRegion);
+        if (modificado)
+        {
+            toastService.ShowSuccess("Country Region modificado exitosamente.");
+            navigationManager.NavigateTo("/CountryRegions/Index");
+        }
+        else
+        {
+            toastService.ShowError("No se pudo modificar el country region correctamente.");
+        }
+    }
+}
