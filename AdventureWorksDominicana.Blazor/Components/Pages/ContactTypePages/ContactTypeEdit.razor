@@ -1,0 +1,78 @@
+﻿@page "/ContactType/Edit/{ContactTypeId:int}";
+
+@inject ContactTypeService contactTypeService;
+@inject ToastService toastService;
+@inject NavigationManager navigationManager;
+
+<EditForm Model="ContactType" FormName="modificarContactType" OnValidSubmit="Guardar">
+    <div class="container">
+        <div class="card">
+            <div class="card-header text-center">
+                <h3>Modificar ContactType</h3>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <label class="form-label"><strong>Nombre</strong></label>
+                    <input class="form-control" type="text" maxlength="50" @bind-value="ContactType.Name" />
+                    <ValidationMessage For="(() => ContactType.Name)" />
+                </div>
+                <div class="mb-3">
+                    <label class="form-label"><strong>Fecha de modificaci&oacute;n</strong></label>
+                    <input class="form-control" type="datetime-local" disabled @bind-value="ContactType.ModifiedDate" />
+                    <ValidationMessage For="(() => ContactType.ModifiedDate)" />
+                </div>
+            </div>
+            <div class="card-footer text-center">
+                <a class="btn btn-secondary bi bi-arrow-left" href="/ContactType/Index"> Volver</a>
+                <button class="btn btn-primary bi bi-floppy"> Guardar</button>
+                <button class="btn btn-danger bi bi-trash" type="button" @onclick="Eliminar"> Eliminar</button>
+            </div>
+        </div>
+    </div>
+</EditForm>
+
+@code {
+    [Parameter]
+    public int ContactTypeId { get; set; }
+
+    public ContactType ContactType { get; set; } = new ContactType();
+
+    protected override async Task OnInitializedAsync()
+    {
+        ContactType = await contactTypeService.Buscar(ContactTypeId);
+        ContactType.ModifiedDate = DateTime.Now;
+    }
+
+    public async Task Guardar()
+    {
+        bool esRepetido = await contactTypeService.BuscarDuplicado(ContactType.Name, ContactType.ContactTypeId);
+        if (esRepetido)
+        {
+            toastService.ShowWarning("El nombre \"" + ContactType.Name + "\" ya esta en uso");
+            return;
+        }
+        bool guardado = await contactTypeService.Guardar(ContactType);
+        if (guardado)
+        {
+            toastService.ShowSuccess("Se ha guardado el tipo de contacto correctamente.");
+            navigationManager.NavigateTo("/ContactType/Index");
+        }
+        else
+        {
+            toastService.ShowError("Ha ocurrido un error al guardar el tipo de contacto.");
+        }
+    }
+    public async Task Eliminar()
+    {
+        bool eliminado = await contactTypeService.Eliminar(ContactType.ContactTypeId);
+        if (eliminado)
+        {
+            toastService.ShowSuccess("Se ha eliminado el tipo de contacto correctamente.");
+            navigationManager.NavigateTo("/ContactType/Index");
+        }
+        else
+        {
+            toastService.ShowError("Ha ocurrido un error inesperado o hay contactos relacionados a este tipo.");
+        }
+    }
+}

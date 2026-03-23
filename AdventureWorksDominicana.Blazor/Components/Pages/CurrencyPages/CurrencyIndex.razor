@@ -1,0 +1,111 @@
+﻿@page "/Currency/Index"
+@rendermode InteractiveServer
+@inject CurrencyService CurrencyService
+
+<PageTitle>Currency Index</PageTitle>
+
+<div class="container">
+    <div class="card shadow-lg">
+        @* Header *@
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h5 class="card-title text-black mb-0">Registro de Monedas</h5>
+            <a href="Currency/Create" class="btn btn-success">
+                <i class="bi bi-plus-square"></i> Crear
+            </a>
+        </div>
+        
+        <div class="card-body">
+            @* Filters *@
+            <div class="row mb-3 align-items-end">
+                <div class="col-md-3">
+                    <label class="form-label">Desde</label>
+                    <input class="form-control" type="date" @bind="Desde" />
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Hasta</label>
+                    <input class="form-control" type="date" @bind="Hasta" />
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Filtrar por</label>
+                    <select class="form-select" @bind="Filtro">
+                        <option value="">Seleccione una opci&oacute;n</option>
+                        <option value="CurrencyCode">Código</option>
+                        <option value="Name">Nombre</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Buscar</label>
+                    <div class="input-group">
+                        <input class="form-control" type="text" placeholder="Buscar..." @bind="ValorFiltro" />
+                        <button class="btn btn-outline-primary" type="button" @onclick="Buscar">
+                            <i class="bi bi-search"></i>
+                        </button>
+                        <button class="btn btn-outline-secondary" type="button" title="Limpiar Filtros" @onclick="Restablecer">
+                            <i class="bi bi-arrow-counterclockwise"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            @* Table *@
+            <div class="table-responsive mt-3">
+                <QuickGrid Items="ListaCurrency.AsQueryable()" Pagination="@pages" Class="table table-bordered table-hover align-middle">
+                    <PropertyColumn Property="@(d => d.CurrencyCode)" Title="Código" Sortable="true" />
+                    <PropertyColumn Property="@(d => d.Name)" Title="Nombre" Sortable="true" />
+                    <PropertyColumn Property="@(d => d.ModifiedDate)" Title="Fecha Modificación" Format="dd/MM/yyyy" Sortable="true" />
+                    <TemplateColumn Context="option" Title="Opción">
+                        <a href="Currency/Edit/@option.CurrencyCode" class="btn btn-primary btn-sm">
+                            <i class="bi bi-pencil"></i> Editar
+                        </a>
+                    </TemplateColumn>
+                </QuickGrid>
+                
+                @* Pagination *@
+                <Paginator State="@pages" />
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private List<Currency> ListaCurrency = new List<Currency>();
+    private PaginationState pages = new PaginationState { ItemsPerPage = 5 };
+    
+    private string Filtro = string.Empty;
+    private string ValorFiltro = string.Empty;
+    private DateTime? Desde;
+    private DateTime? Hasta;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CargarTodo();
+    }
+
+    private async Task CargarTodo()
+    {
+        ListaCurrency = await CurrencyService.GetList(p => true);
+    }
+
+    private async Task Buscar()
+    {
+        ListaCurrency = await CurrencyService.GetList(c =>
+            (!Desde.HasValue || c.ModifiedDate >= Desde.Value.Date) &&
+            (!Hasta.HasValue || c.ModifiedDate <= Hasta.Value.Date.AddDays(1).AddTicks(-1)) &&
+            
+            (string.IsNullOrWhiteSpace(ValorFiltro) ||
+                (Filtro == "Name" && c.Name.Contains(ValorFiltro)) ||
+                (Filtro == "CurrencyCode" && c.CurrencyCode.Contains(ValorFiltro)) ||
+                (string.IsNullOrWhiteSpace(Filtro) && (c.Name.Contains(ValorFiltro) || c.CurrencyCode.Contains(ValorFiltro)))
+            )
+        );
+    }
+
+    private async Task Restablecer()
+    {
+        Filtro = string.Empty;
+        ValorFiltro = string.Empty;
+        Desde = null;
+        Hasta = null;
+        await CargarTodo();
+    }
+}

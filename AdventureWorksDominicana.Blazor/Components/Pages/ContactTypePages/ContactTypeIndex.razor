@@ -1,0 +1,127 @@
+﻿@page "/ContactType/Index"
+
+@inject ContactTypeService contactTypeService;
+
+
+
+<div class="container">
+    <div class="card shadow-lg">
+        <div class="card-header d-flex justify-content-between">
+            <h3>Contact Types</h3>
+            <a class="btn btn-primary bi bi-plus-square" href="/ContactType/Create"> Crear</a>
+        </div>
+        <div class="card-body">
+            @* Filtro por fechas *@
+            <div class="row">
+                <div class="col-3">
+                    <label class="form-label">Desde</label>
+                </div>
+                <div class="col-3">
+                    <label class="form-label">Hasta</label>
+                </div>
+            </div>
+            <div class="row mb-3">
+                <div class="col-3">
+                    <input class="form-control" type="datetime-local" @bind-value="FechaDesde" />
+                </div>
+                <div class="col-3">
+                    <input class="form-control" type="datetime-local" @bind-value="FechaHasta" />
+                </div>
+            </div>
+
+            @* Busqueda y filtro *@
+            <div class="row">
+                <div class="col-3">
+                    <label class="form-label">Filtro</label>
+                </div>
+                <div class="col-4">
+                    <label class="form-label">B&uacute;squeda</label>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-3">
+                    <select class="form-select" @bind="Filtro">
+                        <option value="" disabled hidden selected>Seleccione un filtro...</option>
+                        <option value="Nombre">Nombre</option>
+                    </select>
+                </div>
+                <div class="col-4">
+                    <div class="input-group">
+                        <input class="form-control" type="text" @bind-value="ValorFiltro" />
+                        <button class="btn btn-outline-primary bi bi-search" @onclick="Filtrar"></button>
+                    </div>
+                </div>
+            </div>
+
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Id</th>
+                        <th>Nombre</th>
+                        <th>Fecha de modificaci&oacute;n</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var contactType in ListaContactType)
+                    {
+                        <tr>
+                            <td>@contactType.ContactTypeId</td>
+                            <td>@contactType.Name</td>
+                            <td>@contactType.ModifiedDate</td>
+                            <td>
+                                <a class="btn btn-outline-warning bi bi-pencil-square" href="/ContactType/Edit/@contactType.ContactTypeId"></a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+        <div class="card-footer">
+            <strong>Cantidad:</strong> @ListaContactType.Count
+        </div>
+    </div>
+</div>
+
+@code {
+    public List<ContactType> ListaContactType { get; set; } = new List<ContactType>();
+    public DateTime? FechaDesde { get; set; }
+    public DateTime? FechaHasta { get; set; }
+    public string Filtro { get; set; } = "";
+    public string ValorFiltro { get; set; } = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        ListaContactType = await contactTypeService.GetList(c => c.ContactTypeId > 0);
+        ListaContactType = ListaContactType.OrderByDescending(c => c.ModifiedDate).ToList();
+    }
+
+    public async Task Filtrar()
+    {
+        Expression<Func<ContactType, bool>> criterio = p => p.ContactTypeId > 0;
+
+        if (FechaDesde.HasValue && FechaHasta.HasValue)
+        {
+            DateTime fechaHasta = FechaHasta.Value.Date.AddDays(1).AddTicks(-1);
+            criterio = criterio.And(c => c.ModifiedDate >= FechaDesde.Value && c.ModifiedDate <= fechaHasta);
+        }
+        else if (FechaDesde.HasValue)
+        {
+            criterio = criterio.And(c => c.ModifiedDate >= FechaDesde.Value);
+        }
+        else if (FechaHasta.HasValue)
+        {
+            var fechaHasta = FechaHasta.Value.Date.AddDays(1).AddTicks(-1);
+            criterio = criterio.And(c => c.ModifiedDate <= fechaHasta);
+        }
+        if (Filtro != "" && ValorFiltro != "")
+        {
+            if (Filtro == "Nombre")
+            {
+                criterio = criterio.And(p => p.Name.Trim().ToLower().Contains(ValorFiltro.ToLower()));
+            }
+        }
+        ListaContactType = await contactTypeService.GetList(criterio);
+        ListaContactType = ListaContactType.OrderByDescending(c => c.ModifiedDate).ToList();
+    }
+}

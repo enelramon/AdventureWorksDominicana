@@ -1,0 +1,140 @@
+﻿@page "/SalesTerritory/Index"
+
+@inject SalesTerritoryService salesTerritoryService;
+
+<div class="container">
+    <div class="card">
+        <div class="card-header d-flex justify-content-between">
+            <h3>Sales Territories</h3>
+            <a class="btn btn-primary bi bi-plus-square" href="/SalesTerritory/Create"> Crear</a>
+        </div>
+        <div class="card-body">
+            @* Filtro por fechas *@
+            <div class="row">
+                <div class="col-3">
+                    <label class="form-label">Desde</label>
+                </div>
+                <div class="col-3">
+                    <label class="form-label">Hasta</label>
+                </div>
+            </div>
+            <div class="row mb-3">
+                <div class="col-3">
+                    <input class="form-control" type="datetime-local" @bind-value="FechaDesde" />
+                </div>
+                <div class="col-3">
+                    <input class="form-control" type="datetime-local" @bind-value="FechaHasta" />
+                </div>
+            </div>
+
+            @* Busqueda y filtro *@
+            <div class="row">
+                <div class="col-3">
+                    <label class="form-label">Filtro</label>
+                </div>
+                <div class="col-4">
+                    <label class="form-label">B&uacute;squeda</label>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-3">
+                    <select class="form-select" @bind="Filtro">
+                        <option value="" disabled hidden selected>Seleccione un filtro...</option>
+                        <option value="Nombre">Nombre</option>
+                        <option value="Grupo">Grupo</option>
+                    </select>
+                </div>
+                <div class="col-4">
+                    <div class="input-group">
+                        <input class="form-control" type="text" placeholder="Buscar..." @bind-value="ValorFiltro" />
+                        <button class="btn btn-outline-primary bi bi-search" @onclick="Filtrar"></button>
+                    </div>
+                </div>
+            </div>
+
+            <table class="table table-striped mt-3">
+                <thead>
+                    <tr>
+                        <th>Id</th>
+                        <th>Nombre</th>
+                        <th>Pa&iacute;s/regi&oacute;n</th>
+                        <th>Grupo</th>
+                        <th>Ventas</th>
+                        <th>Ventas LY</th>
+                        <th>Costos</th>
+                        <th>Costos LY</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var salesTerritory in ListaSalesTerritory)
+                    {
+                        <tr>
+                            <td>@salesTerritory.TerritoryId</td>
+                            <td>@salesTerritory.Name</td>
+                            <td>@salesTerritory.CountryRegionCode</td>
+                            <td>@salesTerritory.Group</td>
+                            <td>@salesTerritory.SalesYtd.ToString("N2")</td>
+                            <td>@salesTerritory.SalesLastYear.ToString("N2")</td>
+                            <td>@salesTerritory.CostYtd.ToString("N2")</td>
+                            <td>@salesTerritory.CostLastYear.ToString("N2")</td>
+                            <td>
+                                <a class="btn btn-outline-warning bi bi-pencil-square" href="/SalesTerritory/Edit/@salesTerritory.TerritoryId"></a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+        <div class="card-footer">
+            <strong>Cantidad:</strong> @ListaSalesTerritory.Count
+        </div>
+    </div>
+</div>
+
+@code {
+    public List<SalesTerritory> ListaSalesTerritory { get; set; } = new List<SalesTerritory>();
+    public DateTime? FechaDesde { get; set; }
+    public DateTime? FechaHasta { get; set; }
+    public string Filtro { get; set; } = "";
+    public string ValorFiltro { get; set; } = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        ListaSalesTerritory = await salesTerritoryService.GetList(s => s.TerritoryId > 0);
+        ListaSalesTerritory = ListaSalesTerritory.OrderByDescending(s => s.ModifiedDate).ToList();
+    }
+
+    public async Task Filtrar()
+    {
+        Expression<Func<SalesTerritory, bool>> criterio = s => s.TerritoryId > 0;
+
+        if (FechaDesde.HasValue && FechaHasta.HasValue)
+        {
+            DateTime fechaHasta = FechaHasta.Value.Date.AddDays(1).AddTicks(-1);
+            criterio = criterio.And(s => s.ModifiedDate >= FechaDesde.Value && s.ModifiedDate <= fechaHasta);
+        }
+        else if (FechaDesde.HasValue)
+        {
+            criterio = criterio.And(s => s.ModifiedDate >= FechaDesde.Value);
+        }
+        else if (FechaHasta.HasValue)
+        {
+            var fechaHasta = FechaHasta.Value.Date.AddDays(1).AddTicks(-1);
+            criterio = criterio.And(s => s.ModifiedDate <= fechaHasta);
+        }
+        if (Filtro != "" && ValorFiltro != "")
+        {
+            if (Filtro == "Nombre")
+            {
+                criterio = criterio.And(s => s.Name.Trim().ToLower().Contains(ValorFiltro.ToLower()));
+            }
+            if (Filtro == "Grupo")
+            {
+                criterio = criterio.And(s => s.Group.Trim().ToLower().Contains(ValorFiltro.ToLower()));
+            }
+        }
+        ListaSalesTerritory = await salesTerritoryService.GetList(criterio);
+        ListaSalesTerritory = ListaSalesTerritory.OrderByDescending(s => s.ModifiedDate).ToList();
+    }
+}

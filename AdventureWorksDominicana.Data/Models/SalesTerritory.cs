@@ -19,48 +19,56 @@ public partial class SalesTerritory
     /// </summary>
     [Key]
     [Column("TerritoryID")]
+    [Required(ErrorMessage = "El Id del territorio de ventas es requerido.")]
     public int TerritoryId { get; set; }
 
     /// <summary>
     /// Sales territory description
     /// </summary>
-    [StringLength(50)]
+    [StringLength(50, MinimumLength = 3, ErrorMessage = "El nombre debe tener entre 3 y 50 caracteres.")]
+    [Required(ErrorMessage = "El nombre del territorio de ventas es requerido.")]
     public string Name { get; set; } = null!;
 
     /// <summary>
     /// ISO standard country or region code. Foreign key to CountryRegion.CountryRegionCode. 
     /// </summary>
-    [StringLength(3)]
+    [StringLength(3, ErrorMessage = "El codigo del pais/region debe tener como maximo 3 caracteres.")]
+    [Required(ErrorMessage = "El codigo del pais/region es requerido.")]
     public string CountryRegionCode { get; set; } = null!;
 
     /// <summary>
     /// Geographic area to which the sales territory belong.
     /// </summary>
-    [StringLength(50)]
+    [StringLength(50, MinimumLength = 3, ErrorMessage = "El grupo debe tener entre 3 y 50 caracteres.")]
+    [Required(ErrorMessage = "El grupo del territorio de ventas es requerido.")]
     public string Group { get; set; } = null!;
 
     /// <summary>
     /// Sales in the territory year to date.
     /// </summary>
     [Column("SalesYTD", TypeName = "money")]
+    [Range(0, double.MaxValue, ErrorMessage = "Las ventas del presente anio no pueden ser negativas.")]
     public decimal SalesYtd { get; set; }
 
     /// <summary>
     /// Sales in the territory the previous year.
     /// </summary>
     [Column(TypeName = "money")]
+    [Range(0, double.MaxValue, ErrorMessage = "Las ventas del pasado anio no pueden ser negativas.")]
     public decimal SalesLastYear { get; set; }
 
     /// <summary>
     /// Business costs in the territory year to date.
     /// </summary>
     [Column("CostYTD", TypeName = "money")]
+    [Range(0, double.MaxValue, ErrorMessage = "Los costos del presente anio no pueden ser negativas.")]
     public decimal CostYtd { get; set; }
 
     /// <summary>
     /// Business costs in the territory the previous year.
     /// </summary>
     [Column(TypeName = "money")]
+    [Range(0, double.MaxValue, ErrorMessage = "Los costos del pasado anio no pueden ser negativas.")]
     public decimal CostLastYear { get; set; }
 
     /// <summary>
@@ -73,6 +81,7 @@ public partial class SalesTerritory
     /// Date and time the record was last updated.
     /// </summary>
     [Column(TypeName = "datetime")]
+    [Required(ErrorMessage = "La fecha de modificacion es requerida.")]
     public DateTime ModifiedDate { get; set; }
 
     [ForeignKey("CountryRegionCode")]
