@@ -1,0 +1,108 @@
+﻿@page "/Vendor/Edit/{BusinessEntityId:int}"
+
+@inject VendorService vendorService;
+@inject IToastService toastService;
+@inject NavigationManager navigationManager;
+@rendermode InteractiveServer
+
+<EditForm Model="Vendor" FormName="editarVendor" OnValidSubmit="Modificar">
+    <DataAnnotationsValidator />
+
+    <div class="container">
+        <div class="card shadow-lg">
+            <div class="card-header text-center">
+                <h3>Editar Vendor</h3>
+            </div>
+            <div class="card-body">
+
+                <div class="mb-3">
+                    <label class="form-label"><strong>Nombre</strong></label>
+                    <input class="form-control" type="text" @bind-value="Vendor.Name" />
+                    <ValidationMessage For="(() => Vendor.Name)" />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label"><strong>Número de Cuenta</strong></label>
+                    <input class="form-control" type="text" @bind-value="Vendor.AccountNumber" />
+                    <ValidationMessage For="(() => Vendor.AccountNumber)" />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label"><strong>Credit Rating</strong></label>
+                    <input class="form-control" type="number" min="1" max="5" @bind-value="Vendor.CreditRating" />
+                    <ValidationMessage For="(() => Vendor.CreditRating)" />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label"><strong>Preferred Vendor</strong></label>
+                    <input class="form-check-input" type="checkbox" @bind-value="Vendor.PreferredVendorStatus" />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label"><strong>Activo</strong></label>
+                    <input class="form-check-input" type="checkbox" @bind-value="Vendor.ActiveFlag" />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label"><strong>URL</strong></label>
+                    <input class="form-control" type="text" @bind-value="Vendor.PurchasingWebServiceUrl" />
+                    <ValidationMessage For="(() => Vendor.PurchasingWebServiceUrl)" />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label"><strong>Fecha de modificación</strong></label>
+                    <input class="form-control" type="datetime-local" @bind-value="Vendor.ModifiedDate" disabled />
+                </div>
+
+            </div>
+            <div class="card-footer text-center">
+                <a class="btn btn-secondary bi bi-arrow-left" href="/Vendor/Index"> Volver</a>
+                <button class="btn btn-primary bi bi-floppy" type="submit"> Guardar</button>
+                <button class="btn btn-danger bi bi-trash" type="button" @onclick="Eliminar"> Eliminar</button>
+            </div>
+        </div>
+    </div>
+</EditForm>
+
+@code {
+    [Parameter]
+    public int BusinessEntityId { get; set; }
+
+    public Vendor Vendor { get; set; } = new Vendor();
+
+    protected override async Task OnInitializedAsync()
+    {
+        Vendor = await vendorService.Buscar(BusinessEntityId);
+        Vendor.ModifiedDate = DateTime.Now;
+    }
+
+    public async Task Modificar()
+    {
+        bool modificado = await vendorService.Guardar(Vendor);
+
+        if (modificado)
+        {
+            toastService.ShowSuccess("El vendor fue modificado exitosamente.");
+            navigationManager.NavigateTo("/Vendor/Index");
+        }
+        else
+        {
+            toastService.ShowError("Ha ocurrido un error al modificar el vendor.");
+        }
+    }
+
+    public async Task Eliminar()
+    {
+        bool eliminado = await vendorService.Eliminar(Vendor.BusinessEntityId);
+
+        if (eliminado)
+        {
+            toastService.ShowSuccess("El vendor fue eliminado exitosamente.");
+            navigationManager.NavigateTo("/Vendor/Index");
+        }
+        else
+        {
+            toastService.ShowError("Ha ocurrido un error al eliminar el vendor.");
+        }
+    }
+}
