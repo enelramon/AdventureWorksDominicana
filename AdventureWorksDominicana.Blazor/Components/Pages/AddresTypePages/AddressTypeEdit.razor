@@ -1,0 +1,80 @@
+﻿@page "/AddressType/Edit/{AddressTypeId:int}"
+@inject AddressTypeService addressTypeService;
+@inject ToastService toastService;
+@inject NavigationManager navigationManager;
+
+<EditForm Model="AddressType" FormName="modificarAddressType" OnValidSubmit="Guardar">
+    <DataAnnotationsValidator />
+    <div class="container">
+        <div class="card shadow-lg">
+            <div class="card-header text-center">
+                <h3>Modificar AddressType</h3>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <label class="form-label"><strong>Nombre</strong></label>
+                    <InputText class="form-control" @bind-Value="AddressType.Name" />
+                    <ValidationMessage For="(() => AddressType.Name)" />
+                </div>
+                <div class="mb-3">
+                    <label class="form-label"><strong>Fecha de modificaci&oacute;n</strong></label>
+                    <input class="form-control" type="datetime-local" disabled @bind-value="AddressType.ModifiedDate" />
+                </div>
+            </div>
+            <div class="card-footer text-center">
+                <a class="btn btn-secondary bi bi-arrow-left" href="/AddressType/Index"> Volver</a>
+                <button type="submit" class="btn btn-primary bi bi-floppy"> Guardar</button>
+                <button class="btn btn-danger bi bi-trash" type="button" @onclick="Eliminar"> Eliminar</button>
+            </div>
+        </div>
+    </div>
+</EditForm>
+
+@code {
+    [Parameter]
+    public int AddressTypeId { get; set; }
+
+    public AddressType AddressType { get; set; } = new AddressType();
+
+    protected override async Task OnInitializedAsync()
+    {
+        var encontrado = await addressTypeService.Buscar(AddressTypeId);
+        if (encontrado != null)
+            AddressType = encontrado;
+    }
+
+    public async Task Guardar()
+    {
+        var duplicados = await addressTypeService.Listar(a => a.Name.ToLower() == AddressType.Name.ToLower() && a.AddressTypeId != AddressType.AddressTypeId);
+        if (duplicados.Any())
+        {
+            toastService.ShowWarning("El nombre \"" + AddressType.Name + "\" ya esta en uso");
+            return;
+        }
+
+        bool guardado = await addressTypeService.Guardar(AddressType);
+        if (guardado)
+        {
+            toastService.ShowSuccess("Se ha guardado el tipo de dirección correctamente.");
+            navigationManager.NavigateTo("/AddressType/Index");
+        }
+        else
+        {
+            toastService.ShowError("Ha ocurrido un error al guardar el tipo de dirección.");
+        }
+    }
+
+    public async Task Eliminar()
+    {
+        bool eliminado = await addressTypeService.Eliminar(AddressType.AddressTypeId);
+        if (eliminado)
+        {
+            toastService.ShowSuccess("Se ha eliminado el tipo de dirección correctamente.");
+            navigationManager.NavigateTo("/AddressType/Index");
+        }
+        else
+        {
+            toastService.ShowError("Ha ocurrido un error inesperado.");
+        }
+    }
+}
