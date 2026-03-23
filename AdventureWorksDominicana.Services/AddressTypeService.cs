@@ -3,7 +3,6 @@ using AdventureWorksDominicana.Data.Models;
 using Aplicada1.Core;
 using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
-
 namespace AdventureWorksDominicana.Services;
 
 public class AddressTypeService(IDbContextFactory<Contexto> DbFactory) : IService<AddressType, int>
