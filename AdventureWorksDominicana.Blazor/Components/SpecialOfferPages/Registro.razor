@@ -1,0 +1,168 @@
+﻿@page "/specialoffer/registro"
+@page "/specialoffer/registro/{Id:int}"
+@using AdventureWorksDominicana.Data.Models
+@using AdventureWorksDominicana.Services
+@inject SpecialOfferService SpecialOfferService
+@inject NavigationManager Navigation
+@inject Blazored.Toast.Services.IToastService ToastService
+
+<PageTitle>Registro de SpecialOffer</PageTitle>
+
+<div class="container mt-4">
+    <div class="card shadow-sm border-0">
+        <div class="card-header bg-white border-0 pt-4 px-4">
+            <h3 class="mb-1">Registro de SpecialOffer</h3>
+            <p class="text-muted mb-0">Crear y modificar ofertas especiales.</p>
+        </div>
+
+        <div class="card-body px-4 pb-4">
+            <EditForm Model="specialOffer" OnValidSubmit="Guardar">
+                <DataAnnotationsValidator />
+                <ValidationSummary />
+
+                <div class="row g-3">
+                    <div class="col-md-3">
+                        <label class="form-label">Id</label>
+                        <InputNumber class="form-control" @bind-Value="specialOffer.SpecialOfferId" disabled />
+                    </div>
+
+                    <div class="col-md-9">
+                        <label class="form-label">Descripción</label>
+                        <InputText class="form-control" @bind-Value="specialOffer.Description" />
+                    </div>
+
+                    <div class="col-md-3">
+                        <label class="form-label">Descuento %</label>
+                        <InputNumber class="form-control" @bind-Value="specialOffer.DiscountPct" />
+                    </div>
+
+                    <div class="col-md-3">
+                        <label class="form-label">Tipo</label>
+                        <InputText class="form-control" @bind-Value="specialOffer.Type" />
+                    </div>
+
+                    <div class="col-md-3">
+                        <label class="form-label">Categoría</label>
+                        <InputText class="form-control" @bind-Value="specialOffer.Category" />
+                    </div>
+
+                    <div class="col-md-3">
+                        <label class="form-label">Cantidad mínima</label>
+                        <InputNumber class="form-control" @bind-Value="specialOffer.MinQty" />
+                    </div>
+
+                    <div class="col-md-3">
+                        <label class="form-label">Cantidad máxima</label>
+                        <InputNumber class="form-control" @bind-Value="specialOffer.MaxQty" />
+                    </div>
+
+                    <div class="col-md-3">
+                        <label class="form-label">Fecha inicio</label>
+                        <InputDate class="form-control" @bind-Value="specialOffer.StartDate" />
+                    </div>
+
+                    <div class="col-md-3">
+                        <label class="form-label">Fecha fin</label>
+                        <InputDate class="form-control" @bind-Value="specialOffer.EndDate" />
+                    </div>
+                </div>
+
+                <div class="d-flex gap-2 mt-4 flex-wrap">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-floppy"></i> Guardar
+                    </button>
+
+                    <button type="button" class="btn btn-outline-secondary" @onclick="Nuevo">
+                        <i class="bi bi-file-earmark-plus"></i> Nuevo
+                    </button>
+
+                    <button type="button" class="btn btn-outline-dark" @onclick="Volver">
+                        <i class="bi bi-arrow-left"></i> Volver
+                    </button>
+                </div>
+            </EditForm>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public int Id { get; set; }
+
+    private SpecialOffer specialOffer = new();
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (Id > 0)
+        {
+            var encontrado = await SpecialOfferService.Buscar(Id);
+
+            if (encontrado is not null)
+            {
+                specialOffer = encontrado;
+            }
+            else
+            {
+                ToastService.ShowWarning("Registro no encontrado.");
+                Navigation.NavigateTo("/specialoffer/consulta");
+            }
+        }
+        else
+        {
+            specialOffer = new SpecialOffer
+            {
+                StartDate = DateTime.Today,
+                EndDate = DateTime.Today
+            };
+        }
+    }
+
+    private async Task Guardar()
+    {
+        if (string.IsNullOrWhiteSpace(specialOffer.Description))
+        {
+            ToastService.ShowWarning("La descripción es obligatoria.");
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(specialOffer.Type))
+        {
+            ToastService.ShowWarning("El tipo es obligatorio.");
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(specialOffer.Category))
+        {
+            ToastService.ShowWarning("La categoría es obligatoria.");
+            return;
+        }
+
+        if (specialOffer.EndDate < specialOffer.StartDate)
+        {
+            ToastService.ShowWarning("La fecha fin no puede ser menor que la fecha inicio.");
+            return;
+        }
+
+        var guardado = await SpecialOfferService.Guardar(specialOffer);
+
+        if (guardado)
+        {
+            ToastService.ShowSuccess("Registro guardado correctamente.");
+            Navigation.NavigateTo("/specialoffer/consulta");
+        }
+        else
+        {
+            ToastService.ShowError("No se pudo guardar el registro.");
+        }
+    }
+
+    private void Nuevo()
+    {
+        Navigation.NavigateTo("/specialoffer/registro");
+    }
+
+    private void Volver()
+    {
+        Navigation.NavigateTo("/specialoffer/consulta");
+    }
+}
