@@ -1,0 +1,86 @@
+﻿@page "/Currency/Edit/{CurrencyCode}"
+@rendermode InteractiveServer
+@inject CurrencyService CurrencyService
+@inject NavigationManager NavigationManager
+@inject IToastService toast
+
+<PageTitle>Editar Moneda</PageTitle>
+<EditForm Model="@currency" OnValidSubmit="Guardar">
+	<DataAnnotationsValidator />
+	<div class="container">
+		<div class="card shadow-lg">
+			@* Header *@
+			<div class="card-header">
+				<h5 class="card-title text-black mb-0">Editar Registro de Moneda</h5>
+			</div>
+        
+			<div class="card-body">
+
+
+				<div class="row mb-3">
+					<div class="col-md-6">
+						<label class="form-label fw-bold">Código de Moneda</label>
+
+						<InputText class="form-control" @bind-Value="currency.CurrencyCode" disabled />
+					</div>
+                        
+					<div class="col-md-6">
+						<label class="form-label fw-bold">Nombre</label>
+						<InputText class="form-control" @bind-Value="currency.Name" placeholder="Ej: Peso Dominicano" />
+						<ValidationMessage For="@(() => currency.Name)" />
+					</div>
+				</div>
+
+				@* Botones *@
+				<div class="mt-4 d-flex justify-content-center gap-2">
+                        
+					<a href="Currency/Index" class="btn btn-primary">
+						<i class="bi bi-arrow-left"></i> Volver
+					</a>
+
+					<button type="submit" class="btn btn-primary">
+						<i class="bi bi-floppy"></i> Actualizar
+					</button>
+				</div>
+
+			
+			</div>
+		</div>
+	</div>
+</EditForm>
+
+@code {
+	[Parameter]
+	public string CurrencyCode { get; set; } = null!;
+
+	private Currency currency = new Currency();
+
+	protected override async Task OnInitializedAsync()
+	{
+		currency = await CurrencyService.Buscar(CurrencyCode);
+        
+		if (currency == null)
+		{
+			toast.ShowError("No se encontró la moneda especificada.");
+		}
+	}
+
+	private async Task Guardar()
+	{
+		if (currency != null)
+		{
+			var guardo = await CurrencyService.Guardar(currency);
+            
+			if (guardo)
+			{
+				toast.ShowSuccess("Moneda actualizada correctamente.");
+
+			}
+			else
+			{
+				toast.ShowError("Hubo un error al intentar actualizar la moneda.");
+			}
+		}
+	}
+
+}

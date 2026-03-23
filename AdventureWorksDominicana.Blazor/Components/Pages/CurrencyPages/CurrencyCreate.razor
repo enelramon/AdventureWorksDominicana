@@ -1,0 +1,72 @@
+﻿@page "/Currency/Create"
+@rendermode InteractiveServer
+@inject CurrencyService CurrencyService
+@inject IToastService toast
+
+<PageTitle>Crear Moneda</PageTitle>
+
+<div class="container">
+	<div class="card shadow-lg">
+		@* Header *@
+		<div class="card-header">
+			<h5 class="card-title text-black mb-0">Crear Registro de Moneda</h5>
+		</div>
+        
+		<div class="card-body">
+			<EditForm Model="currency" OnValidSubmit="Guardar">
+				<DataAnnotationsValidator />
+				<ValidationSummary class="text-danger" />
+
+				<div class="row mb-3">
+					<div class="col-md-6">
+						<label class="form-label fw-bold">Código de Moneda</label>
+						<InputText class="form-control" @bind-Value="currency.CurrencyCode" placeholder="Ej: DOP" />
+						<ValidationMessage For="@(() => currency.CurrencyCode)" />
+					</div>
+                    
+					<div class="col-md-6">
+						<label class="form-label fw-bold">Nombre</label>
+						<InputText class="form-control" @bind-Value="currency.Name" placeholder="Ej: Peso Dominicano" />
+						<ValidationMessage For="@(() => currency.Name)" />
+					</div>
+				</div>
+
+				@* Botones *@
+				<div class="mt-4 d-flex justify-content-center gap-2">
+					
+					<a href="Currency/Index" class="btn btn-primary">
+						<i class="bi bi-arrow-left"></i> Volver
+					</a>
+
+					<button type="submit" class="btn btn-success">
+						<i class="bi bi-floppy"></i> Guardar
+					</button>
+				</div>
+			</EditForm>
+		</div>
+	</div>
+</div>
+
+@code {
+	private Currency currency = new Currency();
+
+	private async Task Guardar()
+	{
+		if (!string.IsNullOrEmpty(currency.CurrencyCode))
+		{
+			currency.CurrencyCode = currency.CurrencyCode.ToUpper();
+		}
+
+		var guardo = await CurrencyService.Guardar(currency);
+        
+		if (guardo)
+		{
+			toast.ShowSuccess("Moneda guardada correctamente.");
+		}
+		else
+		{
+			toast.ShowError("Error al guardar la moneda. Verifique que el código no exista.");
+		}
+	}
+
+}
