@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
-var connectionString = builder.Configuration.GetConnectionString("ConStr")
+var connectionString = builder.Configuration.GetConnectionString("ConStr ")
                       ?? throw new InvalidOperationException("No se encontró la cadena de conexión 'DefaultConnection'.");
 
 builder.Services.AddDbContextFactory<Contexto>(options =>
