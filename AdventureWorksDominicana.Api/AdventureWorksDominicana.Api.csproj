@@ -12,4 +12,10 @@
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.5" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\AdventureWorksDominicana.Data\AdventureWorksDominicana.Data.csproj" />
+    <ProjectReference Include="..\AdventureWorksDominicana.Services\AdventureWorksDominicana.Services.csproj" />
+    <ProjectReference Include="..\AdventureWorksDominicana.Tests\AdventureWorksDominicana.Tests.csproj" />
+  </ItemGroup>
+
 </Project>

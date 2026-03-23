@@ -21,7 +21,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\AdventureWorksDominicana.Api\AdventureWorksDominicana.Api.csproj" />
     <ProjectReference Include="..\AdventureWorksDominicana.Data\AdventureWorksDominicana.Data.csproj" />
+    <ProjectReference Include="..\AdventureWorksDominicana.Services\AdventureWorksDominicana.Services.csproj" />
+    <ProjectReference Include="..\AdventureWorksDominicana.Tests\AdventureWorksDominicana.Tests.csproj" />
   </ItemGroup>
 
   <ItemGroup>
