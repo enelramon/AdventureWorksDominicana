@@ -40,18 +40,18 @@ public partial class EmployeeDepartmentHistory
     /// Date the employee started work in the department.
     /// </summary>
     [Key]
-    public DateOnly StartDate { get; set; }
+    public DateOnly? StartDate { get; set; } = DateOnly.FromDateTime(DateTime.Today);
 
     /// <summary>
     /// Date the employee left the department. NULL = Current department.
     /// </summary>
-    public DateOnly? EndDate { get; set; }
+    public DateOnly? EndDate { get; set; } = DateOnly.FromDateTime(DateTime.Today.AddDays(1));
 
     /// <summary>
     /// Date and time the record was last updated.
     /// </summary>
     [Column(TypeName = "datetime")]
-    public DateTime ModifiedDate { get; set; }
+    public DateTime ModifiedDate { get; set; } = DateTime.Now;
 
     [ForeignKey("BusinessEntityId")]
     [InverseProperty("EmployeeDepartmentHistories")]

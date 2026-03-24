@@ -1,0 +1,81 @@
+﻿@page "/PhoneNumberType/Edit/{PhoneNumberTypeId:int}";
+
+@inject PhoneNumberTypeService phoneNumberTypeService;
+@inject ToastService toastService;
+@inject NavigationManager navigationManager;
+
+
+<EditForm Model="PhoneNumberType" FormName="crearPhoneNumberType" OnValidSubmit="Modificar">
+    <DataAnnotationsValidator />
+
+    <div class="container">
+        <div class="card shadow-lg">
+            <div class="card-header text-center">
+                <h3>Crear PhoneNumberType</h3>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <label class="form-label"><strong>Nombre</strong></label>
+                    <input class="form-control" type="text" @bind-value="PhoneNumberType.Name" />
+                    <ValidationMessage For="(() => PhoneNumberType.Name)" />
+                </div>
+                <div class="mb-3">
+                    <label class="form-label"><strong>Fecha de modificaci&oacute;n</strong></label>
+                    <input class="form-control" type="datetime-local" @bind-value="PhoneNumberType.ModifiedDate" disabled />
+                    <ValidationMessage For="(() => PhoneNumberType.ModifiedDate)" />
+                </div>
+            </div>
+            <div class="card-footer text-center">
+                <a class="btn btn-secondary bi bi-arrow-left" href="/PhoneNumberType/Index"> Volver</a>
+                <button class="btn btn-primary bi bi-floppy" type="submit"> Guardar</button>
+                <button class="btn btn-danger bi bi-trash" type="button" @onclick="Eliminar"> Eliminar</button>
+            </div>
+        </div>
+    </div>
+</EditForm>
+
+@code {
+    [Parameter]
+    public int PhoneNumberTypeId { get; set; }
+
+    public PhoneNumberType PhoneNumberType { get; set; } = new PhoneNumberType();
+
+    protected override async Task OnInitializedAsync()
+    {
+        PhoneNumberType = await phoneNumberTypeService.Buscar(PhoneNumberTypeId);
+        PhoneNumberType.ModifiedDate = DateTime.Now;
+    }
+
+    public async Task Modificar()
+    {
+        bool esDuplicado = await phoneNumberTypeService.BuscarDuplicado(PhoneNumberType.Name, PhoneNumberType.PhoneNumberTypeId);
+        if (esDuplicado)
+        {
+            toastService.ShowWarning("El nombre \"" + PhoneNumberType.Name + "\" ya esta en uso.");
+            return;
+        }
+        bool modificado = await phoneNumberTypeService.Guardar(PhoneNumberType);
+        if (modificado)
+        {
+            toastService.ShowSuccess("El tipo de numero de telefono fue modificado exitosamente.");
+            navigationManager.NavigateTo("/PhoneNumberType/Index");
+        }
+        else
+        {
+            toastService.ShowError("Ha ocurrido un error al modificar el tipo de numero de telefono.");
+        }
+    }
+    public async Task Eliminar()
+    {
+        bool eliminado = await phoneNumberTypeService.Eliminar(PhoneNumberType.PhoneNumberTypeId);
+        if (eliminado)
+        {
+            toastService.ShowSuccess("El tipo de numero de telefono fue eliminado exitosamente.");
+            navigationManager.NavigateTo("/PhoneNumberType/Index");
+        }
+        else
+        {
+            toastService.ShowError("Ha ocurrido un error al eliminar el tipo de numero de telefono.");
+        }
+    }
+}

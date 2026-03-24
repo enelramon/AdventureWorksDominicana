@@ -18,18 +18,21 @@ public partial class ContactType
     /// </summary>
     [Key]
     [Column("ContactTypeID")]
+    [Required(ErrorMessage = "El Id es requerido.")]
     public int ContactTypeId { get; set; }
 
     /// <summary>
     /// Contact type description.
     /// </summary>
-    [StringLength(50)]
+    [Required(ErrorMessage = "El nombre es obligatorio.")]
+    [StringLength(50, ErrorMessage = "El nombre debe contener entre 3 y 50 caracteres.")]
     public string Name { get; set; } = null!;
 
     /// <summary>
     /// Date and time the record was last updated.
     /// </summary>
     [Column(TypeName = "datetime")]
+    [Required(ErrorMessage = "La fecha de modificacion es obligatoria.")]
     public DateTime ModifiedDate { get; set; }
 
     [InverseProperty("ContactType")]

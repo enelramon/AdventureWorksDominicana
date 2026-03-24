@@ -31,6 +31,7 @@ public partial class ProductSubcategory
     /// Subcategory description.
     /// </summary>
     [StringLength(50)]
+    [Required (ErrorMessage ="Campo requerido.")]
     public string Name { get; set; } = null!;
 
     /// <summary>

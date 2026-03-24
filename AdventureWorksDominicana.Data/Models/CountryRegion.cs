@@ -17,18 +17,21 @@ public partial class CountryRegion
     /// ISO standard code for countries and regions.
     /// </summary>
     [Key]
-    [StringLength(3)]
+    [StringLength(3, ErrorMessage = "El codigo del pais/region debe tener de 1 a 3 caracteres.")]
+    [Required(ErrorMessage = "El codigo del pais/region es requerido.")]
     public string CountryRegionCode { get; set; } = null!;
 
     /// <summary>
     /// Country or region name.
     /// </summary>
-    [StringLength(50)]
+    [Required(ErrorMessage = "El nombre del pais/region es requerido.")]
+    [StringLength(50, MinimumLength = 3, ErrorMessage = "El nombre del pais/region debe tener entre 3 y 50 caracteres.")]
     public string Name { get; set; } = null!;
 
     /// <summary>
     /// Date and time the record was last updated.
     /// </summary>
+    [Required(ErrorMessage = "La fecha de modificacion del pais/region es requerido.")]
     [Column(TypeName = "datetime")]
     public DateTime ModifiedDate { get; set; }
 

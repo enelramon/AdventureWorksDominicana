@@ -25,6 +25,7 @@ public partial class ProductCategory
     /// Category description.
     /// </summary>
     [StringLength(50)]
+    [Required (ErrorMessage ="Campo requerido.")]
     public string Name { get; set; } = null!;
 
     /// <summary>

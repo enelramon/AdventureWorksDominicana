@@ -1,0 +1,155 @@
+﻿@page "/ProductCategory/Create"
+@inject NavigationManager navigationManager
+@inject ToastService toastService
+@inject ProductCategoryService categoryService
+
+@rendermode InteractiveServer
+
+<PageTitle>Crear Categor&iacute;a de Producto</PageTitle>
+
+<Toasts class="p-3" AutoHide="true" Delay="5000" Placement="ToastsPlacement.TopRight" />
+
+<EditForm Model="categoria" OnValidSubmit="Guardar">
+    <DataAnnotationsValidator />
+
+    <div class="container mt-4">
+        <div class="card shadow-lg">
+
+            <div class="card-header">
+                <h4 class="mb-0">Registro de Categor&iacute;as de Producto</h4>
+            </div>
+
+            <div class="card-body">
+
+                <div class="mb-3">
+                    <label class="form-label fw-bold">ID Categor&iacute;a</label>
+                    <InputNumber class="form-control" @bind-Value="categoria.ProductCategoryId" readonly />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Nombre de Categor&iacute;a</label>
+                    <InputText class="form-control" @bind-Value="categoria.Name" placeholder="Ej: Bicicletas, Accesorios..." />
+                    <ValidationMessage For="() => categoria.Name" />
+                </div>
+
+                <div class="border border-success p-3 mb-3">
+                    <h3 class="mb-3">Detalle de Subcategor&iacute;as</h3>
+
+                    <div class="row mb-3 align-items-end">
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Nombre de la Subcategor&iacute;a</label>
+                            <InputText class="form-control" @bind-Value="NuevaSubcategoriaNombre" placeholder="Ej: Montaña, Ruta..." />
+                        </div>
+
+                        <div class="col-md-2">
+                            <button type="button" class="btn btn-primary bi bi-plus" @onclick="AgregarDetalle">
+                                Agregar
+                            </button>
+                        </div>
+                    </div>
+
+                    @if (categoria.ProductSubcategories.Any())
+                    {
+                        <QuickGrid Items="categoria.ProductSubcategories.AsQueryable()" Class="table table-striped table-bordered">
+                            <PropertyColumn Property="@(d => d.Name)" Title="Subcategoría" />
+                            <TemplateColumn Title="Acción">
+                                <ChildContent Context="det">
+                                    <button type="button" class="btn btn-outline-danger btn-sm bi bi-trash" @onclick="(() => RemoverDetalle(det))">
+                                        Eliminar
+                                    </button>
+                                </ChildContent>
+                            </TemplateColumn>
+                        </QuickGrid>
+                    }
+                    else
+                    {
+                        <div class="alert alert-dark">No hay subcategor&iacute;as agregadas a&uacute;n.</div>
+                    }
+                </div>
+
+                @if (!string.IsNullOrWhiteSpace(mensaje))
+                {
+                    <div class="alert alert-danger">
+                        @mensaje
+                    </div>
+                }
+
+            </div>
+
+            <div class="card-footer text-center">
+                <a class="btn btn-outline-secondary bi bi-arrow-left" href="/ProductCategory/Index"> Volver</a>
+                <button type="submit" class="btn btn-outline-success bi bi-file-earmark"> Guardar</button>
+            </div>
+
+        </div>
+    </div>
+</EditForm>
+
+@code {
+    private ProductCategory categoria { get; set; } = new() { ProductSubcategories = new List<ProductSubcategory>() };
+    private string NuevaSubcategoriaNombre = string.Empty;
+    private string mensaje = string.Empty;
+
+    private void AgregarDetalle()
+    {
+        if (string.IsNullOrWhiteSpace(NuevaSubcategoriaNombre))
+        {
+            mensaje = "El nombre de la subcategoría no puede estar vacío";
+            return;
+        }
+
+        if (categoria.ProductSubcategories.Any(x => x.Name.Equals(NuevaSubcategoriaNombre, StringComparison.OrdinalIgnoreCase)))
+        {
+            mensaje = "Esta subcategoría ya ha sido agregada a la lista.";
+            return;
+        }
+
+        categoria.ProductSubcategories.Add(new ProductSubcategory
+        {
+            Name = NuevaSubcategoriaNombre,
+            ModifiedDate = DateTime.Now,
+            Rowguid = Guid.NewGuid()
+        });
+
+        toastService.ShowSuccess("Subcategoría agregada correctamente.");
+        NuevaSubcategoriaNombre = string.Empty;
+        mensaje = string.Empty;
+    }
+
+    private void RemoverDetalle(ProductSubcategory det)
+    {
+        NuevaSubcategoriaNombre = det.Name;
+
+        categoria.ProductSubcategories.Remove(det);
+        toastService.ShowWarning("Detalle removido.");
+    }
+
+    private async Task Guardar()
+    {
+        if (!categoria.ProductSubcategories.Any())
+        {
+            mensaje = "Debe agregar al menos una subcategoría para este registro.";
+            return;
+        }
+
+        categoria.ModifiedDate = DateTime.Now;
+        categoria.Rowguid = Guid.NewGuid();
+
+        try
+        {
+            if (await categoryService.Guardar(categoria))
+            {
+                toastService.ShowSuccess("Categoría guardada con éxito.");
+                navigationManager.NavigateTo("/ProductCategory/Index");
+            }
+            else
+            {
+                mensaje = "No se pudo guardar el registro.";
+            }
+        }
+        catch (Exception ex)
+        {
+            mensaje = $"Error: {ex.Message}";
+        }
+    }
+}

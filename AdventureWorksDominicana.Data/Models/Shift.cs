@@ -24,17 +24,20 @@ public partial class Shift
     /// <summary>
     /// Shift description.
     /// </summary>
-    [StringLength(50)]
+    [Required(ErrorMessage = "El nombre del turno es obligatorio.")]
+    [StringLength(50, ErrorMessage = "El nombre no puede exceder los 50 caracteres.")]
     public string Name { get; set; } = null!;
 
     /// <summary>
     /// Shift start time.
     /// </summary>
+    [Required(ErrorMessage = "La hora de inicio es obligatoria.")]
     public TimeOnly StartTime { get; set; }
 
     /// <summary>
     /// Shift end time.
     /// </summary>
+    [Required(ErrorMessage = "La hora de fin es obligatoria.")]
     public TimeOnly EndTime { get; set; }
 
     /// <summary>

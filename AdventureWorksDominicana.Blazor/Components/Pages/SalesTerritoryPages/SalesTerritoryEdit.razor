@@ -1,0 +1,80 @@
+﻿@page "/SalesTerritory/Edit/{SalesTerritoryId:int}"
+
+@inject SalesTerritoryService salesTerritoryService;
+@inject ToastService toastService;
+@inject NavigationManager navigationManager;
+@inject CountryRegionsService countryRegionsService;
+
+<EditForm Model="SalesTerritory" FormName="modificarSalesTerritory" OnValidSubmit="Modificar">
+    <DataAnnotationsValidator />
+
+    <div class="container">
+        <div class="card shadow-lg">
+            <div class="card-header text-center">
+                <h3>Modificar Sales Territory</h3>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <label class="form-label"><strong>Nombre</strong></label>
+                    <input class="form-control" type="text" maxlength="50" placeholder="Escriba el nombre..." @bind-value="@SalesTerritory.Name" />
+                    <ValidationMessage For="(() => SalesTerritory.Name)" />
+                </div>
+                <div class="mb-3">
+                    <label class="form-label"><strong>C&oacute;digo de pa&iacute;s/regi&oacute;n</strong></label>
+                    <select class="form-select" @bind="@SalesTerritory.CountryRegionCode">
+                        <option value="" disabled hidden selected>Seleccione un pa&iacute;s/regi&oacute;n...</option>
+                        @foreach (var countryRegion in ListaCountryRegion)
+                        {
+                            <option value="@countryRegion.CountryRegionCode">@countryRegion.Name (@countryRegion.CountryRegionCode)</option>
+                        }
+                    </select>
+                    <ValidationMessage For="(() => SalesTerritory.CountryRegionCode)" />
+                </div>
+                <div class="mb-3">
+                    <label class="form-label"><strong>Grupo</strong></label>
+                    <input class="form-control" type="text" maxlength="50" placeholder="Escriba el Grupo..." @bind-value="@SalesTerritory.Group" />
+                    <ValidationMessage For="(() => SalesTerritory.Group)" />
+                </div>
+                <div class="mb-3">
+                    <label class="form-label"><strong>Fecha de modificaci&oacute;n</strong></label>
+                    <input class="form-control" type="datetime-local" disabled @bind-value="@SalesTerritory.ModifiedDate"/>
+                    <ValidationMessage For="(() => SalesTerritory.ModifiedDate)" />
+                </div>
+            </div>
+            <div class="card-footer text-center">
+                <a class="btn btn-secondary bi bi-arrow-left" href="/SalesTerritory/Index"> Volver</a>
+                <button class="btn btn-primary bi bi-floppy" type="submit"> Guardar</button>
+            </div>
+        </div>
+    </div>
+</EditForm>
+
+@code {
+    [Parameter]
+    public int SalesTerritoryId { get; set; }
+
+    public List<CountryRegion> ListaCountryRegion { get; set; } = new List<CountryRegion>();
+    public SalesTerritory SalesTerritory { get; set; } = new SalesTerritory();
+
+    protected override async Task OnInitializedAsync()
+    {
+        SalesTerritory = await salesTerritoryService.Buscar(SalesTerritoryId);
+        SalesTerritory.ModifiedDate = DateTime.Now;
+        ListaCountryRegion = await countryRegionsService.GetList(c => !c.CountryRegionCode.Equals(""));
+        ListaCountryRegion = ListaCountryRegion.OrderBy(c => c.Name).ToList();
+    }
+
+    public async Task Modificar()
+    {
+        bool modificado = await salesTerritoryService.Guardar(SalesTerritory);
+        if (modificado)
+        {
+            toastService.ShowSuccess("Sales territory modificado exitosamente.");
+            navigationManager.NavigateTo("/SalesTerritory/Index");
+        }
+        else
+        {
+            toastService.ShowError("Ha ocurrido un error inesperado al modificar.");
+        }
+    }
+}

@@ -17,18 +17,21 @@ public partial class PhoneNumberType
     /// </summary>
     [Key]
     [Column("PhoneNumberTypeID")]
+    [Required(ErrorMessage = "El Id del tipo de numero de telefono es obligatorio.")]
     public int PhoneNumberTypeId { get; set; }
 
     /// <summary>
     /// Name of the telephone number type
     /// </summary>
-    [StringLength(50)]
+    [Required(ErrorMessage = "El nombre es obligatorio.")]
+    [StringLength(50, MinimumLength = 2, ErrorMessage = "El nombre debe tener entre 2 y 50 caracteres.")]
     public string Name { get; set; } = null!;
 
     /// <summary>
     /// Date and time the record was last updated.
     /// </summary>
     [Column(TypeName = "datetime")]
+    [Required(ErrorMessage = "La fecha de modificacion es obligatoria.")]
     public DateTime ModifiedDate { get; set; }
 
     [InverseProperty("PhoneNumberType")]

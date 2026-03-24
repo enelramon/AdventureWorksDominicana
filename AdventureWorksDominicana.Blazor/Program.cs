@@ -6,20 +6,32 @@ using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
-var connectionString = builder.Configuration.GetConnectionString("ConStr ")
-                      ?? throw new InvalidOperationException("No se encontró la cadena de conexión 'DefaultConnection'.");
-
 builder.Services.AddDbContextFactory<Contexto>(options =>
-    options.UseSqlServer(connectionString));
+    options.UseSqlServer(builder.Configuration.GetConnectionString("ConStr")));
 
 // Add services to the container.
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
+// Services
+builder.Services.AddScoped<CurrencyService>();
 builder.Services.AddBlazoredToast();
+builder.Services.AddScoped<ShipMethodService>();
+builder.Services.AddScoped<CountryRegionsService>();
+builder.Services.AddScoped<DepartmentService>();
+builder.Services.AddScoped<PersonService>();
+builder.Services.AddScoped<ShiftService>();
+builder.Services.AddScoped<EmployeeService>();
+builder.Services.AddScoped<ContactTypeService>();
+builder.Services.AddScoped<ProductCategoryService>();
+builder.Services.AddScoped<PhoneNumberTypeService>();
+builder.Services.AddScoped<ShiftService>();
+builder.Services.AddScoped<EmployeeService>();
+builder.Services.AddScoped<ProductCategoryService>();
+builder.Services.AddScoped<SalesTerritoryService>();
+builder.Services.AddScoped<VendorService>();
 
-builder.Services.AddScoped<SpecialOfferService>();
-
+builder.Services.AddBlazorBootstrap();
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

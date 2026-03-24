@@ -1,0 +1,142 @@
+﻿@page "/Vendor/Index"
+
+@inject NavigationManager navigationManager
+@inject VendorService vendorService
+@rendermode InteractiveServer
+
+<PageTitle>Vendor</PageTitle>
+
+<div class="container-fluid">
+    <div class="card shadow-lg">
+        <div class="card-header d-flex justify-content-between align-content-center">
+            <h3 class="mb-0">Vendor</h3>
+            <a class="btn btn-primary" href="/Vendor/Create"><i class="bi bi-plus-square"></i> Crear</a>
+        </div>
+
+        <div class="card-body">
+            <div class="mb-3">
+                <div class="row">
+                    <div class="col-4">
+                        <label class="form-label">Desde</label>
+                        <InputDate class="form-control" @bind-Value="Desde" />
+                    </div>
+                    <div class="col-4">
+                        <label class="form-label">Hasta</label>
+                        <InputDate class="form-control" @bind-Value="Hasta" />
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-4">
+                        <label class="form-label">Filtro:</label>
+                        <InputSelect class="form-select" @bind-Value="Filtros">
+                            <option disabled value="">Filtrar...</option>
+                            <option value="Id">ID</option>
+                            <option value="Nombre">Nombre</option>
+                            <option value="Cuenta">Cuenta</option>
+                        </InputSelect>
+                    </div>
+
+                    <div class="col-4">
+                        <label class="form-label">Buscar::</label>
+                        <div class="input-group">
+                            <InputText class="form-control" @bind-Value="ValorFiltro" placeholder="Buscar..." />
+                            <button class="btn btn-primary" @onclick="Buscar">
+                                <i class="bi bi-search"></i> Buscar
+                            </button>
+                            <button type="button" class="btn btn-outline-primary bi bi-arrow-counterclockwise" @onclick="Restablecer"></button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="table-responsive">
+                <QuickGrid Items="ListaVendors" Class="table table-striped table-bordered table-hover">
+
+                    <PropertyColumn Property="@(e => e.BusinessEntityId)" Sortable="true" Title="ID" />
+                    <PropertyColumn Property="@(e => e.Name)" Sortable="true" Title="Nombre" />
+                    <PropertyColumn Property="@(e => e.AccountNumber)" Sortable="true" Title="Cuenta" />
+                    <PropertyColumn Property="@(e => e.CreditRating)" Sortable="true" Title="Crédito" />
+
+                    <TemplateColumn Title="Estado">
+                        @(context.ActiveFlag ? "Activo" : "Inactivo")
+                    </TemplateColumn>
+
+                    <TemplateColumn Title="Preferido">
+                        @(context.PreferredVendorStatus ? "Sí" : "No")
+                    </TemplateColumn>
+
+                    <PropertyColumn Property="@(e => e.ModifiedDate)" Format="dd/MM/yyyy" Title="Fecha de modificación" Sortable="true" />
+
+                    <TemplateColumn Title="Acciones">
+                        <a class="btn btn-outline-primary btn-sm" href="/Vendor/Edit/@context.BusinessEntityId">
+                            <i class="bi bi-pencil-square"></i>
+                        </a>
+                    </TemplateColumn>
+
+                </QuickGrid>
+            </div>
+        </div>
+
+        <div class="card-footer text-end">
+            <strong>Conteo Registros: </strong> @ListaVendors.Count()
+        </div>
+    </div>
+</div>
+
+@code {
+    public IQueryable<Vendor> ListaVendors { get; set; } = Enumerable.Empty<Vendor>().AsQueryable();
+    public string Filtros { get; set; } = string.Empty;
+    public string ValorFiltro { get; set; } = string.Empty;
+    public DateTime? Desde { get; set; }
+    public DateTime? Hasta { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await Buscar();
+    }
+
+    public async Task Buscar()
+    {
+        List<Vendor> ListaResultante;
+
+        if (!string.IsNullOrWhiteSpace(ValorFiltro))
+        {
+            if (Filtros == "Id" && int.TryParse(ValorFiltro, out int id))
+            {
+                ListaResultante = await vendorService.GetList(x => x.BusinessEntityId == id);
+            }
+            else if (Filtros == "Nombre")
+            {
+                ListaResultante = await vendorService.GetList(
+                    x => x.Name.ToLower().Contains(ValorFiltro.ToLower()));
+            }
+            else if (Filtros == "Cuenta")
+            {
+                ListaResultante = await vendorService.GetList(
+                    x => x.AccountNumber.ToLower().Contains(ValorFiltro.ToLower()));
+            }
+            else
+            {
+                ListaResultante = await vendorService.GetList(x => true);
+            }
+        }
+        else
+        {
+            ListaResultante = await vendorService.GetList(x => true);
+        }
+        if (Desde.HasValue)
+            ListaResultante = ListaResultante.Where(x => x.ModifiedDate >= Desde.Value).ToList();
+        if (Hasta.HasValue)
+            ListaResultante = ListaResultante.Where(x => x.ModifiedDate <= Hasta.Value).ToList();
+        ListaVendors = ListaResultante.AsQueryable();
+    }
+    private async Task Restablecer()
+    {
+        Desde = null;
+        Hasta = null;
+        ValorFiltro = string.Empty;
+        Filtros = string.Empty;
+        await Buscar();
+    }
+}
