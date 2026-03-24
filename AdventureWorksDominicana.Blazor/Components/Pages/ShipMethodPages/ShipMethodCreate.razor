@@ -1,0 +1,72 @@
+﻿@page "/ShipMethods/Create"
+@using AdventureWorksDominicana.Data.Models
+@using AdventureWorksDominicana.Services
+@inject ToastService toastService
+@inject NavigationManager navigationManager
+@inject ShipMethodService ShipMethodService
+
+<PageTitle>Crear Ship Method</PageTitle>
+<EditForm Model="@metodo" OnValidSubmit="Guardar">
+    <DataAnnotationsValidator />
+    <div class="container">
+        <div class="card shadow-lg">
+            <div class="card-header bg-light">
+                <h5 class="card-title">Crear Ship Method</h5>
+            </div>
+            <div class="card-body bg-light">
+                <div class="justify-content-between">
+                    <label class="mt-4"><strong>Nombre:</strong></label>
+                    <div class="d-flex justify-content-start gap-2 mt-2">
+                        <InputText class="form-control" @bind-Value="@metodo.Name" placeholder="Ingrese el nombre del metodo..."></InputText>
+                        <ValidationMessage For="@(() => metodo.Name)" />
+                    </div>
+                    <label class="mt-4"><strong>Costo base:</strong></label>
+                    <div class="d-flex justify-content-start gap-2 mt-2">
+                        <InputNumber class="form-control" @bind-Value="@metodo.ShipBase" placeholder="Ingrese el valor..."></InputNumber>
+                        <ValidationMessage For="@(() => metodo.ShipBase)" />
+                    </div>
+                    <label class="mt-4"><strong>Tasa por unidad:</strong></label>
+                    <div class="d-flex justify-content-start gap-2 mt-2">
+                        <InputNumber class="form-control" @bind-Value="@metodo.ShipRate" placeholder="Ingrese el valor..."></InputNumber>
+                        <ValidationMessage For="@(() => metodo.ShipRate)" />
+                    </div>
+                    <label><strong>Fecha de modificaci&oacute;n:</strong></label>
+                    <div class="d-flex justify-content-start gap-2 mt-2">
+                        <InputDate Type="InputDateType.DateTimeLocal" class="form-control" @bind-Value="@metodo.ModifiedDate" placeholder="Ingrese la fecha..."></InputDate>
+                        <ValidationMessage For="@(() => metodo.ModifiedDate)" />
+                    </div>
+                </div>
+            </div>
+            <div class="card-footer d-flex justify-content-center gap-2">
+                <a href="/ShipMethods" class="btn btn-secondary ">
+                    <span class="bi bi-arrow-left"> Volver</span>
+                </a>
+                <button class="btn btn-primary bi bi-save"> Crear</button>
+            </div>
+        </div>
+    </div>
+</EditForm>
+
+@code {
+    ShipMethod metodo = new ShipMethod();
+
+    protected override async Task OnInitializedAsync()
+    {
+    }
+
+    public async Task Guardar()
+    {
+        var guardado = await ShipMethodService.Guardar(metodo);
+        if (guardado)
+        {
+            toastService.ShowSuccess("El metodo ha sido guardada con exito!");
+            navigationManager.NavigateTo("/ShipMethods");
+        }
+        else
+        {
+            toastService.ShowError("Ha ocurrido un error al intentar guardar el metodo.");
+        }
+    }
+
+}
+

@@ -1,0 +1,128 @@
+﻿@page "/ProductCategory/Index"
+
+@inject NavigationManager navigationManager
+@inject ProductCategoryService productCategoryService
+@rendermode InteractiveServer
+
+
+<PageTitle>Product Category</PageTitle>
+
+<div class="container-fluid">
+    <div class="card shadow-lg">
+        <div class="card-header d-flex justify-content-between align-content-center">
+            <h3 class="mb-0">Product Category</h3>
+            <a class="btn btn-primary" href="/ProductCategory/Create"><i class="bi bi-plus-square"></i> Crear</a>
+        </div>
+
+        <div class="card-body">
+            <div class="mb-3">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="input-group">
+                            <span class="input-group-text">Desde</span>
+                            <InputDate class="form-control" @bind-Value="Desde" />
+                            <span class="input-group-text">Hasta</span>
+                            <InputDate class="form-control" @bind-Value="Hasta" />
+                        </div>
+
+                    </div>
+
+                </div>
+                <div class="row mb-4">
+                    <div class="col-md-3">
+                        <InputSelect class="form-select" @bind-Value="Filtros">
+                            <option disabled value="">Elige un filtro</option>
+                            <option value="Id">ID</option>
+                            <option value="Nombre"> Nombre</option>
+                        </InputSelect>
+                    </div>
+
+                    <div class="col-md-5">
+                        <div class="input-group">
+                            <InputText class="form-control" @bind-Value="ValorFiltro" placeholder="Buscar..." />
+                            <button class="btn btn-primary" @onclick="Buscar">
+                                <i class="bi bi-search"></i> Buscar
+                            </button>
+                            <button type="button" class="btn btn-outline-primary bi bi-arrow-counterclockwise" @onclick="Restablecer"></button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="table-responsive">
+                <QuickGrid Items="ListaCategoriasProducto" Class="table table-striped table-bordered table-hover">
+                    <PropertyColumn Property="@(e => e.ProductCategoryId)"  Sortable="true" />
+                    <PropertyColumn Property="@(e => e.Name)" Sortable="true" Title="Nombre" />
+                    <PropertyColumn Property="@(e => e.ModifiedDate)" Format="dd/MM/yyyy" Title="Fecha de modificaci&oacute;n" Sortable="true" />
+
+                    <TemplateColumn Title="Acciones">
+                        <a class="btn btn-outline-primary btn-sm" href="/ProductCategory/Edit/@context.ProductCategoryId">
+                            <i class="bi bi-pencil-square"></i>
+                        </a>
+                    </TemplateColumn>
+                </QuickGrid>
+            </div>
+        </div>
+
+        <div class="card-footer text-end">
+            <strong>Conteo Registros: </strong> @ListaCategoriasProducto.Count()
+        </div>
+    </div>
+</div>
+
+@code {
+    public IQueryable<ProductCategory> ListaCategoriasProducto { get; set; } = Enumerable.Empty<ProductCategory>().AsQueryable();
+    public string Filtros { get; set; } = string.Empty;
+    public string ValorFiltro { get; set; } = string.Empty;
+    public DateTime? Desde { get; set; }
+    public DateTime? Hasta { get; set; }
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        await Buscar();
+    }
+
+    public async Task Buscar()
+    {
+        List<ProductCategory> resultado;
+
+        if (!string.IsNullOrWhiteSpace(ValorFiltro))
+        {
+            if (Filtros == "Id" && int.TryParse(ValorFiltro, out int id))
+            {
+                resultado = await productCategoryService.GetList(x => x.ProductCategoryId == id);
+            }
+            else if (Filtros == "Nombre")
+            {
+                resultado = await productCategoryService.GetList(
+                    x => x.Name.ToLower().Contains(ValorFiltro.ToLower()));
+            }
+            else
+            {
+                resultado = await productCategoryService.GetList(x => true);
+            }
+        }
+        else
+        {
+            resultado = await productCategoryService.GetList(x => true);
+        }
+
+        if (Desde.HasValue)
+            resultado = resultado.Where(x => x.ModifiedDate >= Desde.Value).ToList();
+
+        if (Hasta.HasValue)
+            resultado = resultado.Where(x => x.ModifiedDate <= Hasta.Value).ToList();
+
+        ListaCategoriasProducto = resultado.AsQueryable();
+    }
+
+    private async Task Restablecer()
+    {
+        Desde = null;
+        Hasta = null;
+        ValorFiltro = string.Empty;
+        Filtros = string.Empty;
+        await Buscar();
+    }
+}
