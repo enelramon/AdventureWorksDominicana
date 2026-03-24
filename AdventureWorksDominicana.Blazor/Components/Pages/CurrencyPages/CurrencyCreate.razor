@@ -17,16 +17,16 @@
 				<DataAnnotationsValidator />
 				<ValidationSummary class="text-danger" />
 
-				<div class="row mb-3">
-					<div class="col-md-6">
+				<div class="row mb-3 d-flex gap-2">
+					<div >
 						<label class="form-label fw-bold">Código de Moneda</label>
-						<InputText class="form-control" @bind-Value="currency.CurrencyCode" placeholder="Ej: DOP" />
+						<InputText class="form-control form-control-sm w-25" @bind-Value="currency.CurrencyCode" placeholder="Ej: DOP" />
 						<ValidationMessage For="@(() => currency.CurrencyCode)" />
 					</div>
                     
-					<div class="col-md-6">
+					<div  >
 						<label class="form-label fw-bold">Nombre</label>
-						<InputText class="form-control" @bind-Value="currency.Name" placeholder="Ej: Peso Dominicano" />
+						<InputText class="form-control form-control-sm w-25" @bind-Value="currency.Name" placeholder="Ej: Peso Dominicano" />
 						<ValidationMessage For="@(() => currency.Name)" />
 					</div>
 				</div>
