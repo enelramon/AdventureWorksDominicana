@@ -2,6 +2,7 @@
   <Folder Name="/Solution Items/">
     <File Path=".github/workflows/dotnet.yml" />
     <File Path="README.md" />
+    <Project Path="BlazorApp1/BlazorApp1.csproj" Id="e83be556-ec5c-47f6-8604-f92d9e28ed18" />
   </Folder>
   <Project Path="AdventureWorksDominicana.Api/AdventureWorksDominicana.Api.csproj" />
   <Project Path="AdventureWorksDominicana.Blazor/AdventureWorksDominicana.Blazor.csproj" />
