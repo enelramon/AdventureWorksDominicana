@@ -1,0 +1,105 @@
+﻿@page "/product-reviews/create"
+@using AdventureWorksDominicana.Data.Models
+@using AdventureWorksDominicana.Services
+@inject ProductReviewService ProductReviewService
+@inject NavigationManager navigationManager
+@inject ToastService toastService
+@rendermode InteractiveServer
+
+<PageTitle>Crear Registro de Review</PageTitle>
+
+<EditForm Model="review" OnSubmit="Guardar">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <div class="container mt-4">
+        <div class="card shadow-lg">
+            <div class="card-header text-center">
+                <h3>Crear Registro de Review</h3>
+            </div>
+            
+            <div class="card-body">
+
+                <div class="mb-3">
+                    <label class="form-label"><strong>ID del Producto</strong></label>
+                    <InputNumber class="form-control" @bind-Value="review.ProductId" />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label"><strong>Nombre del Revisor</strong></label>
+                    <InputText class="form-control" @bind-Value="review.ReviewerName" />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label"><strong>Email</strong></label>
+                    <InputText class="form-control" @bind-Value="review.EmailAddress" />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label"><strong>Calificación (1-5)</strong></label>
+                    <InputNumber class="form-control" @bind-Value="review.Rating" />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label"><strong>Comentarios</strong></label>
+                    <InputTextArea class="form-control" @bind-Value="review.Comments" rows="3" />
+                </div>
+
+            </div>
+
+            <div class="card-footer text-center">
+                <button type="button" class="btn btn-secondary" @onclick="Volver">Volver</button>
+                <button class="btn btn-primary" type="submit">Guardar</button>
+            </div>
+        </div>
+    </div>
+</EditForm>
+
+@code {
+    public ProductReview review { get; set; } = new ProductReview();
+
+    protected override void OnInitialized()
+    {
+        review.ReviewerName = "";
+        review.EmailAddress = "";
+        review.ReviewDate = DateTime.Now;
+        review.ModifiedDate = DateTime.Now;
+    }
+
+    public async Task Guardar()
+    {
+        Console.WriteLine("ENTRÓ A GUARDAR");
+
+     
+        if (review.ProductId <= 0 ||
+            string.IsNullOrWhiteSpace(review.ReviewerName) ||
+            string.IsNullOrWhiteSpace(review.EmailAddress) ||
+            review.Rating < 1 || review.Rating > 5)
+        {
+            toastService.ShowError("Completa todos los campos correctamente.");
+            return;
+        }
+
+        try
+        {
+            bool guardado = await ProductReviewService.CreateAsync(review);
+
+            if (guardado)
+            {
+                toastService.ShowSuccess("Review creado exitosamente.");
+                navigationManager.NavigateTo("/product-reviews");
+            }
+            else
+            {
+                toastService.ShowError("No se pudo guardar.");
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.ToString());
+            toastService.ShowError("Error real en consola.");
+        }
+    }
+
+    private void Volver() => navigationManager.NavigateTo("/product-reviews");
+}

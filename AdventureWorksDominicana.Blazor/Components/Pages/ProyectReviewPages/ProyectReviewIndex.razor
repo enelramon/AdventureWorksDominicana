@@ -1,0 +1,101 @@
+﻿@page "/product-reviews"
+@using AdventureWorksDominicana.Data.Models
+@using AdventureWorksDominicana.Services
+@using Microsoft.AspNetCore.Components.QuickGrid
+@inject ProductReviewService ProductReviewService
+@inject NavigationManager NavigationManager
+@rendermode InteractiveServer
+
+<PageTitle>Registro de Reviews</PageTitle>
+
+<div class="container mt-4">
+    <div class="card shadow-sm">
+      
+        <div class="card-header bg-white d-flex justify-content-between align-items-center py-3">
+            <h3 class="mb-0">Registro de Reviews</h3>
+            <button class="btn btn-primary" @onclick="IrACrear">
+                <i class="bi bi-plus-square"></i> Crear
+            </button>
+        </div>
+
+        <div class="card-body">
+           
+            <div class="row mb-4 align-items-end">
+                <div class="col-md-3">
+                    <label class="form-label fw-bold">Desde</label>
+                    <input type="date" class="form-control" />
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label fw-bold">Hasta</label>
+                    <input type="date" class="form-control" />
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label fw-bold">Filtrar por</label>
+                    <select class="form-select">
+                        <option value="">Seleccione una opción</option>
+                        <option value="nombre">Nombre</option>
+                        <option value="rating">Calificación</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label fw-bold">Buscar</label>
+                    <div class="input-group">
+                        <input type="text" class="form-control" placeholder="Buscar..." />
+                        <button class="btn btn-outline-primary" type="button">
+                            <i class="bi bi-search"></i> Buscar
+                        </button>
+                        <button class="btn btn-outline-primary" type="button">
+                            <i class="bi bi-arrow-clockwise"></i> Limpiar
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            
+            @if (reviews == null)
+            {
+                <div class="text-center py-5">
+                    <div class="spinner-border text-primary" role="status"></div>
+                    <p class="mt-2">Cargando datos...</p>
+                </div>
+            }
+            else
+            {
+                <div class="table-responsive">
+                    <QuickGrid Items="@reviews.AsQueryable()" Class="table table-striped table-bordered align-middle mt-2">
+                        <PropertyColumn Property="@(p => p.ProductReviewId)" Title="Código" Sortable="true" />
+                        <PropertyColumn Property="@(p => p.ReviewerName)" Title="Nombre" Sortable="true" />
+                        
+                        <TemplateColumn Title="Opción" Class="text-center">
+                            <div class="d-flex justify-content-center gap-2">
+                                
+                                <button class="btn btn-primary btn-sm" @onclick="() => IrAEditar(context.ProductReviewId)">
+                                    <i class="bi bi-pencil"></i> Editar
+                                </button>
+                                <button class="btn btn-primary btn-sm" @onclick="() => IrADetalle(context.ProductReviewId)">
+                                    <i class="bi bi-eye"></i> Detalle
+                                </button>
+                            </div>
+                        </TemplateColumn>
+                    </QuickGrid>
+                </div>
+                <div class="card-footer bg-white border-top-0">
+                    <p class="text-muted small">@reviews.Count items</p>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@code {
+    private List<ProductReview>? reviews;
+
+    protected override async Task OnInitializedAsync()
+    {
+        reviews = await ProductReviewService.GetReviewsAsync();
+    }
+
+    private void IrACrear() => NavigationManager.NavigateTo("/product-reviews/create");
+    private void IrAEditar(int id) => NavigationManager.NavigateTo($"/product-reviews/edit/{id}");
+    private void IrADetalle(int id) => NavigationManager.NavigateTo($"/product-reviews/details/{id}");
+}
