@@ -8,5 +8,4 @@
   <Project Path="AdventureWorksDominicana.Data/AdventureWorksDominicana.Data.csproj" />
   <Project Path="AdventureWorksDominicana.Services/AdventureWorksDominicana.Services.csproj" />
   <Project Path="AdventureWorksDominicana.Tests/AdventureWorksDominicana.Tests.csproj" />
-  <Project Path="BlazorApp1/BlazorApp1.csproj" Id="d5797fa7-0a85-49a1-8b87-9b0ed6b391a9" />
 </Solution>
