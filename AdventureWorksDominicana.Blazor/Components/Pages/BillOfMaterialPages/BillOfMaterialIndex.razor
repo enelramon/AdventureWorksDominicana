@@ -1,15 +1,15 @@
-﻿@page "/Currency/Index"
+﻿@page "/BillOfMaterial/Index"
 @rendermode InteractiveServer
-@inject CurrencyService CurrencyService
+@inject BillOfMaterialService BOMService
 
-<PageTitle>Currency Index</PageTitle>
+<PageTitle>Bill of Materials Index</PageTitle>
 
 <div class="container">
     <div class="card shadow-lg">
 
         <div class="card-header d-flex justify-content-between align-items-center">
-            <h5 class="card-title text-black mb-0">Registro de Monedas</h5>
-            <a href="Currency/Create" class="btn btn-primary">
+            <h5 class="card-title text-black mb-0">Registro de Lista de Materiales </h5>
+            <a href="BillOfMaterial/Create" class="btn btn-primary">
                 <i class="bi bi-plus-square"></i> Crear
             </a>
         </div>
@@ -29,14 +29,14 @@
                     <label class="form-label">Filtrar por</label>
                     <select class="form-select" @bind="Filtro">
                         <option value="">Seleccione una opci&oacute;n</option>
-                        <option value="CurrencyCode">Código</option>
-                        <option value="Name">Nombre</option>
+                        <option value="ComponentId">ID Componente</option>
+                        <option value="AssemblyId">ID Ensamblaje</option>
                     </select>
                 </div>
                 <div class="col-md-3">
-                    <label class="form-label">Buscar</label>
+                    <label class="form-label">Buscar </label>
                     <div class="input-group">
-                        <input class="form-control" type="text" placeholder="Buscar..." @bind="ValorFiltro" />
+                        <input class="form-control" type="number" placeholder="Buscar..." @bind="ValorFiltro" />
                         <button class="btn btn-outline-primary" type="button" @onclick="Buscar">
                             <i class="bi bi-search"></i>Buscar
                         </button>
@@ -48,11 +48,15 @@
             </div>
 
             <div class="table-responsive mt-3">
-                <QuickGrid Items="ListaCurrency.AsQueryable()" Pagination="@pages" Class="table table-bordered table-hover align-middle">
-                    <PropertyColumn Property="@(d => d.CurrencyCode)" Title="Código" Sortable="true" />
-                    <PropertyColumn Property="@(d => d.Name)" Title="Nombre" Sortable="true" />
+                <QuickGrid Items="ListaBOM.AsQueryable()" Pagination="@pages" Class="table table-bordered table-hover align-middle">
+                    <PropertyColumn Property="@(d => d.BillOfMaterialsId)" Title="BOM ID" Sortable="true" />
+                    <PropertyColumn Property="@(d => d.ProductAssemblyId)" Title="Ensamblaje " Sortable="true" />
+                    <PropertyColumn Property="@(d => d.ComponentId)" Title="Componente" Sortable="true" />
+                    <PropertyColumn Property="@(d => d.StartDate)" Title="Fecha Inicio" Format="dd/MM/yyyy" Sortable="true" />
+                    <PropertyColumn Property="@(d => d.PerAssemblyQty)" Title="Cant. Requerida" Sortable="true" />
+                    <PropertyColumn Property="@(d => d.UnitMeasureCode)" Title="Unidad" Sortable="true" />
                     <TemplateColumn Context="option" Title="Opción">
-                        <a href="Currency/Edit/@option.CurrencyCode" class="btn btn-primary btn-sm">
+                        <a href="BillOfMaterial/Edit/@option.BillOfMaterialsId" class="btn btn-primary btn-sm">
                             <i class="bi bi-pencil"></i> Editar
                         </a>
                     </TemplateColumn>
@@ -65,29 +69,28 @@
 </div>
 
 @code {
-    private List<Currency> ListaCurrency = new List<Currency>();
+    private List<BillOfMaterial> ListaBOM = new List<BillOfMaterial>();
     private PaginationState pages = new PaginationState { ItemsPerPage = 5 };
 
     private string Filtro = string.Empty;
-    private string ValorFiltro = string.Empty;
+    private int? ValorFiltro;
     private DateTime? Desde;
     private DateTime? Hasta;
 
     protected override async Task OnInitializedAsync()
     {
-        ListaCurrency = await CurrencyService.GetList(p => true);
+        ListaBOM = await BOMService.GetList(p => true);
     }
 
     private async Task Buscar()
     {
-        ListaCurrency = await CurrencyService.GetList(c =>
-            (!Desde.HasValue || c.ModifiedDate >= Desde.Value.Date) &&
-            (!Hasta.HasValue || c.ModifiedDate <= Hasta.Value.Date.AddDays(1).AddTicks(-1)) &&
-
-            (string.IsNullOrWhiteSpace(ValorFiltro) ||
-                (Filtro == "Name" && c.Name.Contains(ValorFiltro)) ||
-                (Filtro == "CurrencyCode" && c.CurrencyCode.Contains(ValorFiltro)) ||
-                (string.IsNullOrWhiteSpace(Filtro) && (c.Name.Contains(ValorFiltro) || c.CurrencyCode.Contains(ValorFiltro)))
+        ListaBOM = await BOMService.GetList(c =>
+            (!Desde.HasValue || c.StartDate >= Desde.Value.Date) &&
+            (!Hasta.HasValue || c.StartDate <= Hasta.Value.Date.AddDays(1).AddTicks(-1)) &&
+            (!ValorFiltro.HasValue ||
+                (Filtro == "ComponentId" && c.ComponentId == ValorFiltro) ||
+                (Filtro == "AssemblyId" && c.ProductAssemblyId == ValorFiltro) ||
+                (string.IsNullOrWhiteSpace(Filtro) && (c.ComponentId == ValorFiltro || c.ProductAssemblyId == ValorFiltro))
             )
         );
     }
@@ -95,7 +98,7 @@
     private async Task Restablecer()
     {
         Filtro = string.Empty;
-        ValorFiltro = string.Empty;
+        ValorFiltro = null;
         Desde = null;
         Hasta = null;
         await OnInitializedAsync();
