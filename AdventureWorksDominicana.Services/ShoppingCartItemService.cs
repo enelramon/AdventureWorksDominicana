@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
+using System.Security.Cryptography;
 using System.Text;
 
 namespace AdventureWorksDominicana.Services;
@@ -29,7 +30,12 @@ public class ShoppingCartItemService(IDbContextFactory<Contexto> DbFactory) : IS
         await using var contexto = await DbFactory.CreateDbContextAsync();
         if (string.IsNullOrWhiteSpace(cartItem.ShoppingCartId))
         {
-            cartItem.ShoppingCartId = Guid.NewGuid().ToString("N");
+            string id;
+            do
+            {
+                id = $"SC-{RandomNumberGenerator.GetInt32(0, 1_000_000):D6}";
+            } while (await contexto.ShoppingCartItems.AnyAsync(s => s.ShoppingCartId == id));
+            cartItem.ShoppingCartId = id;
         }
         if (cartItem.Product != null)
         {
