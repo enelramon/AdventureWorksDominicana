@@ -1,0 +1,63 @@
+﻿@page "/AddressType/Create"
+@rendermode InteractiveServer
+@inject AddressTypeService AddressTypeService
+@inject ToastService toastService
+
+<PageTitle>Crear Tipo de Dirección</PageTitle>
+
+<div class="container">
+    <div class="card shadow-lg">
+        <div class="card-header">
+            <h5 class="card-title text-black mb-0">Crear Registro de Tipo de Dirección</h5>
+        </div>
+
+        <div class="card-body">
+            <EditForm Model="addressType" OnValidSubmit="Guardar">
+                <DataAnnotationsValidator />
+                <ValidationSummary class="text-danger" />
+
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">Nombre</label>
+                        <InputText class="form-control" @bind-Value="addressType.Name" placeholder="Ej: Billing" />
+                        <ValidationMessage For="@(() => addressType.Name)" />
+                    </div>
+                </div>
+
+                <div class="mt-4 d-flex justify-content-center gap-2">
+                    <a href="AddressType/Index" class="btn btn-secondary">
+                        <i class="bi bi-arrow-left"></i> Volver
+                    </a>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-floppy"></i> Guardar
+                    </button>
+                </div>
+            </EditForm>
+        </div>
+    </div>
+</div>
+
+@code {
+    private AddressType addressType = new AddressType();
+
+    private async Task Guardar()
+    {
+        bool esRepetido = await AddressTypeService.BuscarDuplicado(addressType.Name, addressType.AddressTypeId);
+        if (esRepetido)
+        {
+            toastService.ShowWarning("El nombre \"" + addressType.Name + "\" ya está en uso.");
+            return;
+        }
+
+        var guardo = await AddressTypeService.Guardar(addressType);
+
+        if (guardo)
+        {
+            toastService.ShowSuccess("Tipo de dirección guardado correctamente.");
+        }
+        else
+        {
+            toastService.ShowError("Error al guardar el tipo de dirección.");
+        }
+    }
+}
