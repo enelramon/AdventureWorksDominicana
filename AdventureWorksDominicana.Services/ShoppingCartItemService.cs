@@ -27,6 +27,15 @@ public class ShoppingCartItemService(IDbContextFactory<Contexto> DbFactory) : IS
     public async Task<bool> Insertar(ShoppingCartItem cartItem)
     {
         await using var contexto = await DbFactory.CreateDbContextAsync();
+        if (string.IsNullOrWhiteSpace(cartItem.ShoppingCartId))
+        {
+            cartItem.ShoppingCartId = Guid.NewGuid().ToString("N");
+        }
+        if (cartItem.Product != null)
+        {
+            contexto.Attach(cartItem.Product);
+            contexto.Entry(cartItem.Product).State = EntityState.Unchanged;
+        }
         contexto.ShoppingCartItems.Add(cartItem);
         return await contexto.SaveChangesAsync() > 0;
     }
