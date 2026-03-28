@@ -1,0 +1,64 @@
+﻿@page "/ProductModel/Create"
+@rendermode InteractiveServer
+@inject ProductModelService ProductModelService
+@inject ToastService toastService
+
+<PageTitle>Crear Product Model</PageTitle>
+
+<div class="container">
+    <div class="card shadow-lg">
+        <div class="card-header">
+            <h5 class="card-title text-black mb-0">Crear Registro de Product Model</h5>
+        </div>
+
+        <div class="card-body">
+            <EditForm Model="productModel" OnValidSubmit="Guardar">
+                <DataAnnotationsValidator />
+                <ValidationSummary class="text-danger" />
+
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">Nombre</label>
+                        <InputText class="form-control" @bind-Value="productModel.Name" placeholder="Ej: Classic Vest" />
+                        <ValidationMessage For="@(() => productModel.Name)" />
+                    </div>
+                </div>
+
+                <div class="mt-4 d-flex justify-content-center gap-2">
+                    <a href="ProductModel/Index" class="btn btn-secondary">
+                        <i class="bi bi-arrow-left"></i> Volver
+                    </a>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-floppy"></i> Guardar
+                    </button>
+                </div>
+            </EditForm>
+        </div>
+    </div>
+</div>
+
+@code {
+    private ProductModel productModel = new ProductModel();
+
+    private async Task Guardar()
+    {
+        bool esRepetido = await ProductModelService.BuscarDuplicado(productModel.Name, productModel.ProductModelId);
+        if (esRepetido)
+        {
+            toastService.ShowWarning("El nombre \"" + productModel.Name + "\" ya está en uso.");
+            return;
+        }
+
+        var guardo = await ProductModelService.Guardar(productModel);
+
+        if (guardo)
+        {
+            toastService.ShowSuccess("Product Model guardado correctamente.");
+            productModel = new ProductModel();
+        }
+        else
+        {
+            toastService.ShowError("Error al guardar el Product Model.");
+        }
+    }
+}

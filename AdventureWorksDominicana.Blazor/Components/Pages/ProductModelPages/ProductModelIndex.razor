@@ -1,0 +1,104 @@
+﻿@page "/ProductModel/Index"
+@rendermode InteractiveServer
+@inject ProductModelService ProductModelService
+
+<PageTitle>ProductModel</PageTitle>
+
+<div class="container">
+    <div class="card shadow-lg">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h5 class="card-title text-black mb-0">Registro de Product Models</h5>
+            <a href="ProductModel/Create" class="btn btn-primary">
+                <i class="bi bi-plus-square"></i> Crear
+            </a>
+        </div>
+
+        <div class="card-body">
+            <div class="row mb-3 align-items-end">
+                <div class="col-md-3">
+                    <label class="form-label">Desde</label>
+                    <input class="form-control" type="date" @bind="Desde" />
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Hasta</label>
+                    <input class="form-control" type="date" @bind="Hasta" />
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Filtrar por</label>
+                    <select class="form-select" @bind="Filtro">
+                        <option value="">Seleccione una opción</option>
+                        <option value="Nombre">Nombre</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Buscar</label>
+                    <div class="input-group">
+                        <input class="form-control" type="text" placeholder="Buscar..." @bind="ValorFiltro" />
+                        <button class="btn btn-primary" type="button" @onclick="Buscar">
+                            <i class="bi bi-search"></i> Buscar
+                        </button>
+                        <button class="btn btn-outline-primary" type="button" @onclick="Restablecer">
+                            <i class="bi bi-arrow-counterclockwise"></i> Limpiar
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="table-responsive mt-3">
+                <QuickGrid Items="ListaProductModel.AsQueryable()" Pagination="@pages" Class="table table-striped table-bordered table-responsive align-middle">
+                    <PropertyColumn Property="@(a => a.ProductModelId)" Title="ID" Sortable="true" />
+                    <PropertyColumn Property="@(a => a.Name)" Title="Nombre" Sortable="true" />
+                    <PropertyColumn Property="@(a => a.ModifiedDate)" Title="Fecha Modificación" Format="dd/MM/yyyy" Sortable="true" />
+                    <TemplateColumn Context="option" Title="Opción">
+                        <a href="ProductModel/Edit/@option.ProductModelId" class="btn btn-primary btn-sm">
+                            <i class="bi bi-pencil"></i> Editar
+                        </a>
+                    </TemplateColumn>
+                </QuickGrid>
+
+                <Paginator State="@pages" />
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private List<ProductModel> ListaProductModel = new List<ProductModel>();
+    private PaginationState pages = new PaginationState { ItemsPerPage = 5 };
+
+    private string Filtro = string.Empty;
+    private string ValorFiltro = string.Empty;
+    private DateTime? Desde;
+    private DateTime? Hasta;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CargarTodo();
+    }
+
+    private async Task CargarTodo()
+    {
+        ListaProductModel = await ProductModelService.Listar(a => true);
+    }
+
+    private async Task Buscar()
+    {
+        ListaProductModel = await ProductModelService.Listar(a =>
+            (!Desde.HasValue || a.ModifiedDate >= Desde.Value.Date) &&
+            (!Hasta.HasValue || a.ModifiedDate <= Hasta.Value.Date.AddDays(1).AddTicks(-1)) &&
+            (string.IsNullOrWhiteSpace(ValorFiltro) ||
+                (Filtro == "Nombre" && a.Name.Contains(ValorFiltro)) ||
+                (string.IsNullOrWhiteSpace(Filtro) && a.Name.Contains(ValorFiltro))
+            )
+        );
+    }
+
+    private async Task Restablecer()
+    {
+        Filtro = string.Empty;
+        ValorFiltro = string.Empty;
+        Desde = null;
+        Hasta = null;
+        await CargarTodo();
+    }
+}
