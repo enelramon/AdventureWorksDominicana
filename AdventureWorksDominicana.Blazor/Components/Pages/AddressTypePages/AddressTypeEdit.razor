@@ -1,0 +1,75 @@
+﻿@page "/AddressType/Edit/{AddressTypeId:int}"
+@rendermode InteractiveServer
+@inject AddressTypeService AddressTypeService
+@inject NavigationManager NavigationManager
+@inject ToastService toastService
+
+<PageTitle>Editar Tipo de Dirección</PageTitle>
+
+<EditForm Model="@addressType" OnValidSubmit="Guardar">
+    <DataAnnotationsValidator />
+    <div class="container">
+        <div class="card shadow-lg">
+            <div class="card-header">
+                <h5 class="card-title text-black mb-0">Editar Registro de Tipo de Dirección</h5>
+            </div>
+
+            <div class="card-body">
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">Nombre</label>
+                        <InputText class="form-control" @bind-Value="addressType.Name" placeholder="Ej: Billing" />
+                        <ValidationMessage For="@(() => addressType.Name)" />
+                    </div>
+                </div>
+
+                <div class="mt-4 d-flex justify-content-center gap-2">
+                    <a href="AddressType/Index" class="btn btn-secondary">
+                        <i class="bi bi-arrow-left"></i> Volver
+                    </a>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-floppy"></i> Modificar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</EditForm>
+
+@code {
+    [Parameter]
+    public int AddressTypeId { get; set; }
+
+    private AddressType addressType = new AddressType();
+
+    protected override async Task OnInitializedAsync()
+    {
+        var encontrado = await AddressTypeService.Buscar(AddressTypeId);
+        if (encontrado != null)
+            addressType = encontrado;
+        else
+            toastService.ShowError("No se encontró el tipo de dirección.");
+    }
+
+    private async Task Guardar()
+    {
+        bool esRepetido = await AddressTypeService.BuscarDuplicado(addressType.Name, addressType.AddressTypeId);
+        if (esRepetido)
+        {
+            toastService.ShowWarning("El nombre \"" + addressType.Name + "\" ya está en uso.");
+            return;
+        }
+
+        var guardo = await AddressTypeService.Guardar(addressType);
+
+        if (guardo)
+        {
+            toastService.ShowSuccess("Tipo de dirección actualizado correctamente.");
+            NavigationManager.NavigateTo("/AddressType/Index");
+        }
+        else
+        {
+            toastService.ShowError("Error al actualizar el tipo de dirección.");
+        }
+    }
+}
