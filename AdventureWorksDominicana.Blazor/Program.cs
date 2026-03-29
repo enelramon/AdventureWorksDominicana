@@ -15,7 +15,6 @@ builder.Services.AddRazorComponents()
 
 // Services
 builder.Services.AddScoped<CurrencyService>();
-builder.Services.AddBlazoredToast();
 builder.Services.AddScoped<ShipMethodService>();
 builder.Services.AddScoped<CountryRegionsService>();
 builder.Services.AddScoped<DepartmentService>();
@@ -30,6 +29,9 @@ builder.Services.AddScoped<EmployeeService>();
 builder.Services.AddScoped<ProductCategoryService>();
 builder.Services.AddScoped<SalesTerritoryService>();
 builder.Services.AddScoped<VendorService>();
+builder.Services.AddScoped<BillOfMaterialService>();
+builder.Services.AddScoped<UnitMeasureService>();
+builder.Services.AddScoped<ProductService>();
 builder.Services.AddScoped<ProductDescriptionService>();
 builder.Services.AddScoped<ShoppingCartItemService>();
 
