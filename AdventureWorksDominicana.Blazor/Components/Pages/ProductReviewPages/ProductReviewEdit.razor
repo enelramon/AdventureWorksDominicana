@@ -1,0 +1,124 @@
+﻿@page "/product-reviews/edit/{Id:int}"
+@using AdventureWorksDominicana.Data.Models
+@using AdventureWorksDominicana.Services
+@inject ProductReviewService ProductReviewService
+@inject NavigationManager NavigationManager
+@rendermode InteractiveServer
+
+<PageTitle>Editar Registro de Review</PageTitle>
+
+<div class="container mt-4">
+    <div class="card shadow-lg">
+      
+        <div class="card-header bg-white">
+            <h5 class="mb-0 fw-bold">Editar Registro de Review</h5>
+        </div>
+        
+        <div class="card-body p-4">
+            @if (review == null)
+            {
+                <div class="text-center py-5">
+                    <div class="spinner-border text-primary" role="status"></div>
+                    <p class="mt-2 text-muted">Cargando información del review...</p>
+                </div>
+            }
+            else
+            {
+                <EditForm Model="review" OnSubmit="IntentarActualizar">
+                    
+                    <div class="mb-3">
+                        <label><strong>Producto (ID) - Solo Lectura</strong></label>
+                        <input type="number" class="form-control bg-light" value="@review.ProductId" readonly />
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label><strong>Nombre del Revisor</strong></label>
+                            <InputText @bind-Value="review.ReviewerName" class="form-control" />
+                            @if (errores.Contains("Nombre"))
+                            {
+                                <span class="text-danger small">El nombre no puede estar vacío.</span>
+                            }
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label><strong>Calificación (1-5)</strong></label>
+                            <InputNumber @bind-Value="review.Rating" class="form-control" />
+                            @if (errores.Contains("Rating"))
+                            {
+                                <span class="text-danger small">Rating inválido (1-5).</span>
+                            }
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label><strong>Email</strong></label>
+                        <InputText @bind-Value="review.EmailAddress" class="form-control" />
+                        @if (errores.Contains("Email"))
+                        {
+                            <span class="text-danger small">El email es requerido.</span>
+                        }
+                    </div>
+
+                    
+                    <div class="mb-3">
+                        <label><strong>Review</strong></label>
+                        <InputTextArea @bind-Value="review.Comments" class="form-control" rows="4" placeholder="Edite el review aquí..." />
+                    </div>
+
+                    @if (errores.Any())
+                    {
+                        <div class="alert alert-danger py-2 small mt-3">
+                            <i class="bi bi-exclamation-triangle"></i> Por favor, corrija los errores marcados.
+                        </div>
+                    }
+
+                    <div class="card-footer text-center bg-white border-top pt-3">
+                        <button type="button" class="btn btn-secondary px-3" @onclick="Volver">
+                            <i class="bi bi-arrow-left"></i> Volver
+                        </button>
+                        <button type="submit" class="btn btn-primary px-3">
+                            <i class="bi bi-floppy"></i> Guardar
+                        </button>
+                        <button type="button" class="btn btn-danger px-3" @onclick="Eliminar">
+                            <i class="bi bi-trash"></i> Eliminar
+                        </button>
+                    </div>
+                </EditForm>
+            }
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter] public int Id { get; set; }
+    private ProductReview? review;
+    private List<string> errores = new List<string>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        review = await ProductReviewService.GetReviewByIdAsync(Id);
+    }
+
+    private async Task IntentarActualizar()
+    {
+        errores.Clear();
+        if (review == null) return;
+
+      
+        if (string.IsNullOrWhiteSpace(review.ReviewerName)) errores.Add("Nombre");
+        if (string.IsNullOrWhiteSpace(review.EmailAddress)) errores.Add("Email");
+        if (review.Rating < 1 || review.Rating > 5) errores.Add("Rating");
+
+        if (errores.Any()) return;
+
+        if (await ProductReviewService.UpdateAsync(review)) Volver();
+    }
+
+    private async Task Eliminar()
+    {
+        
+        if (await ProductReviewService.DeleteAsync(Id)) Volver();
+    }
+
+    private void Volver() => NavigationManager.NavigateTo("/product-reviews");
+}
