@@ -1,0 +1,85 @@
+﻿@page "/product-reviews/create"
+@using AdventureWorksDominicana.Data.Models
+@using AdventureWorksDominicana.Services
+@inject ProductReviewService ProductReviewService
+@inject NavigationManager navigationManager
+@inject ToastService toastService
+@rendermode InteractiveServer
+
+<PageTitle>Crear Registro de Review</PageTitle>
+
+<div class="bg-light border border-bottom-0 rounded-top py-2 px-3 mt-3 shadow-sm mx-2">
+    <h5 class="mb-0 text-dark">Crear Registro de Review</h5>
+</div>
+
+<div class="bg-white border rounded-bottom shadow-sm mx-2 p-4">
+    <EditForm Model="nuevoReview" FormName="crearProductReview" OnValidSubmit="Guardar">
+        <DataAnnotationsValidator />
+        
+        <div class="row g-3">
+            <div class="col-md-5 col-lg-4">
+                <label class="form-label fw-bold text-dark mb-1 small">ID del Producto</label>
+                <InputNumber @bind-Value="nuevoReview.ProductId" class="form-control form-control-sm" />
+                <ValidationMessage For="(() => nuevoReview.ProductId)" class="text-danger small" />
+            </div>
+
+            <div class="col-md-7 col-lg-8">
+                <label class="form-label fw-bold text-dark mb-1 small">Nombre del Revisor</label>
+                <InputText @bind-Value="nuevoReview.ReviewerName" class="form-control form-control-sm" placeholder="Ej: Juan Perez" />
+                <ValidationMessage For="(() => nuevoReview.ReviewerName)" class="text-danger small" />
+            </div>
+
+            <div class="col-md-6">
+                <label class="form-label fw-bold text-dark mb-1 small">Email</label>
+                <InputText @bind-Value="nuevoReview.EmailAddress" class="form-control form-control-sm" placeholder="correo@ejemplo.com" />
+                <ValidationMessage For="(() => nuevoReview.EmailAddress)" class="text-danger small" />
+            </div>
+
+            <div class="col-md-6 col-lg-4">
+                <label class="form-label fw-bold text-dark mb-1 small">Calificaci&oacute;n (1-5)</label>
+                <InputNumber @bind-Value="nuevoReview.Rating" class="form-control form-control-sm" min="1" max="5" />
+                <ValidationMessage For="(() => nuevoReview.Rating)" class="text-danger small" />
+            </div>
+
+            <div class="col-12">
+                <label class="form-label fw-bold text-dark mb-1 small">Review</label>
+                <InputTextArea @bind-Value="nuevoReview.Comments" class="form-control form-control-sm" rows="3" placeholder="Escriba su review aquí..." />
+                <ValidationMessage For="(() => nuevoReview.Comments)" class="text-danger small" />
+            </div>
+        </div>
+
+        
+        <div class="d-flex justify-content-center gap-2 mt-5">
+            
+            <button type="button" class="btn btn-secondary btn-sm px-3 d-flex align-items-center gap-1" @onclick="Volver">
+                <i class="bi bi-arrow-left"></i> Volver
+            </button>
+            
+           
+            <button type="submit" class="btn btn-primary btn-sm px-3 d-flex align-items-center gap-1">
+                <i class="bi bi-floppy"></i> Guardar
+            </button>
+        </div>
+    </EditForm>
+</div>
+
+@code {
+    private ProductReview nuevoReview = new ProductReview { ReviewDate = DateTime.Now };
+
+    public async Task Guardar()
+    {
+        bool creado = await ProductReviewService.CreateAsync(nuevoReview);
+        
+        if (creado)
+        {
+            toastService.ShowSuccess("Review creado exitosamente.");
+            navigationManager.NavigateTo("/product-reviews");
+        }
+        else
+        {
+            toastService.ShowError("Error al intentar crear el registro.");
+        }
+    }
+
+    private void Volver() => navigationManager.NavigateTo("/product-reviews");
+}
