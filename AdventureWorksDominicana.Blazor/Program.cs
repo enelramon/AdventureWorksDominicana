@@ -34,6 +34,8 @@ builder.Services.AddScoped<ProductDescriptionService>();
 builder.Services.AddScoped<ShoppingCartItemService>();
 
 
+builder.Services.AddScoped<ProductReviewService>();
+builder.Services.AddScoped<SalesPersonService>();
 builder.Services.AddBlazorBootstrap();
 var app = builder.Build();
 

@@ -1,0 +1,104 @@
+﻿@page "/product-reviews/create"
+@using AdventureWorksDominicana.Data.Models
+@using AdventureWorksDominicana.Services
+@inject ProductReviewService ProductReviewService
+@inject NavigationManager NavigationManager
+@rendermode InteractiveServer
+
+<PageTitle>Crear Registro de Review</PageTitle>
+
+<div class="container mt-4">
+    <div class="card shadow-lg">
+        
+        <div class="card-header bg-white">
+            <h5 class="mb-0 fw-bold">Crear Registro de Review</h5>
+        </div>
+        
+        <div class="card-body p-4">
+            <EditForm Model="nuevoReview" OnSubmit="IntentarGuardar">
+                
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label><strong>ID del Producto</strong></label>
+                        <InputNumber @bind-Value="nuevoReview.ProductId" class="form-control" />
+                        @if (errores.Contains("ID"))
+                        {
+                            <span class="text-danger small">El ID del producto es obligatorio.</span>
+                        }
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label><strong>Nombre del Revisor</strong></label>
+                        <InputText @bind-Value="nuevoReview.ReviewerName" class="form-control" placeholder="Ej: Francis Castillo" />
+                        @if (errores.Contains("Nombre"))
+                        {
+                            <span class="text-danger small">El nombre es obligatorio.</span>
+                        }
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label><strong>Email</strong></label>
+                        <InputText @bind-Value="nuevoReview.EmailAddress" class="form-control" placeholder="correo@ejemplo.com" />
+                        @if (errores.Contains("Email"))
+                        {
+                            <span class="text-danger small">El email es obligatorio.</span>
+                        }
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label><strong>Calificación (1-5)</strong></label>
+                        <InputNumber @bind-Value="nuevoReview.Rating" class="form-control" />
+                        @if (errores.Contains("Rating"))
+                        {
+                            <span class="text-danger small">La calificación debe estar entre 1 y 5.</span>
+                        }
+                    </div>
+                </div>
+
+                
+                <div class="mb-3">
+                    <label><strong>Review</strong></label>
+                    <InputTextArea @bind-Value="nuevoReview.Comments" class="form-control" rows="3" placeholder="Escriba el review aquí..." />
+                </div>
+
+                @if (errores.Any())
+                {
+                    <div class="alert alert-danger py-2 small mt-3">
+                        <i class="bi bi-exclamation-triangle"></i> Complete los campos obligatorios resaltados arriba.
+                    </div>
+                }
+
+                
+                <div class="card-footer text-center bg-white border-top pt-3">
+                    <button type="button" class="btn btn-secondary px-4" @onclick="Volver">
+                        <i class="bi bi-arrow-left"></i> Volver
+                    </button>
+                    <button type="submit" class="btn btn-primary px-4">
+                        <i class="bi bi-floppy"></i> Guardar
+                    </button>
+                </div>
+            </EditForm>
+        </div>
+    </div>
+</div>
+
+@code {
+    private ProductReview nuevoReview = new ProductReview { Rating = 0 };
+    private List<string> errores = new List<string>();
+
+    private async Task IntentarGuardar()
+    {
+        errores.Clear();
+
+        
+        if (nuevoReview.ProductId <= 0) errores.Add("ID");
+        if (string.IsNullOrWhiteSpace(nuevoReview.ReviewerName)) errores.Add("Nombre");
+        if (string.IsNullOrWhiteSpace(nuevoReview.EmailAddress)) errores.Add("Email");
+        if (nuevoReview.Rating < 1 || nuevoReview.Rating > 5) errores.Add("Rating");
+
+        if (errores.Any()) return;
+
+        if (await ProductReviewService.CreateAsync(nuevoReview)) Volver();
+    }
+    private void Volver() => NavigationManager.NavigateTo("/product-reviews");
+}
