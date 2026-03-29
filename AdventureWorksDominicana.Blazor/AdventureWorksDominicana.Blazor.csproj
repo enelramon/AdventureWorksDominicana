@@ -10,14 +10,23 @@
   <ItemGroup>
     <PackageReference Include="Blazor.Bootstrap" Version="3.5.0" />
     <PackageReference Include="Microsoft.AspNetCore.Components.QuickGrid" Version="10.0.5" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="10.0.5" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.5">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="10.0.5" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="10.0.5">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Aplicada1.Core" Version="1.0.0" />
+    <ProjectReference Include="..\AdventureWorksDominicana.Api\AdventureWorksDominicana.Api.csproj" />
+    <ProjectReference Include="..\AdventureWorksDominicana.Data\AdventureWorksDominicana.Data.csproj" />
+    <ProjectReference Include="..\AdventureWorksDominicana.Services\AdventureWorksDominicana.Services.csproj" />
+    <ProjectReference Include="..\AdventureWorksDominicana.Tests\AdventureWorksDominicana.Tests.csproj" />
   </ItemGroup>
 
   <ItemGroup>

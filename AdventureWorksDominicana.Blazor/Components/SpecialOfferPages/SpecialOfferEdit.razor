@@ -1,0 +1,56 @@
+﻿@page "/specialoffer/edit/{Id:int}"
+
+@using AdventureWorksDominicana.Data.Models
+@using AdventureWorksDominicana.Services
+@inject SpecialOfferService SpecialOfferService
+@inject NavigationManager Navigation
+@inject Blazored.Toast.Services.IToastService ToastService
+
+<PageTitle>Editar SpecialOffer</PageTitle>
+
+<h3>Editar SpecialOffer</h3>
+
+<EditForm Model="model" OnValidSubmit="Guardar">
+    <DataAnnotationsValidator />
+
+    <InputText class="form-control mb-2" @bind-Value="model.Description" />
+    <InputNumber class="form-control mb-2" @bind-Value="model.DiscountPct" />
+    <InputText class="form-control mb-2" @bind-Value="model.Type" />
+    <InputText class="form-control mb-2" @bind-Value="model.Category" />
+
+    <button class="btn btn-primary">Guardar</button>
+    <button type="button" class="btn btn-secondary" @onclick="Volver">Volver</button>
+</EditForm>
+
+@code {
+    [Parameter] public int Id { get; set; }
+
+    private SpecialOffer model = new();
+
+    protected override async Task OnParametersSetAsync()
+    {
+        var data = await SpecialOfferService.Buscar(Id);
+
+        if (data != null)
+            model = data;
+        else
+            Navigation.NavigateTo("/specialoffer");
+    }
+
+    private async Task Guardar()
+    {
+        var ok = await SpecialOfferService.Guardar(model);
+
+        if (ok)
+        {
+            ToastService.ShowSuccess("Actualizado correctamente");
+            Navigation.NavigateTo("/specialoffer");
+        }
+        else
+        {
+            ToastService.ShowError("Error al actualizar");
+        }
+    }
+
+    private void Volver() => Navigation.NavigateTo("/specialoffer");
+}

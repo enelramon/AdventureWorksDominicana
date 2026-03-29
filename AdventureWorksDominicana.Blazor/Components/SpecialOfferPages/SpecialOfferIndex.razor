@@ -1,0 +1,48 @@
+﻿@page "/specialoffer/create"
+
+@using AdventureWorksDominicana.Data.Models
+@using AdventureWorksDominicana.Services
+@inject SpecialOfferService SpecialOfferService
+@inject NavigationManager Navigation
+@inject Blazored.Toast.Services.IToastService ToastService
+
+<PageTitle>Crear SpecialOffer</PageTitle>
+
+<h3>Crear SpecialOffer</h3>
+
+<EditForm Model="model" OnValidSubmit="Guardar">
+    <DataAnnotationsValidator />
+
+    <InputText class="form-control mb-2" @bind-Value="model.Description" />
+    <InputNumber class="form-control mb-2" @bind-Value="model.DiscountPct" />
+    <InputText class="form-control mb-2" @bind-Value="model.Type" />
+    <InputText class="form-control mb-2" @bind-Value="model.Category" />
+
+    <button class="btn btn-primary">Guardar</button>
+    <button type="button" class="btn btn-secondary" @onclick="Volver">Volver</button>
+</EditForm>
+
+@code {
+    private SpecialOffer model = new()
+    {
+        StartDate = DateTime.Today,
+        EndDate = DateTime.Today
+    };
+
+    private async Task Guardar()
+    {
+        var ok = await SpecialOfferService.Guardar(model);
+
+        if (ok)
+        {
+            ToastService.ShowSuccess("Guardado correctamente");
+            Navigation.NavigateTo("/specialoffer");
+        }
+        else
+        {
+            ToastService.ShowError("Error al guardar");
+        }
+    }
+
+    private void Volver() => Navigation.NavigateTo("/specialoffer");
+}

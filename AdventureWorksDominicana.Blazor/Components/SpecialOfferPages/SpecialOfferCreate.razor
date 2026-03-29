@@ -1,0 +1,21 @@
+﻿@page "/specialoffer/resumen"
+@using AdventureWorksDominicana.Services
+@inject SpecialOfferService Service
+
+<h3>Resumen de SpecialOffer</h3>
+
+<p>Total ofertas: @total</p>
+<p>Promedio descuento: @promedio</p>
+
+@code {
+    int total;
+    decimal promedio;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var lista = await Service.Listar(x => true);
+
+        total = lista.Count;
+        promedio = lista.Count > 0 ? lista.Average(x => x.DiscountPct) : 0;
+    }
+}
