@@ -1,0 +1,70 @@
+﻿@page "/ProductDescription/Edit/{ProductDescriptionId:int}"
+@rendermode InteractiveServer
+@inject ProductDescriptionService productDescriptionService
+@inject ToastService toastService
+@inject NavigationManager navigationManager
+
+<PageTitle>ProductDescription Edit</PageTitle>
+<EditForm Model="@ProductDescription" OnValidSubmit="Modificar">
+    <DataAnnotationsValidator />
+    <div class="container">
+        <div class="card shadow-lg">
+            @*Header*@
+            <div class="card-header d-flex justify-content-center bg-info">
+                <h5 class="card-title text-light">Modificaci&oacute;n de Descripci&oacute;n de Producto</h5>
+            </div>
+        
+            <div class="card-body">
+                <div>
+                    <label class="form-label text-bg-info text-white">Descripci&oacute;n</label>
+                    <InputText class="form-control" @bind-Value="ProductDescription.Description" />
+                    <ValidationMessage For="() => ProductDescription.Description" />
+                </div>
+            </div>
+            <div class="card-footer d-flex justify-content-center gap-2">
+                <a href="ProductDescription/Index" class="btn btn-outline-secondary d-flex gap-1">
+                    <i class="bi bi-arrow-left"></i>
+                    <span>Volver</span>
+                </a>
+                <button class="btn btn-outline-primary bi bi-plus-square-fill">Guardar</button>
+                <button type="button" class="btn btn-outline-danger bi bi-trash" @onclick="Eliminar">Eliminar</button>
+            </div>
+        </div>
+    </div>
+</EditForm>
+
+@code {
+    [Parameter]
+    public int ProductDescriptionId { get; set; }
+    private ProductDescription ProductDescription = new ProductDescription();
+    private PaginationState pages = new PaginationState { ItemsPerPage = 5 };
+
+    protected override async Task OnInitializedAsync()
+    {
+        ProductDescription = await productDescriptionService.Buscar(ProductDescriptionId);
+    }
+    private async Task Modificar()
+    {
+        var existeDuplicado = await productDescriptionService.GetList(d => d.Description.ToLower().Trim() == ProductDescription.Description.ToLower().Trim() && d.ProductDescriptionId != ProductDescription.ProductDescriptionId);
+        if (existeDuplicado.Any())
+        {
+            toastService.ShowWarning("Descripción ya existe.");
+            return;
+        }
+        var modificado = await productDescriptionService.Guardar(ProductDescription);
+        if (modificado)
+        {
+            toastService.ShowSuccess("Descripción actualizada correctamente.");
+            navigationManager.NavigateTo("ProductDescription/Index");
+        }
+    }
+    private async Task Eliminar()
+    {
+        var eliminado = await productDescriptionService.Eliminar(ProductDescriptionId);
+        if (eliminado)
+        {
+            toastService.ShowSuccess("Descripción eliminada correctamente.");
+            navigationManager.NavigateTo("ProductDescription/Index");
+        }
+    }
+}

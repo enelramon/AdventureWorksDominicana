@@ -1,0 +1,78 @@
+﻿@page "/ProductDescription/Index"
+@inject ProductDescriptionService productDescriptionService
+@rendermode InteractiveServer
+
+<PageTitle>ProductDescription Index</PageTitle>
+<div class="container">
+    <div class="card shadow-lg">
+        @*Header*@
+        <div class="card-header d-flex justify-content-between bg-primary">
+            <h3 class="card-title text-light">Registro de Descripci&oacute;n de Producto</h3>
+            <a href="ProductDescription/Create" class="btn btn-outline-secondary d-flex gap-2">
+                <i class="bi bi-plus-square-fill text-light"></i>
+                <span class="text-light">Crear</span>
+            </a>
+        </div>
+        
+        <div class="card-body">
+            @*Filters*@
+            <div class="row">
+                <div class="col-6">
+                    <label class="form-label">Desde</label>
+                    <input class="form-control" type="date" @bind="StartDate" />
+                </div>
+                <div class="col-6">
+                    <label class="form-label">Hasta</label>
+                    <input class="form-control" type="date" @bind="EndDate" />
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-12">
+                    <label class="form-label">Buscar</label>
+                    <div class="input-group">
+                        <input class="form-control" type="text" placeholder="Buscar..." @bind="ValorFiltro" />
+                        <i class="btn btn-outline-primary bi bi-search" @onclick="Buscar"></i>
+                    </div>
+                </div>
+            </div>
+            @*Table*@
+            <div class="table-responsive mt-3">
+                <QuickGrid Items="ProductDescriptionsList.AsQueryable()" Pagination="@pages" Class="table table-bordered table-hover">
+                    <PropertyColumn Property="@(d => d.ProductDescriptionId)" Title="ProductDescriptionId" Sortable="true" />
+                    <PropertyColumn Property="@(d => d.Description)" Title="Descripci&oacute;n" Sortable="true" />
+                    <PropertyColumn Property="@(d => d.ModifiedDate)" Title="Fecha de Modificaci&oacute;n" Sortable="true" />
+                    <TemplateColumn Context="option" Title="Opci&oacute;n">
+                        <a href="ProductDescription/Edit/@option.ProductDescriptionId" class="btn btn-outline-primary bi bi-pencil"></a>
+                    </TemplateColumn>
+                </QuickGrid>
+                @*Pagination*@
+                <Paginator State="@pages" />
+            </div>
+        </div>
+    </div>
+</div>
+@code {
+    private List<ProductDescription> ProductDescriptionsList = new List<ProductDescription>();
+    private PaginationState pages = new PaginationState { ItemsPerPage = 5 };
+    private string ValorFiltro = string.Empty;
+    private DateTime? StartDate = DateTime.Today.Date, EndDate = DateTime.Today.Date.AddDays(1);
+    protected override async Task OnInitializedAsync()
+    {
+        ProductDescriptionsList = await productDescriptionService.GetList(d => true);
+    }
+    private async Task Buscar()
+    {
+        Expression<Func<ProductDescription, bool>> criterio = d => true;
+        if (StartDate.HasValue && EndDate.HasValue)
+        {
+            var start = StartDate.Value.Date;
+            var end = EndDate.Value.Date.AddDays(1).AddTicks(-1);
+            criterio = criterio.And(d => d.ModifiedDate >= start && d.ModifiedDate <= end);
+        }
+        if (!string.IsNullOrWhiteSpace(ValorFiltro))
+        {
+           criterio = criterio.And(d => d.Description.Contains(ValorFiltro));
+        }
+        ProductDescriptionsList = await productDescriptionService.GetList(criterio);
+    }
+}
