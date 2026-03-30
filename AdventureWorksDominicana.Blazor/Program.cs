@@ -14,6 +14,7 @@ builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
 // Services
+// Services
 builder.Services.AddScoped<CurrencyService>();
 builder.Services.AddBlazoredToast();
 builder.Services.AddScoped<ShipMethodService>();
@@ -25,18 +26,12 @@ builder.Services.AddScoped<EmployeeService>();
 builder.Services.AddScoped<ContactTypeService>();
 builder.Services.AddScoped<ProductCategoryService>();
 builder.Services.AddScoped<PhoneNumberTypeService>();
-builder.Services.AddScoped<ShiftService>();
-builder.Services.AddScoped<EmployeeService>();
-builder.Services.AddScoped<ProductCategoryService>();
 builder.Services.AddScoped<SalesTerritoryService>();
 builder.Services.AddScoped<VendorService>();
 builder.Services.AddScoped<ProductDescriptionService>();
 builder.Services.AddScoped<AddressTypeService>();
 builder.Services.AddScoped<ProductModelService>();
-
-
 builder.Services.AddScoped<ShoppingCartItemService>();
-
 
 builder.Services.AddBlazorBootstrap();
 var app = builder.Build();
