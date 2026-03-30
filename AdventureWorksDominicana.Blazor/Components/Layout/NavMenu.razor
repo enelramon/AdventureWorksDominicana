@@ -75,6 +75,47 @@
                 <span class="bi bi-plus-square-fill-nav-menu" aria-hidden="true"></span> Culture
             </NavLink>
         </div>
+
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="/Location/Index">
+                <span class="bi bi-plus-square-fill-nav-menu" aria-hidden="true"></span> Location
+            </NavLink>
+        </div>
+
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="/Employee/Index">
+                <span class="bi bi-plus-square-fill-nav-menu" aria-hidden="true"></span> Employees
+            </NavLink>
+        </div>
+
+        <div class="accordion px-3 nav-item" id="accordionUbicaciones">
+            <div class="accordion-item bg-transparent border-0">
+                <div class="accordion-header">
+                    <button class="accordion-button collapsed bg-transparent px-3" type="button" data-bs-toggle="collapse" data-bs-target="#collapseUbicaciones" aria-expanded="false">
+                        <span class="bi bi-geo-alt-fill-nav-menu"></span> Locations
+                    </button>
+                </div>
+                <div id="collapseUbicaciones" class="accordion-collapse collapse" data-bs-parent="#accordionUbicaciones">
+                    <div class="accordion-body p-0 ps-3">
+                        <div class="nav-item pt-2">
+                            <NavLink class="nav-link" href="/CountryRegions/Index">
+                                <span class="bi bi-flag-fill-nav-menu"></span> Country Regions
+                            </NavLink>
+                        </div>
+                        <div class="nav-item">
+                            <NavLink class="nav-link" href="/StateProvince/Index">
+                                <span class="bi bi-building-fill-nav-menu"></span> State Provinces
+                            </NavLink>
+                        </div>
+                        <div class="nav-item">
+                            <NavLink class="nav-link" href="/SalesTerritory/Index">
+                                <span class="bi bi-map-fill-nav-menu"></span> Sales Territories
+                            </NavLink>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </nav>
 </div>
 
