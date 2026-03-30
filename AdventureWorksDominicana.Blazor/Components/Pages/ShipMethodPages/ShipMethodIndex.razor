@@ -59,10 +59,12 @@
                     <PropertyColumn Property="e => e.ShipBase" Sortable="true"  Title="Costo base" />
                     <PropertyColumn Property="e => e.ShipRate" Sortable="true" Title="Costo adicional" />
                     <PropertyColumn Property="e => e.ModifiedDate" Sortable="true" Format="dd/MM/yyyy" Title="Fecha de modificacion" />
-                    <TemplateColumn Title="Acciones">
-                        <a class="btn btn-outline-primary btn-sm" href="/ShipMethods/Edit/@context.ShipMethodId">
-                            <i class="bi bi-pencil-square"></i>
-                        </a>
+                    <TemplateColumn Title="Accion">
+                        <div class="d-flex justify-content-center align-items-center">
+                            <a class="btn btn-outline-primary btn-sm" href="/ShipMethods/Edit/@context.ShipMethodId">
+                                <i class="bi bi-pencil-square"></i> Modificar
+                            </a>
+                        </div>
                     </TemplateColumn>
                 </QuickGrid>
             </div>
