@@ -60,6 +60,6 @@ public class ShipMethodService(IDbContextFactory<Contexto> DbFactory): IService<
     public async Task<List<ShipMethod>> GetList(Expression<Func<ShipMethod, bool>> criterio)
     {
         await using var contexto = await DbFactory.CreateDbContextAsync();
-        return await contexto.ShipMethods.Where(criterio).ToListAsync();
+        return await contexto.ShipMethods.Where(criterio).OrderBy(t => t.Name).ToListAsync();
     }
 }

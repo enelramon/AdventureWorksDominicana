@@ -37,12 +37,14 @@ public partial class SalesOrderHeader
     /// <summary>
     /// Date the order is due to the customer.
     /// </summary>
+    [Required(ErrorMessage = "Campo Obligatorio")]
     [Column(TypeName = "datetime")]
-    public DateTime DueDate { get; set; }
+    public DateTime? DueDate { get; set; }
 
     /// <summary>
     /// Date the order was shipped to the customer.
     /// </summary>
+    [Required(ErrorMessage = "Campo Obligatorio")]
     [Column(TypeName = "datetime")]
     public DateTime? ShipDate { get; set; }
 
@@ -77,48 +79,57 @@ public partial class SalesOrderHeader
     /// <summary>
     /// Customer identification number. Foreign key to Customer.BusinessEntityID.
     /// </summary>
+
+    [Range(1, int.MaxValue, ErrorMessage = "Campo Obligatorio")]
     [Column("CustomerID")]
     public int CustomerId { get; set; }
 
     /// <summary>
     /// Sales person who created the sales order. Foreign key to SalesPerson.BusinessEntityID.
     /// </summary>
+    [Range(1, int.MaxValue, ErrorMessage = "Campo Obligatorio")]
     [Column("SalesPersonID")]
-    public int? SalesPersonId { get; set; }
+    public int SalesPersonId { get; set; }
 
     /// <summary>
     /// Territory in which the sale was made. Foreign key to SalesTerritory.SalesTerritoryID.
     /// </summary>
+    [Range(1, int.MaxValue, ErrorMessage = "Campo Obligatorio")]
     [Column("TerritoryID")]
-    public int? TerritoryId { get; set; }
+    public int TerritoryId { get; set; }
 
     /// <summary>
     /// Customer billing address. Foreign key to Address.AddressID.
     /// </summary>
+    [Range(1, int.MaxValue, ErrorMessage = "Campo Obligatorio")]
     [Column("BillToAddressID")]
     public int BillToAddressId { get; set; }
 
     /// <summary>
     /// Customer shipping address. Foreign key to Address.AddressID.
     /// </summary>
+    [Range(1, int.MaxValue, ErrorMessage = "Campo Obligatorio")]
     [Column("ShipToAddressID")]
     public int ShipToAddressId { get; set; }
 
     /// <summary>
     /// Shipping method. Foreign key to ShipMethod.ShipMethodID.
     /// </summary>
+    [Range(1, int.MaxValue, ErrorMessage = "Campo Obligatorio")]
     [Column("ShipMethodID")]
     public int ShipMethodId { get; set; }
 
     /// <summary>
     /// Credit card identification number. Foreign key to CreditCard.CreditCardID.
     /// </summary>
+    [Range(1, int.MaxValue, ErrorMessage = "Campo Obligatorio")]
     [Column("CreditCardID")]
-    public int? CreditCardId { get; set; }
+    public int CreditCardId { get; set; }
 
     /// <summary>
     /// Approval code provided by the credit card company.
     /// </summary>
+    [Required(ErrorMessage = "Campo Obligatorio")]
     [StringLength(15)]
     [Unicode(false)]
     public string? CreditCardApprovalCode { get; set; }
