@@ -1,0 +1,150 @@
+﻿@page "/StateProvince/Index"
+
+@inject StateProvinceService stateProvinceService;
+@inject SalesTerritoryService salesTerritoryService;
+
+<div class="container">
+    <div class="card shadow-lg">
+        <div class="card-header d-flex justify-content-between justify-content-center">
+            <h4>State Provinces</h4>
+            <a class="btn btn-primary bi bi-plus-square" href="/StateProvince/Create"> Crear</a>
+        </div>
+        <div class="card-body">
+            @* Encabezados *@
+            <div class="row">
+                <div class="col-3">
+                    <label>Desde:</label>
+                </div>
+                <div class="col-3">
+                    <label>Hasta:</label>
+                </div>
+                <div class="col-3">
+                    <label>Filtro:</label>
+                </div>
+                <div class="col-3">
+                    <label>Buscar:</label>
+                </div>
+            </div>
+
+            @* Inputs *@
+            <div class="row pb-3">
+                <div class="col-3">
+                    <input class="form-control" type="datetime-local" @bind-value="FechaHasta" />
+                </div>
+                <div class="col-3">
+                    <input class="form-control" type="datetime-local" @bind-value="FechaDesde" />
+                </div>
+                <div class="col-3">
+                    <select class="form-select" @bind="Filtro">
+                        <option value="" disabled selected hidden>Seleccione un filtro...</option>
+                        <option value="Nombre">Nombre</option>
+                        <option value="Codigo">C&oacute;digo</option>
+                        <option value="CodigoPais">C&oacute;digo Pa&iacute;s/Regi&oacute;n</option>
+                    </select>
+                </div>
+                <div class="col-3">
+                    <div class="input-group">
+                        <input class="form-control" type="text" @bind-value="ValorFiltro" placeholder="Buscar..." />
+                        <button class="btn btn-primary bi bi-search" type="button" @onclick="Filtrar"></button>
+                        <button class="btn btn-outline-primary bi bi-arrow-clockwise" type="button" @onclick="Restablecer"></button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="table-responsive">
+                <QuickGrid Class="table table-striped table-bordered table-hover" Pagination="@pages" Items="ListaStateProvince.AsQueryable()" ItemKey="@(s => s.StateProvinceId)">
+                    <PropertyColumn Property="@(s => s.StateProvinceId)" Sortable="true" Title="Id"></PropertyColumn>
+                    <PropertyColumn Property="@(s => s.StateProvinceCode)" Sortable="true" Title="C&oacute;digo"></PropertyColumn>
+                    <PropertyColumn Property="@(s => s.CountryRegionCode)" Sortable="true" Title="C&oacute;digo Pa&iacute;s/regi&oacute;n"></PropertyColumn>
+                    <PropertyColumn Property="@(s => s.Name)" Sortable="true" Title="Nombre"></PropertyColumn>
+                    <TemplateColumn Context="options" Title="Territorio">
+                        @(ListaSalesTerritory.Find(s => s.TerritoryId == options.TerritoryId).Name ?? "Not found")
+                    </TemplateColumn>
+                    <TemplateColumn class="text-center" Context="options" Title="¿Es Unico?">
+                        @if (EsUnico(options.CountryRegionCode, options.StateProvinceId))
+                        {
+                            <span class="bi bi-check-circle text-success"></span>
+                        }
+                        else
+                        {
+                            <span class="bi bi-x-circle text-danger"></span>
+                        }
+                    </TemplateColumn>
+                    <TemplateColumn Class="text-center" Context="options" Title="Acciones">
+                        <a href="/StateProvince/Edit/@options.StateProvinceId" class="btn btn-outline-primary bi bi-pencil-square"> Modificar</a>
+                    </TemplateColumn>
+                </QuickGrid>
+            </div>
+            @*Pagination*@
+            <Paginator State="@pages" />
+        </div>
+    </div>
+</div>
+
+@code {
+    public List<StateProvince> ListaStateProvince { get; set; } = new List<StateProvince>();
+    public List<SalesTerritory> ListaSalesTerritory { get; set; } = new List<SalesTerritory>();
+    public DateTime? FechaDesde { get; set; }
+    public DateTime? FechaHasta { get; set; }
+    public string Filtro { get; set; } = "";
+    public string ValorFiltro { get; set; } = "";
+    private PaginationState pages = new PaginationState { ItemsPerPage = 5 };
+
+    protected override async Task OnInitializedAsync()
+    {
+        ListaStateProvince = await stateProvinceService.GetList(s => s.StateProvinceId > 0);
+        ListaStateProvince = ListaStateProvince.OrderByDescending(s => s.ModifiedDate).ToList();
+        ListaSalesTerritory = await salesTerritoryService.GetList(s => s.TerritoryId > 0);
+    }
+
+    public async Task Filtrar()
+    {
+        Expression<Func<StateProvince, bool>> criterio = s => s.StateProvinceId > 0;
+
+        if (FechaDesde.HasValue && FechaHasta.HasValue)
+        {
+            DateTime fechaHasta = FechaHasta.Value.Date.AddDays(1).AddTicks(-1);
+            criterio = criterio.And(s => s.ModifiedDate >= FechaDesde.Value && s.ModifiedDate <= fechaHasta);
+        }
+        else if (FechaDesde.HasValue)
+        {
+            criterio = criterio.And(s => s.ModifiedDate >= FechaDesde.Value);
+        }
+        else if (FechaHasta.HasValue)
+        {
+            var fechaHasta = FechaHasta.Value.Date.AddDays(1).AddTicks(-1);
+            criterio = criterio.And(s => s.ModifiedDate <= fechaHasta);
+        }
+        if (Filtro != "" && ValorFiltro != "")
+        {
+            if (Filtro == "Nombre")
+            {
+                criterio = criterio.And(s => s.Name.Trim().ToLower().Contains(ValorFiltro.ToLower()));
+            }
+            if (Filtro == "Codigo")
+            {
+                criterio = criterio.And(s => s.StateProvinceCode.Trim().ToLower().Contains(ValorFiltro.ToLower()));
+            }
+            if (Filtro == "CodigoPais")
+            {
+                criterio = criterio.And(s => s.CountryRegionCode.Trim().ToLower().Contains(ValorFiltro.ToLower()));
+            }
+        }
+        ListaStateProvince = await stateProvinceService.GetList(criterio);
+        ListaStateProvince = ListaStateProvince.OrderByDescending(s => s.ModifiedDate).ToList();
+    }
+
+    public async Task Restablecer()
+    {
+        FechaDesde = null;
+        FechaHasta = null;
+        Filtro = "";
+        ValorFiltro = "";
+        await Filtrar();
+    }
+
+    public bool EsUnico(string codigoPais, int id)
+    {
+        return !ListaStateProvince.Any(s => s.CountryRegionCode.ToUpper().Equals(codigoPais) && s.StateProvinceId != id);
+    }
+}

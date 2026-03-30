@@ -36,7 +36,7 @@ builder.Services.AddScoped<ProductService>();
 builder.Services.AddScoped<ProductModelService>();
 builder.Services.AddScoped<UnitMeasureService>();
 builder.Services.AddScoped<ProductSubcategoryService>();
-
+builder.Services.AddScoped<StateProvinceService>();
 
 builder.Services.AddBlazorBootstrap();
 var app = builder.Build();
