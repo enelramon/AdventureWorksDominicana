@@ -19,6 +19,7 @@
                     <input class="form-control" type="text" maxlength="50" placeholder="Escriba el nombre..." @bind-value="@SalesTerritory.Name" />
                     <ValidationMessage For="(() => SalesTerritory.Name)" />
                 </div>
+
                 <div class="mb-3">
                     <label class="form-label"><strong>C&oacute;digo de pa&iacute;s/regi&oacute;n</strong></label>
                     <select class="form-select" @bind="@SalesTerritory.CountryRegionCode">
@@ -30,15 +31,23 @@
                     </select>
                     <ValidationMessage For="(() => SalesTerritory.CountryRegionCode)" />
                 </div>
+
                 <div class="mb-3">
                     <label class="form-label"><strong>Grupo</strong></label>
-                    <input class="form-control" type="text" maxlength="50" placeholder="Escriba el Grupo..." @bind-value="@SalesTerritory.Group" />
+                    <select class="form-select" @bind="SalesTerritory.Group">
+                        <option value="" disabled hidden selected>Seleccione un grupo...</option>
+                        <option value="Norteamerica">Norteam&eacute;rica</option>
+                        <option value="Europa">Europa</option>
+                        <option value="Pacifico">Pac&iacute;fico</option>
+                        <option value="Asia">Asia</option>
+                        <option value="Sudamerica">Sudam&eacute;rica</option>
+                        <option value="Centroamerica">Centroam&eacute;rica</option>
+                        <option value="Africa">&Aacute;frica</option>
+                        <option value="Medio Oriente">Medio Oriente</option>
+                        <option value="Oceania">Ocean&iacute;a</option>
+                        <option value="Caribe">Caribe</option>
+                    </select>
                     <ValidationMessage For="(() => SalesTerritory.Group)" />
-                </div>
-                <div class="mb-3">
-                    <label class="form-label"><strong>Fecha de modificaci&oacute;n</strong></label>
-                    <input class="form-control" type="datetime-local" disabled @bind-value="@SalesTerritory.ModifiedDate"/>
-                    <ValidationMessage For="(() => SalesTerritory.ModifiedDate)" />
                 </div>
             </div>
             <div class="card-footer text-center">
@@ -55,13 +64,20 @@
 
     protected override async Task OnInitializedAsync()
     {
-        SalesTerritory.ModifiedDate = DateTime.Now;
         ListaCountryRegion = await countryRegionsService.GetList(c => !c.CountryRegionCode.Equals(""));
         ListaCountryRegion = ListaCountryRegion.OrderBy(c => c.Name).ToList();
     }
 
     public async Task Guardar()
     {
+        bool nombreDuplicado = await salesTerritoryService.BuscarDuplicado(SalesTerritory.Name, SalesTerritory.CountryRegionCode);
+        if (nombreDuplicado)
+        {
+            toastService.ShowWarning("El nombre \"" + SalesTerritory.Name + "\" ya esta en uso en el pais/region.");
+            return;
+        }
+
+        SalesTerritory.ModifiedDate = DateTime.Now;
         bool guardado = await salesTerritoryService.Guardar(SalesTerritory);
         if (guardado)
         {
