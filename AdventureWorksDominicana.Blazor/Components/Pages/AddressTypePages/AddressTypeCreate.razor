@@ -3,7 +3,7 @@
 @inject AddressTypeService AddressTypeService
 @inject ToastService toastService
 
-<PageTitle>Crear Tipo de Dirección</PageTitle>
+<PageTitle>Crear Tipo de Direccion</PageTitle>
 
 <div class="container">
     <div class="card shadow-lg">
@@ -16,15 +16,13 @@
                 <DataAnnotationsValidator />
                 <ValidationSummary class="text-danger" />
 
-                <div class="row mb-3">
-                    <div class="col-md-6">
-                        <label class="form-label fw-bold">Nombre</label>
-                        <InputText class="form-control" @bind-Value="addressType.Name" placeholder="Ej: Billing" />
-                        <ValidationMessage For="@(() => addressType.Name)" />
-                    </div>
+                <div class="mb-3">
+                    <strong><label class="form-label">Nombre</label></strong>
+                    <InputText class="form-control" @bind-Value="addressType.Name" placeholder="Ej: Billing" />
+                    <ValidationMessage For="@(() => addressType.Name)" />
                 </div>
 
-                <div class="mt-4 d-flex justify-content-center gap-2">
+                <div class="card-footer text-center">
                     <a href="AddressType/Index" class="btn btn-secondary">
                         <i class="bi bi-arrow-left"></i> Volver
                     </a>
@@ -54,6 +52,7 @@
         if (guardo)
         {
             toastService.ShowSuccess("Tipo de dirección guardado correctamente.");
+            addressType = new AddressType();
         }
         else
         {

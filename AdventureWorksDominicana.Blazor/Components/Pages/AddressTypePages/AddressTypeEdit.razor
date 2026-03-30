@@ -6,35 +6,38 @@
 
 <PageTitle>Editar Tipo de Dirección</PageTitle>
 
-<EditForm Model="@addressType" OnValidSubmit="Guardar">
-    <DataAnnotationsValidator />
-    <div class="container">
-        <div class="card shadow-lg">
-            <div class="card-header">
-                <h5 class="card-title text-black mb-0">Editar Registro de Tipo de Dirección</h5>
-            </div>
+<div class="container">
+    <div class="card shadow-lg">
+        <div class="card-header">
+            <h5 class="card-title text-black mb-0">Editar Registro de Tipo de Dirección</h5>
+        </div>
 
-            <div class="card-body">
-                <div class="row mb-3">
-                    <div class="col-md-6">
-                        <label class="form-label fw-bold">Nombre</label>
-                        <InputText class="form-control" @bind-Value="addressType.Name" placeholder="Ej: Billing" />
-                        <ValidationMessage For="@(() => addressType.Name)" />
-                    </div>
+        <div class="card-body">
+            <EditForm Model="@addressType" OnValidSubmit="Guardar">
+                <DataAnnotationsValidator />
+                <ValidationSummary class="text-danger" />
+
+                <div class="mb-3">
+                    <strong><label class="form-label">Nombre</label></strong>
+                    <InputText class="form-control" @bind-Value="addressType.Name" placeholder="Ej: Billing" />
+                    <ValidationMessage For="@(() => addressType.Name)" />
                 </div>
 
-                <div class="mt-4 d-flex justify-content-center gap-2">
+                <div class="card-footer text-center">
                     <a href="AddressType/Index" class="btn btn-secondary">
                         <i class="bi bi-arrow-left"></i> Volver
                     </a>
                     <button type="submit" class="btn btn-primary">
                         <i class="bi bi-floppy"></i> Modificar
                     </button>
+                    <button type="button" class="btn btn-danger" @onclick="Eliminar">
+                        <i class="bi bi-trash"></i> Eliminar
+                    </button>
                 </div>
-            </div>
+            </EditForm>
         </div>
     </div>
-</EditForm>
+</div>
 
 @code {
     [Parameter]
@@ -70,6 +73,20 @@
         else
         {
             toastService.ShowError("Error al actualizar el tipo de dirección.");
+        }
+    }
+
+    private async Task Eliminar()
+    {
+        var eliminado = await AddressTypeService.Eliminar(addressType.AddressTypeId);
+        if (eliminado)
+        {
+            toastService.ShowSuccess("Tipo de dirección eliminado correctamente.");
+            NavigationManager.NavigateTo("/AddressType/Index");
+        }
+        else
+        {
+            toastService.ShowError("Error al eliminar el tipo de dirección.");
         }
     }
 }

@@ -66,8 +66,9 @@ public class AddressTypeService(IDbContextFactory<Contexto> DbFactory) : IServic
         return await contexto.SaveChangesAsync() > 0;
     }
 
-    public Task<List<AddressType>> GetList(Expression<Func<AddressType, bool>> criterio)
+    public async Task<List<AddressType>> GetList(Expression<Func<AddressType, bool>> criterio)
     {
-        throw new NotImplementedException();
+        await using var contexto = await DbFactory.CreateDbContextAsync();
+        return await contexto.AddressTypes.Where(criterio).AsNoTracking().ToListAsync();
     }
 }

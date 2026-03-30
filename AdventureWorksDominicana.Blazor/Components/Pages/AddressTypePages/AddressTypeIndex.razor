@@ -14,50 +14,63 @@
         </div>
 
         <div class="card-body">
-            <div class="row mb-3 align-items-end">
+            <div class="row">
                 <div class="col-md-3">
                     <label class="form-label">Desde</label>
-                    <input class="form-control" type="date" @bind="Desde" />
                 </div>
                 <div class="col-md-3">
                     <label class="form-label">Hasta</label>
-                    <input class="form-control" type="date" @bind="Hasta" />
                 </div>
                 <div class="col-md-3">
                     <label class="form-label">Filtrar por</label>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Buscar</label>
+                </div>
+            </div>
+            <div class="row mb-3">
+                <div class="col-md-3">
+                    <input class="form-control" type="date" @bind="Desde" />
+                </div>
+                <div class="col-md-3">
+                    <input class="form-control" type="date" @bind="Hasta" />
+                </div>
+                <div class="col-md-3">
                     <select class="form-select" @bind="Filtro">
                         <option value="">Seleccione una opci&oacute;n</option>
                         <option value="Nombre">Nombre</option>
                     </select>
                 </div>
                 <div class="col-md-3">
-                    <label class="form-label">Buscar</label>
                     <div class="input-group">
                         <input class="form-control" type="text" placeholder="Buscar..." @bind="ValorFiltro" />
                         <button class="btn btn-primary" type="button" @onclick="Buscar">
-                            <i class="bi bi-search"></i> Buscar
+                            <i class="bi bi-search"></i>
                         </button>
                         <button class="btn btn-outline-primary" type="button" @onclick="Restablecer">
-                            <i class="bi bi-arrow-counterclockwise"></i> Limpiar
+                            <i class="bi bi-arrow-counterclockwise"></i>
                         </button>
                     </div>
                 </div>
             </div>
 
             <div class="table-responsive mt-3">
-                <QuickGrid Items="ListaAddressType.AsQueryable()" Pagination="@pages" Class="table table-striped table-bordered table-responsive align-middle">
+                <QuickGrid Items="ListaAddressType.AsQueryable()" Pagination="@pages" Class="table table-striped table-bordered table-hover align-middle">
                     <PropertyColumn Property="@(a => a.AddressTypeId)" Title="ID" Sortable="true" />
                     <PropertyColumn Property="@(a => a.Name)" Title="Nombre" Sortable="true" />
                     <PropertyColumn Property="@(a => a.ModifiedDate)" Title="Fecha Modificación" Format="dd/MM/yyyy" Sortable="true" />
                     <TemplateColumn Context="option" Title="Opción">
-                        <a href="AddressType/Edit/@option.AddressTypeId" class="btn btn-primary btn-sm">
-                            <i class="bi bi-pencil"></i> Editar
+                        <a href="AddressType/Edit/@option.AddressTypeId" class="btn btn-outline-primary btn-sm">
+                            <i class="bi bi-pencil"></i> Modificar
                         </a>
                     </TemplateColumn>
                 </QuickGrid>
-
                 <Paginator State="@pages" />
             </div>
+        </div>
+
+        <div class="card-footer text-end">
+            <strong>Total de registros: @ListaAddressType.Count</strong>
         </div>
     </div>
 </div>
