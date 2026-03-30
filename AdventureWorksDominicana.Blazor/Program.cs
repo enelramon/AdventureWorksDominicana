@@ -35,6 +35,8 @@ builder.Services.AddScoped<AddressTypeService>();
 builder.Services.AddScoped<ProductModelService>();
 
 
+builder.Services.AddScoped<ShoppingCartItemService>();
+
 
 builder.Services.AddBlazorBootstrap();
 var app = builder.Build();
