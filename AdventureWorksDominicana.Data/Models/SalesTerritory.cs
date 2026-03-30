@@ -19,7 +19,6 @@ public partial class SalesTerritory
     /// </summary>
     [Key]
     [Column("TerritoryID")]
-    [Required(ErrorMessage = "El Id del territorio de ventas es requerido.")]
     public int TerritoryId { get; set; }
 
     /// <summary>

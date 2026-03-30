@@ -6,7 +6,6 @@
 
 <div class="container">
     <div class="card shadow-lg">
-        @* Header *@
         <div class="card-header d-flex justify-content-between align-items-center">
             <h5 class="card-title text-black mb-0">Registro de Monedas</h5>
             <a href="Currency/Create" class="btn btn-success">
@@ -15,7 +14,6 @@
         </div>
         
         <div class="card-body">
-            @* Filters *@
             <div class="row mb-3 align-items-end">
                 <div class="col-md-3">
                     <label class="form-label">Desde</label>
@@ -47,7 +45,6 @@
                 </div>
             </div>
 
-            @* Table *@
             <div class="table-responsive mt-3">
                 <QuickGrid Items="ListaCurrency.AsQueryable()" Pagination="@pages" Class="table table-bordered table-hover align-middle">
                     <PropertyColumn Property="@(d => d.CurrencyCode)" Title="Código" Sortable="true" />
@@ -60,7 +57,6 @@
                     </TemplateColumn>
                 </QuickGrid>
                 
-                @* Pagination *@
                 <Paginator State="@pages" />
             </div>
         </div>

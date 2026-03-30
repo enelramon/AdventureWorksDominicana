@@ -1,6 +1,7 @@
 <Solution>
   <Folder Name="/Solution Items/">
     <File Path=".github/workflows/dotnet.yml" />
+    <File Path="README.md" />
   </Folder>
   <Project Path="AdventureWorksDominicana.Api/AdventureWorksDominicana.Api.csproj" />
   <Project Path="AdventureWorksDominicana.Blazor/AdventureWorksDominicana.Blazor.csproj" />

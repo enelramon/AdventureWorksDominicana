@@ -20,20 +20,23 @@ public partial class Employee
     /// </summary>
     [Key]
     [Column("BusinessEntityID")]
+    [Required(ErrorMessage = "El ID de la entidad es obligatorio.")]
     public int BusinessEntityId { get; set; }
 
     /// <summary>
     /// Unique national identification number such as a social security number.
     /// </summary>
     [Column("NationalIDNumber")]
-    [StringLength(15)]
+    [Required(ErrorMessage = "El número de identificación nacional es obligatorio.")]
+    [StringLength(15, ErrorMessage = "El número de identificación no puede exceder los 15 caracteres.")]
     public string NationalIdnumber { get; set; } = null!;
 
     /// <summary>
     /// Network login.
     /// </summary>
     [Column("LoginID")]
-    [StringLength(256)]
+    [Required(ErrorMessage = "El LoginID es obligatorio.")]
+    [StringLength(256, ErrorMessage = "El LoginID no puede exceder los 256 caracteres.")]
     public string LoginId { get; set; } = null!;
 
     /// <summary>
@@ -44,7 +47,6 @@ public partial class Employee
     /// <summary>
     /// Work title such as Buyer or Sales Representative.
     /// </summary>
-    [StringLength(50)]
     public string JobTitle { get; set; } = null!;
 
     /// <summary>
@@ -55,13 +57,11 @@ public partial class Employee
     /// <summary>
     /// M = Married, S = Single
     /// </summary>
-    [StringLength(1)]
     public string MaritalStatus { get; set; } = null!;
 
     /// <summary>
     /// M = Male, F = Female
     /// </summary>
-    [StringLength(1)]
     public string Gender { get; set; } = null!;
 
     /// <summary>

@@ -45,18 +45,40 @@ namespace AdventureWorksDominicana.Services
         public async Task<CountryRegion?> Buscar(string id)
         {
             await using var contexto = await DbFactory.CreateDbContextAsync();
-            return await contexto.CountryRegions.FirstOrDefaultAsync(c => c.CountryRegionCode.Equals(id));
+            return await contexto.CountryRegions
+                .Include(c => c.SalesTerritories)
+                .Include(c => c.StateProvinces)
+                .Include(c => c.CountryRegionCurrencies)
+                .FirstOrDefaultAsync(c => c.CountryRegionCode.Equals(id));
+        }
+
+        public async Task<CountryRegion?> BuscarDuplicado(string id, string idExcluido)
+        {
+            await using var contexto = await DbFactory.CreateDbContextAsync();
+            return await contexto.CountryRegions.FirstOrDefaultAsync(c => c.CountryRegionCode.Equals(id) && !c.CountryRegionCode.Equals(idExcluido));
         }
 
         public async Task<bool> Eliminar(string id)
         {
             await using var contexto = await DbFactory.CreateDbContextAsync();
-            var country = await Buscar(id);
 
-            if (country == null) return false;
+            var tieneEstados = await contexto.StateProvinces.AnyAsync(s => s.CountryRegionCode == id);
+            if (tieneEstados)
+                throw new InvalidOperationException("No se puede eliminar: tiene estados/provincias asociados");
 
-            contexto.CountryRegions.Remove(country);
-            return await contexto.SaveChangesAsync() > 0;
+            var tieneTerritorios = await contexto.SalesTerritories.AnyAsync(t => t.CountryRegionCode == id);
+            if (tieneTerritorios)
+                throw new InvalidOperationException("No se puede eliminar: tiene territorios de ventas asociados");
+
+            var tieneMonedas = await contexto.CountryRegionCurrencies.AnyAsync(c => c.CountryRegionCode == id);
+            if (tieneMonedas)
+                throw new InvalidOperationException("No se puede eliminar: tiene monedas asociadas");
+
+            var country = await contexto.CountryRegions.FirstOrDefaultAsync(c => c.CountryRegionCode == id);
+            if (country == null)
+                throw new InvalidOperationException("El país/región no existe");
+
+            return await contexto.CountryRegions.Where(c => c.CountryRegionCode.Equals(id)).ExecuteDeleteAsync() > 0;
         }
 
         public async Task<List<CountryRegion>> GetList(Expression<Func<CountryRegion, bool>> criterio)

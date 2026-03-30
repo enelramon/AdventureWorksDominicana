@@ -1,0 +1,177 @@
+﻿@page "/StateProvince/Edit/{StateProvinceId:int}"
+
+@inject StateProvinceService stateProvinceService;
+@inject CountryRegionsService countryRegionsService;
+@inject SalesTerritoryService salesTerritoryService;
+@inject ToastService toastService;
+@inject NavigationManager navigationManager;
+
+<EditForm Model="StateProvince" FormName="modificarStateProvince" OnValidSubmit="Guardar">
+    <DataAnnotationsValidator />
+
+    <div class="container">
+        <div class="card">
+            <div class="card-header text-center">
+                <h4>Modificar StateProvince</h4>
+            </div>
+            <div class="card-body">
+                @* StateProvince Code *@
+                <div class="mb-3">
+                    <label class="form-label"><strong>C&oacute;digo de Estado/Provincia</strong></label>
+                    <input class="form-control" type="text" @bind="StateProvince.StateProvinceCode" maxlength="3" @bind:after="ConvertirMayuscula" placeholder="Escriba el codigo..." />
+                    <ValidationMessage For="(() => StateProvince.StateProvinceCode)" />
+                </div>
+
+                @* CountryRegion Code *@
+                <div class="mb-3">
+                    <label class="form-label"><strong>C&oacute;digo de pa&iacute;s/regi&oacute;n</strong></label>
+                    <select class="form-select" @bind="@StateProvince.CountryRegionCode" @bind:after="CargarSalesTerritories">
+                        <option value="" disabled hidden selected>Seleccione un pa&iacute;s/regi&oacute;n...</option>
+                        @foreach (var countryRegion in ListaCountryRegion)
+                        {
+                            <option value="@countryRegion.CountryRegionCode">@countryRegion.Name (@countryRegion.CountryRegionCode)</option>
+                        }
+                    </select>
+                    <ValidationMessage For="(() => StateProvince.CountryRegionCode)" />
+                </div>
+
+                @* Nombre *@
+                <div class="mb-3">
+                    <label class="form-label"><strong>Nombre</strong></label>
+                    <input class="form-control" type="text" maxlength="50" @bind="StateProvince.Name" placeholder="Escriba el nombre..." />
+                    <ValidationMessage For="(() => StateProvince.Name)" />
+                </div>
+
+                @* Sales Territory *@
+                <div class="mb-3">
+                    <label class="form-label"><strong>Territorio de Ventas</strong></label>
+                    <select class="form-select" @bind="@StateProvince.TerritoryId">
+                        @if (string.IsNullOrEmpty(StateProvince.CountryRegionCode))
+                        {
+                            <option value="0" disabled selected hidden>Primero seleccione un país</option>
+                        }
+                        else if (!ListaSalesTerritory.Any())
+                        {
+                            <option value="0" disabled selected hidden>
+                                No hay territorios disponibles para @ObtenerNombrePais(StateProvince.CountryRegionCode)
+                            </option>
+                        }
+                        else
+                        {
+                            <option value="0" disabled selected hidden>Seleccione un territorio...</option>
+                            @foreach (var territory in ListaSalesTerritory)
+                            {
+                                <option value="@territory.TerritoryId">@territory.Name</option>
+                            }
+                        }
+                    </select>
+                    <ValidationMessage For="(() => StateProvince.TerritoryId)" />
+                </div>
+            </div>
+            <div class="card-footer text-center">
+                <a class="btn btn-secondary bi bi-arrow-left" href="/StateProvince/Index"> Volver</a>
+                <button class="btn btn-primary bi bi-floppy" type="submit"> Modificar</button>
+                <button class="btn btn-danger bi bi-trash" type="button" @onclick="Eliminar"> Eliminar</button>
+            </div>
+        </div>
+    </div>
+</EditForm>
+
+@code {
+    [Parameter]
+    public int StateProvinceId { get; set; }
+
+    public StateProvince StateProvince { get; set; } = new StateProvince();
+    public List<CountryRegion> ListaCountryRegion { get; set; } = new List<CountryRegion>();
+    public List<SalesTerritory> ListaSalesTerritory { get; set; } = new List<SalesTerritory>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        StateProvince = await stateProvinceService.Buscar(StateProvinceId);
+        if (StateProvince == null)
+        {
+            toastService.ShowError("El estado/provincia no existe.");
+            navigationManager.NavigateTo("/StateProvince/Index");
+            return;
+        }
+        ListaCountryRegion = await countryRegionsService.GetList(c => !c.CountryRegionCode.Equals(""));
+        ListaCountryRegion = ListaCountryRegion.OrderBy(c => c.Name).ToList();
+        ListaSalesTerritory = await salesTerritoryService.GetList(s => s.CountryRegionCode == StateProvince.CountryRegionCode);
+        ListaSalesTerritory = ListaSalesTerritory.OrderBy(t => t.Name).ToList();
+    }
+
+    public async Task Guardar()
+    {
+        bool repetido = await stateProvinceService.BuscarRepetido(StateProvince.StateProvinceCode, StateProvince.StateProvinceId, StateProvince.CountryRegionCode);
+        if (repetido)
+        {
+            toastService.ShowWarning("El codigo \"" + StateProvince.StateProvinceCode + "\" ya esta en uso.");
+            return;
+        }
+
+        if (StateProvince.TerritoryId <= 0)
+        {
+            toastService.ShowWarning("Debe seleccionar un territorio de ventas.");
+            return;
+        }
+    
+        bool territorioValido = ListaSalesTerritory.Any(t => t.TerritoryId == StateProvince.TerritoryId);
+        if (!territorioValido)
+        {
+            toastService.ShowWarning("El territorio seleccionado no es válido para este país.");
+            return;
+        }
+        
+        StateProvince.ModifiedDate = DateTime.Now;
+        bool guardado = await stateProvinceService.Guardar(StateProvince);
+        if (guardado)
+        {
+            toastService.ShowSuccess("El Estado/Provincia se ha modificado correctamente.");
+            navigationManager.NavigateTo("/StateProvince/Index");
+        }
+        else
+        {
+            toastService.ShowError("Ha ocurrido un error inesperado al modificar el estado/provincia.");
+        }
+    }
+
+    public async Task Eliminar()
+    {
+        bool eliminado = await stateProvinceService.Eliminar(StateProvince.StateProvinceId);
+        if (eliminado)
+        {
+            toastService.ShowSuccess("El Estado/Provincia se ha eliminado correctamente.");
+            navigationManager.NavigateTo("/StateProvince/Index");
+        }
+        else
+        {
+            toastService.ShowError("Ha ocurrido un error inesperado al eliminar el estado/provincia.");
+        }
+    }
+
+    private string ObtenerNombrePais(string countryCode)
+    {
+        var pais = ListaCountryRegion.FirstOrDefault(c => c.CountryRegionCode == countryCode);
+        return pais?.Name ?? countryCode;
+    }
+
+    public async Task CargarSalesTerritories()
+    {
+        StateProvince.TerritoryId = 0;
+    
+        if (!string.IsNullOrEmpty(StateProvince.CountryRegionCode))
+        {
+            ListaSalesTerritory = await salesTerritoryService.GetList(s => s.CountryRegionCode == StateProvince.CountryRegionCode);
+            ListaSalesTerritory = ListaSalesTerritory.OrderBy(t => t.Name).ToList();
+        }
+        else
+        {
+            ListaSalesTerritory = new List<SalesTerritory>();
+        }
+    }
+
+    public async Task ConvertirMayuscula()
+    {
+        StateProvince.StateProvinceCode = StateProvince.StateProvinceCode.ToUpper();
+    }
+}

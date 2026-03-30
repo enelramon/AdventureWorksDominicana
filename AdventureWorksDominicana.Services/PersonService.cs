@@ -5,15 +5,15 @@ using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
-using System.Text;
 
 namespace AdventureWorksDominicana.Services;
 
 public class PersonService(IDbContextFactory<Contexto> DbFactory) : IService<Person, int>
 {
-    public Task<Person?> Buscar(int id)
+    public async Task<Person?> Buscar(int id)
     {
-        throw new NotImplementedException();
+        await using var context = await DbFactory.CreateDbContextAsync();
+        return await context.People.FirstOrDefaultAsync(p => p.BusinessEntityId == id);
     }
 
     public Task<bool> Eliminar(int id)
@@ -30,5 +30,11 @@ public class PersonService(IDbContextFactory<Contexto> DbFactory) : IService<Per
     public Task<bool> Guardar(Person entidad)
     {
         throw new NotImplementedException();
+    }
+
+    public async Task<List<Person>> BuscarPorNombre(string nombre)
+    {
+        await using var context = await DbFactory.CreateDbContextAsync();
+        return await context.People.Where(p => p.FirstName.Contains(nombre) || p.LastName.Contains(nombre)).Take(10).ToListAsync();
     }
 }

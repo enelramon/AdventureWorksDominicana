@@ -15,20 +15,25 @@
 
         <div class="card-body">
             <div class="mb-3">
+
                 <div class="row">
-                    <div class="col-4">
-                        <label class="form-label">Desde</label>
-                        <InputDate class="form-control" @bind-Value="Desde" />
+                    <div class="col-3">
+                        <label class="form-label">Filtro:</label>
                     </div>
-                    <div class="col-4">
+                    <div class="col-3">
+                        <label class="form-label">Buscar:</label>
+                    </div>
+                    <div class="col-2">
+                        <label class="form-label">Desde</label>
+                    </div>
+                    <div class="col-3">
                         <label class="form-label">Hasta</label>
-                        <InputDate class="form-control" @bind-Value="Hasta" />
                     </div>
                 </div>
 
                 <div class="row">
-                    <div class="col-4">
-                        <label class="form-label">Filtro:</label>
+
+                    <div class="col-3">
                         <InputSelect class="form-select" @bind-Value="Filtros">
                             <option disabled value="">Filtrar...</option>
                             <option value="Id">ID</option>
@@ -37,15 +42,20 @@
                         </InputSelect>
                     </div>
 
-                    <div class="col-4">
-                        <label class="form-label">Buscar::</label>
+                    <div class="col-3">
                         <div class="input-group">
                             <InputText class="form-control" @bind-Value="ValorFiltro" placeholder="Buscar..." />
                             <button class="btn btn-primary" @onclick="Buscar">
-                                <i class="bi bi-search"></i> Buscar
+                                <i class="bi bi-search"></i>
                             </button>
                             <button type="button" class="btn btn-outline-primary bi bi-arrow-counterclockwise" @onclick="Restablecer"></button>
                         </div>
+                    </div>
+                    <div class="col-2">
+                        <InputDate class="form-control" @bind-Value="Desde" />
+                    </div>
+                    <div class="col-2">
+                        <InputDate class="form-control" @bind-Value="Hasta" />
                     </div>
                 </div>
             </div>
@@ -68,9 +78,9 @@
 
                     <PropertyColumn Property="@(e => e.ModifiedDate)" Format="dd/MM/yyyy" Title="Fecha de modificación" Sortable="true" />
 
-                    <TemplateColumn Title="Acciones">
-                        <a class="btn btn-outline-primary btn-sm" href="/Vendor/Edit/@context.BusinessEntityId">
-                            <i class="bi bi-pencil-square"></i>
+                    <TemplateColumn Class="text-center align-middle" Title="Acción">
+                        <a class="btn btn-outline-primary btn-" href="/Vendor/Edit/@context.BusinessEntityId">
+                            <i class="bi bi-pencil-square"></i> Modificar
                         </a>
                     </TemplateColumn>
 
