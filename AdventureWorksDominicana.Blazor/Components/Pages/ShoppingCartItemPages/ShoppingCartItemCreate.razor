@@ -1,0 +1,90 @@
+﻿@page "/ShoppingCartItem/Create";
+
+@using Microsoft.EntityFrameworkCore;
+@using AdventureWorksDominicana.Data.Context;
+
+@inject ShoppingCartItemService shoppingCartitemService;
+@inject ToastService toastService;
+@inject NavigationManager navigationManager;
+@inject Contexto contexto
+
+<EditForm Model="ShoppingCartItem" FormName="crearShoppingCartItem" OnValidSubmit="Guardar">
+    <DataAnnotationsValidator />
+    <div class="container">
+        <div class="card shadow-lg">
+            <div class="card-header d-flex justify-content-between">
+                <h4>Crear Shopping Cart Item</h4>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <label class="form-label"><strong>Fecha de creaci&oacute;n (y modificaci&oacute;n)</strong></label>
+                    <input class="form-control" type="datetime-local" @bind-value="ShoppingCartItem.DateCreated"/>
+                    <ValidationMessage For="(() => ShoppingCartItem.DateCreated)" />
+                </div>
+                <div class="mb-3">
+                    <label class="form-label"><strong>Producto</strong></label>
+                    <InputSelect class="form-control" min="1" @bind-Value="@ShoppingCartItem.ProductId">
+                        <option value="0" selected disabled hidden>Seleccione un producto...</option>
+                        @foreach (var producto in ListaProductos)
+                        {
+                            <option value="@producto.ProductId">@producto.Name</option>
+                        }
+                    </InputSelect>
+                    <ValidationMessage For="(() => ShoppingCartItem.ProductId)" />
+                </div>
+                <div class="mb-3">
+                    <label class="form-label"><strong>Cantidad</strong></label>
+                    <input class="form-control" type="number" min="1" @bind-value="ShoppingCartItem.Quantity" placeholder="Introduzca una cantidad..." />
+                    <ValidationMessage For="(() => ShoppingCartItem.Quantity)" />
+                </div>
+            </div>
+            <div class="card-footer text-center">
+                <a class="btn btn-secondary bi bi-arrow-left" href="/ShoppingCartItem/Index"> Volver</a>
+                <button class="btn btn-primary bi bi-floppy" type="submit"> Guardar</button>
+            </div>
+        </div>
+    </div>
+</EditForm>
+
+
+@code {
+    public ShoppingCartItem ShoppingCartItem { get; set; } = new ShoppingCartItem();
+    public List<Product> ListaProductos { get; set; } = new List<Product>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        ShoppingCartItem.DateCreated = DateTime.Now;
+        ShoppingCartItem.ModifiedDate = ShoppingCartItem.DateCreated;
+
+        try
+        {
+            var productos = await contexto.Products.ToListAsync();
+            ListaProductos = productos?.ToList() ?? new List<Product>();
+        }
+        catch (Exception ex)
+        {
+            toastService.ShowError("Ha ocurrido un error al cargar los productos.");
+            ListaProductos = new List<Product>();
+        }
+    }
+
+    public async Task Guardar()
+    {
+        ShoppingCartItem.Product = ListaProductos.FirstOrDefault(p => p.ProductId == ShoppingCartItem.ProductId);
+        if (ShoppingCartItem.Product == null)
+        {
+            toastService.ShowError("Producto no encontrado en la lista. Seleccione un producto válido.");
+            return;
+        }
+        bool guardado = await shoppingCartitemService.Guardar(ShoppingCartItem);
+        if (guardado)
+        {
+            toastService.ShowSuccess("Shopping car item guardado exitosamente.");
+            navigationManager.NavigateTo("/ShoppingCartItem/Index");
+        }
+        else
+        {
+            toastService.ShowError("No se pudo guardar el shopping cart item correctamente.");
+        }
+    }
+}

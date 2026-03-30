@@ -1,0 +1,54 @@
+﻿@page "/ProductDescription/Create"
+@rendermode InteractiveServer
+@inject ProductDescriptionService productDescriptionService
+@inject ToastService toastService
+@inject NavigationManager navigationManager
+
+<PageTitle>ProductDescription Create</PageTitle>
+<EditForm Model="@ProductDescription" OnValidSubmit="Guardar">
+    <DataAnnotationsValidator />
+    <div class="container">
+        <div class="card shadow-lg">
+            @*Header*@
+            <div class="card-header d-flex justify-content-center bg-info">
+                <h5 class="card-title text-light">Creaci&oacute;n de Descripci&oacute;n de Producto</h5>
+            </div>
+        
+            <div class="card-body">
+                <div>
+                    <label class="form-label text-bg-info text-white">Descripci&oacute;n</label>
+                    <InputText class="form-control" @bind-Value="ProductDescription.Description" />
+                    <ValidationMessage For="() => ProductDescription.Description" />
+                </div>
+            </div>
+            <div class="card-footer d-flex justify-content-center gap-2">
+                <a href="ProductDescription/Index" class="btn btn-outline-secondary d-flex gap-1">
+                    <i class="bi bi-arrow-left"></i>
+                    <span>Volver</span>
+                </a>
+                <button class="btn btn-outline-primary bi bi-plus-square-fill">Guardar</button>
+            </div>
+        </div>
+    </div>
+</EditForm>
+
+@code {
+    private ProductDescription ProductDescription = new ProductDescription();
+    private PaginationState pages = new PaginationState { ItemsPerPage = 5 };
+
+    private async Task Guardar()
+    {
+        var existeDuplicado = await productDescriptionService.GetList(d => d.Description.ToLower().Trim() == ProductDescription.Description.ToLower().Trim() && d.ProductDescriptionId != ProductDescription.ProductDescriptionId);
+        if (existeDuplicado.Any())
+        {
+            toastService.ShowWarning("Descripción ya existe.");
+            return;
+        }
+        var creado = await productDescriptionService.Guardar(ProductDescription);
+        if (creado)
+        {
+            toastService.ShowSuccess("Descripción guardada correctamente.");
+            navigationManager.NavigateTo("ProductDescription/Index");
+        }
+    }
+}

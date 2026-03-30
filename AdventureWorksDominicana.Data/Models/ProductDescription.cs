@@ -24,6 +24,7 @@ public partial class ProductDescription
     /// Description of the product.
     /// </summary>
     [StringLength(400)]
+    [Required(ErrorMessage = "Campo Obligatorio")]
     public string Description { get; set; } = null!;
 
     /// <summary>

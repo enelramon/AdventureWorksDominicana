@@ -32,6 +32,13 @@ builder.Services.AddScoped<VendorService>();
 builder.Services.AddScoped<BillOfMaterialService>();
 builder.Services.AddScoped<UnitMeasureService>();
 builder.Services.AddScoped<ProductService>();
+builder.Services.AddScoped<ProductDescriptionService>();
+builder.Services.AddScoped<ShoppingCartItemService>();
+builder.Services.AddScoped<ProductService>();
+builder.Services.AddScoped<ProductModelService>();
+builder.Services.AddScoped<UnitMeasureService>();
+builder.Services.AddScoped<ProductSubcategoryService>();
+
 
 builder.Services.AddBlazorBootstrap();
 var app = builder.Build();

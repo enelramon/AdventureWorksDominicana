@@ -1,16 +1,16 @@
-﻿@page "/Vendor/Index"
+﻿@page "/Product/Index"
 
 @inject NavigationManager navigationManager
-@inject VendorService vendorService
+@inject ProductService productService
 @rendermode InteractiveServer
 
-<PageTitle>Vendor</PageTitle>
+<PageTitle>Product</PageTitle>
 
 <div class="container-fluid">
     <div class="card shadow-lg">
         <div class="card-header d-flex justify-content-between align-content-center">
-            <h3 class="mb-0">Vendor</h3>
-            <a class="btn btn-primary" href="/Vendor/Create"><i class="bi bi-plus-square"></i> Crear</a>
+            <h3 class="mb-0">Product</h3>
+            <a class="btn btn-primary" href="/Product/Create"><i class="bi bi-plus-square"></i> Crear</a>
         </div>
 
         <div class="card-body">
@@ -38,7 +38,7 @@
                             <option disabled value="">Filtrar...</option>
                             <option value="Id">ID</option>
                             <option value="Nombre">Nombre</option>
-                            <option value="Cuenta">Cuenta</option>
+                            <option value="Numero">Número producto</option>
                         </InputSelect>
                     </div>
 
@@ -61,25 +61,24 @@
             </div>
 
             <div class="table-responsive">
-                <QuickGrid Items="ListaVendors" Class="table table-striped table-bordered table-hover">
+                <QuickGrid Items="ListaProductos" Class="table table-striped table-bordered table-hover">
 
-                    <PropertyColumn Property="@(e => e.BusinessEntityId)" Sortable="true" Title="ID" />
+                    <PropertyColumn Property="@(e => e.ProductId)" Sortable="true" Title="ID" />
                     <PropertyColumn Property="@(e => e.Name)" Sortable="true" Title="Nombre" />
-                    <PropertyColumn Property="@(e => e.AccountNumber)" Sortable="true" Title="Cuenta" />
-                    <PropertyColumn Property="@(e => e.CreditRating)" Sortable="true" Title="Crédito" />
+                    <PropertyColumn Property="@(e => e.ProductNumber)" Sortable="true" Title="Número" />
 
-                    <TemplateColumn Title="Estado">
-                        @(context.ActiveFlag ? "Activo" : "Inactivo")
+                    <TemplateColumn Title="Precio lista">
+                        @context.ListPrice.ToString("C2")
                     </TemplateColumn>
 
-                    <TemplateColumn Title="Preferido">
-                        @(context.PreferredVendorStatus ? "Sí" : "No")
+                    <TemplateColumn Title="Subcategoría">
+                        @(context.ProductSubcategory?.Name ?? "—")
                     </TemplateColumn>
 
                     <PropertyColumn Property="@(e => e.ModifiedDate)" Format="dd/MM/yyyy" Title="Fecha de modificación" Sortable="true" />
 
                     <TemplateColumn Class="text-center align-middle" Title="Acción">
-                        <a class="btn btn-outline-primary btn-" href="/Vendor/Edit/@context.BusinessEntityId">
+                        <a class="btn btn-outline-primary btn-" href="/Product/Edit/@context.ProductId">
                             <i class="bi bi-pencil-square"></i> Modificar
                         </a>
                     </TemplateColumn>
@@ -89,13 +88,13 @@
         </div>
 
         <div class="card-footer text-end">
-            <strong>Conteo Registros: </strong> @ListaVendors.Count()
+            <strong>Conteo Registros: </strong> @ListaProductos.Count()
         </div>
     </div>
 </div>
 
 @code {
-    public IQueryable<Vendor> ListaVendors { get; set; } = Enumerable.Empty<Vendor>().AsQueryable();
+    public IQueryable<Product> ListaProductos { get; set; } = Enumerable.Empty<Product>().AsQueryable();
     public string Filtros { get; set; } = string.Empty;
     public string ValorFiltro { get; set; } = string.Empty;
     public DateTime? Desde { get; set; }
@@ -108,39 +107,42 @@
 
     public async Task Buscar()
     {
-        List<Vendor> ListaResultante;
+        List<Product> listaResultante;
 
         if (!string.IsNullOrWhiteSpace(ValorFiltro))
         {
             if (Filtros == "Id" && int.TryParse(ValorFiltro, out int id))
             {
-                ListaResultante = await vendorService.GetList(x => x.BusinessEntityId == id);
+                listaResultante = await productService.GetList(x => x.ProductId == id);
             }
             else if (Filtros == "Nombre")
             {
-                ListaResultante = await vendorService.GetList(
+                listaResultante = await productService.GetList(
                     x => x.Name.ToLower().Contains(ValorFiltro.ToLower()));
             }
-            else if (Filtros == "Cuenta")
+            else if (Filtros == "Numero")
             {
-                ListaResultante = await vendorService.GetList(
-                    x => x.AccountNumber.ToLower().Contains(ValorFiltro.ToLower()));
+                listaResultante = await productService.GetList(
+                    x => x.ProductNumber.ToLower().Contains(ValorFiltro.ToLower()));
             }
             else
             {
-                ListaResultante = await vendorService.GetList(x => true);
+                listaResultante = await productService.GetList(x => true);
             }
         }
         else
         {
-            ListaResultante = await vendorService.GetList(x => true);
+            listaResultante = await productService.GetList(x => true);
         }
+
         if (Desde.HasValue)
-            ListaResultante = ListaResultante.Where(x => x.ModifiedDate >= Desde.Value).ToList();
+            listaResultante = listaResultante.Where(x => x.ModifiedDate >= Desde.Value).ToList();
         if (Hasta.HasValue)
-            ListaResultante = ListaResultante.Where(x => x.ModifiedDate <= Hasta.Value).ToList();
-        ListaVendors = ListaResultante.AsQueryable();
+            listaResultante = listaResultante.Where(x => x.ModifiedDate <= Hasta.Value).ToList();
+
+        ListaProductos = listaResultante.AsQueryable();
     }
+
     private async Task Restablecer()
     {
         Desde = null;
