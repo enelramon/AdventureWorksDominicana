@@ -32,10 +32,9 @@ builder.Services.AddScoped<SalesTerritoryService>();
 builder.Services.AddScoped<VendorService>();
 builder.Services.AddScoped<ProductDescriptionService>();
 builder.Services.AddScoped<ShoppingCartItemService>();
-
-
 builder.Services.AddScoped<ProductReviewService>();
 builder.Services.AddScoped<SalesPersonService>();
+builder.Services.AddScoped<SalesTaxRateService>();
 builder.Services.AddBlazorBootstrap();
 var app = builder.Build();
 
