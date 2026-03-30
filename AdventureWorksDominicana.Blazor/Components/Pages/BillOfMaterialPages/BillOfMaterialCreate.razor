@@ -1,0 +1,137 @@
+﻿@page "/BillOfMaterial/Create"
+@rendermode InteractiveServer
+@inject BillOfMaterialService BOMService
+@inject ProductService ProductService
+@inject UnitMeasureService UnitMeasureService
+@inject NavigationManager NavigationManager
+@inject ToastService Toast
+
+<PageTitle>Crear BOM</PageTitle>
+
+<div class="container">
+	<div class="card shadow-lg">
+		<div class="card-header">
+			<h5 class="card-title text-black mb-0">Crear Lista de Materiales</h5>
+		</div>
+        
+		<div class="card-body">
+           
+			<EditForm Model="@bom" OnValidSubmit="Guardar">
+				<DataAnnotationsValidator />
+				<ValidationSummary class="text-danger" />
+
+				<div class="row mb-3">
+					<div class="col-md-6">
+						<label class="form-label fw-bold">Producto Ensamblaje (Padre)</label>
+						<InputSelect class="form-select" @bind-Value="bom.ProductAssemblyId">
+							<option value=""> Nivel Superior </option>
+							@foreach (var p in productos)
+							{
+								<option value="@p.ProductId">@p.Name</option>
+							}
+						</InputSelect>
+					</div>
+                        
+					<div class="col-md-6">
+						<label class="form-label fw-bold">Componente (Requerido) *</label>
+						<InputSelect class="form-select" @bind-Value="bom.ComponentId">
+							<option value="0"> Seleccione un Componente </option>
+							@foreach (var p in productos)
+							{
+								<option value="@p.ProductId">@p.Name</option>
+							}
+						</InputSelect>
+						<ValidationMessage For="@(() => bom.ComponentId)" />
+					</div>
+				</div>
+
+				<div class="row mb-3">
+					<div class="col-md-6">
+						<label class="form-label fw-bold">Fecha de Inicio</label>
+						<InputDate class="form-control" @bind-Value="bom.StartDate" />
+						<ValidationMessage For="@(() => bom.StartDate)" />
+					</div>
+                        
+					<div class="col-md-6">
+						<label class="form-label fw-bold">Fecha de Fin</label>
+						<InputDate class="form-control" @bind-Value="bom.EndDate" />
+					</div>
+				</div>
+
+				<div class="row mb-3">
+					<div class="col-md-4">
+						<label class="form-label fw-bold">Nivel BOM (Profundidad)</label>
+						<InputNumber class="form-control" @bind-Value="bom.Bomlevel" />
+					</div>
+                        
+					<div class="col-md-4">
+						<label class="form-label fw-bold">Cantidad por Ensamblaje *</label>
+						<InputNumber class="form-control" @bind-Value="bom.PerAssemblyQty" />
+						<ValidationMessage For="@(() => bom.PerAssemblyQty)" />
+					</div>
+
+					<div class="col-md-4">
+						<label class="form-label fw-bold">Código Unidad Medida *</label>
+						<InputSelect class="form-select" @bind-Value="bom.UnitMeasureCode">
+							<option value=""> Seleccione Unidad </option>
+							@foreach (var u in unidades)
+							{
+								<option value="@u.UnitMeasureCode">@u.UnitMeasureCode - @u.Name</option>
+							}
+						</InputSelect>
+						<ValidationMessage For="@(() => bom.UnitMeasureCode)" />
+					</div>
+				</div>
+
+				<div class="mt-4 d-flex justify-content-center gap-2">
+					<a href="/BillOfMaterial/Index" class="btn btn-primary">
+						Volver
+					</a>
+					<button type="submit" class="btn btn-primary" @onclick="Volver">
+						<i class="bi bi-floppy"></i> Guardar
+					</button>
+				</div>
+			</EditForm>
+           
+		</div>
+	</div>
+</div>
+
+@code {
+	private BillOfMaterial bom = new BillOfMaterial()
+	{
+		StartDate = DateTime.Today,
+		PerAssemblyQty = 1.00m
+	};
+
+	private List<Product>? productos;
+	private List<UnitMeasure>? unidades;
+
+	protected override async Task OnInitializedAsync()
+	{
+		productos = await ProductService.GetList(p => true);
+		unidades = await UnitMeasureService.GetList(u => true);
+	}
+
+	private async Task Guardar()
+	{
+		if (bom.ComponentId == 0)
+		{
+			Toast.ShowWarning("Debe seleccionar un componente válido.");
+			return;
+		}
+
+		var guardo = await BOMService.Guardar(bom);
+        
+		if (guardo)
+		{
+			Toast.ShowSuccess("Material agregado a la lista correctamente.");
+			Volver();
+		}
+		else
+		{
+			Toast.ShowError("Error al guardar el registro.");
+		}
+	}
+	private void Volver() => NavigationManager.NavigateTo("/BillOfMaterial/Index");
+}

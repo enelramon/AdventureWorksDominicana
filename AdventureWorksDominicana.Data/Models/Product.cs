@@ -25,98 +25,113 @@ public partial class Product
     /// <summary>
     /// Name of the product.
     /// </summary>
-    [StringLength(50)]
+    [Required(ErrorMessage = "El nombre es requerido.")]
+    [StringLength(50, MinimumLength = 3, ErrorMessage = "El nombre debe tener entre 3 y 50 caracteres.")]
     public string Name { get; set; } = null!;
 
     /// <summary>
     /// Unique product identification number.
     /// </summary>
-    [StringLength(25)]
+    [Required(ErrorMessage = "El número de producto es requerido.")]
+    [StringLength(25, MinimumLength = 3, ErrorMessage = "El número de producto debe tener entre 3 y 25 caracteres.")]
     public string ProductNumber { get; set; } = null!;
 
     /// <summary>
     /// 0 = Product is purchased, 1 = Product is manufactured in-house.
     /// </summary>
+    [Required(ErrorMessage = "La bandera Make es requerida.")]
     public bool MakeFlag { get; set; }
 
     /// <summary>
     /// 0 = Product is not a salable item. 1 = Product is salable.
     /// </summary>
+    [Required(ErrorMessage = "La bandera de producto terminado es requerida.")]
     public bool FinishedGoodsFlag { get; set; }
 
     /// <summary>
     /// Product color.
     /// </summary>
-    [StringLength(15)]
+    [StringLength(15, ErrorMessage = "El color debe tener como máximo 15 caracteres.")]
     public string? Color { get; set; }
 
     /// <summary>
     /// Minimum inventory quantity. 
     /// </summary>
+    [Required(ErrorMessage = "El nivel de stock de seguridad es requerido.")]
+    [Range(0, short.MaxValue, ErrorMessage = "El nivel de stock de seguridad debe ser mayor o igual a 0.")]
     public short SafetyStockLevel { get; set; }
 
     /// <summary>
     /// Inventory level that triggers a purchase order or work order. 
     /// </summary>
+    [Required(ErrorMessage = "El punto de reorden es requerido.")]
+    [Range(0, short.MaxValue, ErrorMessage = "El punto de reorden debe ser mayor o igual a 0.")]
     public short ReorderPoint { get; set; }
 
     /// <summary>
     /// Standard cost of the product.
     /// </summary>
+    [Required(ErrorMessage = "El costo estándar es requerido.")]
+    [Range(typeof(decimal), "0", "999999999", ErrorMessage = "El costo estándar debe ser mayor o igual a 0.")]
     [Column(TypeName = "money")]
     public decimal StandardCost { get; set; }
 
     /// <summary>
     /// Selling price.
     /// </summary>
+    [Required(ErrorMessage = "El precio de lista es requerido.")]
+    [Range(typeof(decimal), "0", "999999999", ErrorMessage = "El precio de lista debe ser mayor o igual a 0.")]
     [Column(TypeName = "money")]
     public decimal ListPrice { get; set; }
 
     /// <summary>
     /// Product size.
     /// </summary>
-    [StringLength(5)]
+    [StringLength(5, ErrorMessage = "El tamaño debe tener como máximo 5 caracteres.")]
     public string? Size { get; set; }
 
     /// <summary>
     /// Unit of measure for Size column.
     /// </summary>
-    [StringLength(3)]
+    [StringLength(3, ErrorMessage = "La unidad de medida del tamaño debe tener como máximo 3 caracteres.")]
     public string? SizeUnitMeasureCode { get; set; }
 
     /// <summary>
     /// Unit of measure for Weight column.
     /// </summary>
-    [StringLength(3)]
+    [StringLength(3, ErrorMessage = "La unidad de medida del peso debe tener como máximo 3 caracteres.")]
     public string? WeightUnitMeasureCode { get; set; }
 
     /// <summary>
     /// Product weight.
     /// </summary>
+    [Range(typeof(decimal), "0", "99999999", ErrorMessage = "El peso debe ser mayor o igual a 0.")]
     [Column(TypeName = "decimal(8, 2)")]
     public decimal? Weight { get; set; }
 
     /// <summary>
     /// Number of days required to manufacture the product.
     /// </summary>
+    [Required(ErrorMessage = "Los días de fabricación son requeridos.")]
+    [Range(0, int.MaxValue, ErrorMessage = "Los días de fabricación deben ser mayor o igual a 0.")]
     public int DaysToManufacture { get; set; }
 
     /// <summary>
     /// R = Road, M = Mountain, T = Touring, S = Standard
     /// </summary>
-    [StringLength(2)]
+    [StringLength(2, ErrorMessage = "La línea de producto debe tener como máximo 2 caracteres.")]
     public string? ProductLine { get; set; }
 
     /// <summary>
     /// H = High, M = Medium, L = Low
     /// </summary>
-    [StringLength(2)]
+    [StringLength(2, ErrorMessage = "La clase debe tener como máximo 2 caracteres.")]
     public string? Class { get; set; }
 
     /// <summary>
     /// W = Womens, M = Mens, U = Universal
     /// </summary>
-    [StringLength(2)]
+    [StringLength(2, ErrorMessage = "El estilo debe tener como máximo 2 caracteres.")]
     public string? Style { get; set; }
 
     /// <summary>
@@ -134,6 +149,7 @@ public partial class Product
     /// <summary>
     /// Date the product was available for sale.
     /// </summary>
+    [Required(ErrorMessage = "La fecha de inicio de venta es requerida.")]
     [Column(TypeName = "datetime")]
     public DateTime SellStartDate { get; set; }
 
@@ -158,6 +174,7 @@ public partial class Product
     /// <summary>
     /// Date and time the record was last updated.
     /// </summary>
+    [Required(ErrorMessage = "La fecha de modificación es requerida.")]
     [Column(TypeName = "datetime")]
     public DateTime ModifiedDate { get; set; }
 

@@ -32,3 +32,4 @@ public class SpecialOfferProductService(IDbContextFactory<Contexto> DbFactory) :
         throw new NotImplementedException();
     }
 }
+}
