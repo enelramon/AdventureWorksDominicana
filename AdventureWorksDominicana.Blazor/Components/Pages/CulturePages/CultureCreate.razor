@@ -1,0 +1,97 @@
+﻿@page "/Culture/Create"
+@inject NavigationManager navigationManager
+@inject ToastService toastService
+@inject CultureService cultureService
+@rendermode InteractiveServer
+
+<PageTitle>Crear Cultura</PageTitle>
+
+<Toasts class="p-3" AutoHide="true" Delay="5000" Placement="ToastsPlacement.TopRight" />
+
+<EditForm Model="culture" OnValidSubmit="Guardar">
+    <DataAnnotationsValidator />
+    <div class="container mt-4">
+        <div class="card shadow-lg">
+            <div class="card-header">
+                <h4 class="mb-0">Registro de cultura</h4>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <label class="form-label fw-bold">ID de Cultura</label>
+                    <InputText class="form-control" @bind-Value="culture.CultureId" maxlength="6" />
+                    <ValidationMessage For="() => culture.CultureId" />
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Nombre</label>
+                    <InputText class="form-control" @bind-Value="culture.Name" maxlength="50" />
+                    <ValidationMessage For="() => culture.Name" />
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Fecha de Modificación</label>
+                    <InputDate class="form-control" @bind-Value="culture.ModifiedDate" />
+                    <ValidationMessage For="() => culture.ModifiedDate" />
+                </div>
+
+                @if (!string.IsNullOrWhiteSpace(mensaje))
+                {
+                    <div class="alert alert-danger">
+                        @mensaje
+                    </div>
+                }
+            </div>
+            <div class="card-footer text-center">
+                <a class="btn btn-outline-secondary bi bi-arrow-left" href="/Culture/Index"> Volver</a>
+                <button type="submit" class="btn btn-outline-success bi bi-file-earmark"> Guardar</button>
+            </div>
+        </div>
+    </div>
+</EditForm>
+
+@code {
+    private Culture culture { get; set; } = new();
+    private string mensaje = string.Empty;
+
+    protected override void OnInitialized()
+    {
+        culture.ModifiedDate = DateTime.Now;
+    }
+
+    private async Task Guardar()
+    {
+        if (string.IsNullOrWhiteSpace(culture.CultureId))
+        {
+            mensaje = "El ID de la Cultura es obligatorio.";
+            return;
+        }
+
+        var isCultureDuplicated = await cultureService.GetList(c =>
+            c.CultureId.ToLower() == culture.CultureId.ToLower() ||
+            c.Name.ToLower() == culture.Name.ToLower()
+        );
+
+        if (isCultureDuplicated.Any())
+        {
+            mensaje = $"Ya existe una cultura registrada con ese ID ({culture.CultureId}) o Nombre ({culture.Name}).";
+            return;
+        }
+
+        culture.ModifiedDate = DateTime.Now;
+
+        try
+        {
+            if (await cultureService.Guardar(culture))
+            {
+                toastService.ShowSuccess($"Cultura {culture.Name} guardada correctamente.");
+                navigationManager.NavigateTo("/Culture/Index");
+            }
+            else
+            {
+                mensaje = "Ocurrió un error al intentar guardar la cultura.";
+            }
+        }
+        catch (Exception ex)
+        {
+            mensaje = ex.Message;
+        }
+    }
+}

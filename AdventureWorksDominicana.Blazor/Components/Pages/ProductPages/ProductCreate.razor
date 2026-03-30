@@ -1,0 +1,260 @@
+﻿@page "/Product/Create"
+
+@inject ProductService productService
+@inject ProductSubcategoryService productSubcategoryService
+@inject ProductModelService productModelService
+@inject UnitMeasureService unitMeasureService
+@inject ToastService toastService
+@inject NavigationManager navigationManager
+@rendermode InteractiveServer
+
+<EditForm Model="Product" FormName="FormularioProduct" OnValidSubmit="Guardar">
+    <DataAnnotationsValidator />
+
+    <div class="container">
+        <div class="card shadow-lg">
+            <div class="card-header text-center">
+                <h3>Crear Product</h3>
+            </div>
+
+            <div class="card-body">
+
+                <div class="mb-3">
+                    <label class="form-label"><strong>Nombre</strong></label>
+                    <input class="form-control" type="text" @bind-value="Product.Name" />
+                    <ValidationMessage For="(() => Product.Name)" />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label"><strong>Número de producto</strong></label>
+                    <input class="form-control" type="text" @bind-value="Product.ProductNumber" />
+                    <ValidationMessage For="(() => Product.ProductNumber)" />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label"><strong>Fabricación propia (Make)</strong></label>
+                    <input type="checkbox" @bind="Product.MakeFlag" />
+                    <ValidationMessage For="(() => Product.MakeFlag)" />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label"><strong>Producto terminado / vendible</strong></label>
+                    <input type="checkbox" @bind="Product.FinishedGoodsFlag" />
+                    <ValidationMessage For="(() => Product.FinishedGoodsFlag)" />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label"><strong>Color</strong></label>
+                    <input class="form-control" type="text" @bind-value="Product.Color" />
+                    <ValidationMessage For="(() => Product.Color)" />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label"><strong>Stock de seguridad</strong></label>
+                    <input class="form-control" type="number" min="0" @bind-value="Product.SafetyStockLevel" />
+                    <ValidationMessage For="(() => Product.SafetyStockLevel)" />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label"><strong>Punto de reorden</strong></label>
+                    <input class="form-control" type="number" min="0" @bind-value="Product.ReorderPoint" />
+                    <ValidationMessage For="(() => Product.ReorderPoint)" />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label"><strong>Costo estándar</strong></label>
+                    <input class="form-control" type="number" min="0" step="0.01" @bind-value="Product.StandardCost" />
+                    <ValidationMessage For="(() => Product.StandardCost)" />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label"><strong>Precio de lista</strong></label>
+                    <input class="form-control" type="number" min="0" step="0.01" @bind-value="Product.ListPrice" />
+                    <ValidationMessage For="(() => Product.ListPrice)" />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label"><strong>Tamaño</strong></label>
+                    <input class="form-control" type="text" @bind-value="Product.Size" />
+                    <ValidationMessage For="(() => Product.Size)" />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label"><strong>Unidad de medida (tamaño)</strong></label>
+                    <InputSelect class="form-select" @bind-Value="Product.SizeUnitMeasureCode">
+                        <option value="">— Ninguna —</option>
+                        @foreach (var u in ListaUnitMeasures)
+                        {
+                            <option value="@u.UnitMeasureCode">@u.Name (@u.UnitMeasureCode)</option>
+                        }
+                    </InputSelect>
+                    <ValidationMessage For="(() => Product.SizeUnitMeasureCode)" />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label"><strong>Unidad de medida (peso)</strong></label>
+                    <InputSelect class="form-select" @bind-Value="Product.WeightUnitMeasureCode">
+                        <option value="">— Ninguna —</option>
+                        @foreach (var u in ListaUnitMeasures)
+                        {
+                            <option value="@u.UnitMeasureCode">@u.Name (@u.UnitMeasureCode)</option>
+                        }
+                    </InputSelect>
+                    <ValidationMessage For="(() => Product.WeightUnitMeasureCode)" />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label"><strong>Peso</strong></label>
+                    <input class="form-control" type="number" min="0" step="0.01" @bind-value="Product.Weight" />
+                    <ValidationMessage For="(() => Product.Weight)" />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label"><strong>Días de fabricación</strong></label>
+                    <input class="form-control" type="number" min="0" @bind-value="Product.DaysToManufacture" />
+                    <ValidationMessage For="(() => Product.DaysToManufacture)" />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label"><strong>Línea de producto</strong></label>
+                    <InputSelect class="form-select" @bind-Value="Product.ProductLine">
+                        <option value="">—</option>
+                        <option value="R">R — Road</option>
+                        <option value="M">M — Mountain</option>
+                        <option value="T">T — Touring</option>
+                        <option value="S">S — Standard</option>
+                    </InputSelect>
+                    <ValidationMessage For="(() => Product.ProductLine)" />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label"><strong>Clase</strong></label>
+                    <InputSelect class="form-select" @bind-Value="Product.Class">
+                        <option value="">—</option>
+                        <option value="H">H — High</option>
+                        <option value="M">M — Medium</option>
+                        <option value="L">L — Low</option>
+                    </InputSelect>
+                    <ValidationMessage For="(() => Product.Class)" />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label"><strong>Estilo</strong></label>
+                    <InputSelect class="form-select" @bind-Value="Product.Style">
+                        <option value="">—</option>
+                        <option value="W">W — Womens</option>
+                        <option value="M">M — Mens</option>
+                        <option value="U">U — Universal</option>
+                    </InputSelect>
+                    <ValidationMessage For="(() => Product.Style)" />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label"><strong>Subcategoría</strong></label>
+                    <InputSelect class="form-select" TValue="int?" @bind-Value="Product.ProductSubcategoryId">
+                        <option value="">— Ninguna —</option>
+                        @foreach (var s in ListaSubcategorias)
+                        {
+                            <option value="@s.ProductSubcategoryId">@s.Name</option>
+                        }
+                    </InputSelect>
+                    <ValidationMessage For="(() => Product.ProductSubcategoryId)" />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label"><strong>Modelo de producto</strong></label>
+                    <InputSelect class="form-select" TValue="int?" @bind-Value="Product.ProductModelId">
+                        <option value="">— Ninguno —</option>
+                        @foreach (var m in ListaModelos)
+                        {
+                            <option value="@m.ProductModelId">@m.Name</option>
+                        }
+                    </InputSelect>
+                    <ValidationMessage For="(() => Product.ProductModelId)" />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label"><strong>Inicio ventas</strong></label>
+                    <input class="form-control" type="datetime-local" @bind-value="Product.SellStartDate" />
+                    <ValidationMessage For="(() => Product.SellStartDate)" />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label"><strong>Fin ventas</strong></label>
+                    <input class="form-control" type="datetime-local" @bind-value="Product.SellEndDate" />
+                    <ValidationMessage For="(() => Product.SellEndDate)" />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label"><strong>Fecha discontinuación</strong></label>
+                    <input class="form-control" type="datetime-local" @bind-value="Product.DiscontinuedDate" />
+                    <ValidationMessage For="(() => Product.DiscontinuedDate)" />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label"><strong>Fecha de modificación</strong></label>
+                    <input class="form-control" type="datetime-local" @bind-value="Product.ModifiedDate" disabled />
+                    <ValidationMessage For="(() => Product.ModifiedDate)" />
+                </div>
+
+            </div>
+
+            <div class="card-footer text-center">
+                <a class="btn btn-secondary bi bi-arrow-left" href="/Product/Index"> Volver</a>
+                <button class="btn btn-primary bi bi-floppy" type="submit"> Guardar</button>
+            </div>
+        </div>
+    </div>
+</EditForm>
+
+@code {
+    public Product Product { get; set; } = new();
+
+    public List<ProductSubcategory> ListaSubcategorias { get; set; } = new();
+    public List<ProductModel> ListaModelos { get; set; } = new();
+    public List<UnitMeasure> ListaUnitMeasures { get; set; } = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        Product.ModifiedDate = DateTime.Now;
+        Product.SellStartDate = DateTime.Now;
+        Product.MakeFlag = false;
+        Product.FinishedGoodsFlag = true;
+
+        ListaSubcategorias = await productSubcategoryService.GetList(x => true);
+        ListaModelos = await productModelService.GetList(x => true);
+        ListaUnitMeasures = await unitMeasureService.GetList(x => true);
+    }
+
+    public async Task Guardar()
+    {
+        Product.SizeUnitMeasureCode = string.IsNullOrWhiteSpace(Product.SizeUnitMeasureCode) ? null : Product.SizeUnitMeasureCode;
+        Product.WeightUnitMeasureCode = string.IsNullOrWhiteSpace(Product.WeightUnitMeasureCode) ? null : Product.WeightUnitMeasureCode;
+        Product.ProductLine = string.IsNullOrWhiteSpace(Product.ProductLine) ? null : Product.ProductLine;
+        Product.Class = string.IsNullOrWhiteSpace(Product.Class) ? null : Product.Class;
+        Product.Style = string.IsNullOrWhiteSpace(Product.Style) ? null : Product.Style;
+
+        var duplicado = await productService.GetList(p =>
+            (p.Name.ToLower().Trim() == Product.Name.ToLower().Trim()
+             || p.ProductNumber.ToLower().Trim() == Product.ProductNumber.ToLower().Trim())
+            && p.ProductId != Product.ProductId);
+
+        if (duplicado.Any())
+        {
+            toastService.ShowWarning("Ya existe otro producto con el mismo nombre o número de producto.");
+            return;
+        }
+
+        bool guardado = await productService.Guardar(Product);
+
+        if (guardado)
+        {
+            toastService.ShowSuccess("El producto fue creado exitosamente.");
+            navigationManager.NavigateTo("/Product/Index");
+        }
+        else
+        {
+            toastService.ShowError("Ha ocurrido un error al guardar el producto.");
+        }
+    }
+}

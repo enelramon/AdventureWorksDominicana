@@ -6,11 +6,11 @@
 <div class="container">
     <div class="card shadow-lg">
         @*Header*@
-        <div class="card-header d-flex justify-content-between bg-primary">
-            <h5 class="card-title text-light">Registro de Departamentos</h5>
-            <a href="Department/Create" class="btn btn-outline-secondary d-flex gap-2">
-                <i class="bi bi-plus-square-fill text-light"></i>
-                <span class="text-light">Crear</span>
+        <div class="card-header d-flex justify-content-between">
+            <h4 class="card-title">Registro de Departamentos</h4>
+            <a href="Department/Create" class="btn btn-primary d-flex gap-2">
+                <i class="bi bi-plus-square"></i>
+                <span>Crear</span>
             </a>
         </div>
         
@@ -19,26 +19,26 @@
             <div class="row">
                 <div class="col-6">
                     <label class="form-label">Desde</label>
-                    <input class="form-control" type="date" @bind="StartDate"/>
+                    <InputDate class="form-control" @bind-Value="StartDate"/>
                 </div>
                 <div class="col-6">
                     <label class="form-label">Hasta</label>
-                    <input class="form-control" type="date" @bind="EndDate"/>
+                    <InputDate class="form-control" @bind-Value="EndDate"/>
                 </div>
             </div>
             <div class="row">
                 <div class="col-6">
                     <label class="form-label">Seleccione una opci&oacute;n</label>
-                    <select class="form-select" @bind="Filtro">
+                    <InputSelect class="form-select" @bind-Value="Filtro">
                         <option value="">Seleccione una opci&oacute;n</option>
                         <option value="Name">Nombre</option>
                         <option value="GroupName">Nombre del Grupo</option>
-                    </select>
+                    </InputSelect>
                 </div>
                 <div class="col-6">
                     <label class="form-label">Buscar</label>
                     <div class="input-group">
-                        <input class="form-control" type="text" placeholder="Buscar..." @bind="ValorFiltro"/>
+                        <InputText class="form-control" placeholder="Buscar..." @bind-Value="ValorFiltro"/>
                         <i class="btn btn-outline-primary bi bi-search" @onclick="Buscar"></i>
                     </div>
                 </div>
