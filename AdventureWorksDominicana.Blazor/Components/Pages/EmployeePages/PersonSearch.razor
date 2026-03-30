@@ -1,36 +1,43 @@
-﻿@inject PersonService personService;
+﻿@using AdventureWorksDominicana.Data.Models
+@using AdventureWorksDominicana.Services
+@using Microsoft.AspNetCore.Components
+
+@inject PersonService personService
 
 <div class="mb-3">
-    <input type="text" 
-           class="form-control" 
+    <input type="text"
+           class="form-control"
            placeholder="Escriba nombre o apellido..."
            @bind="nombre"
            @bind:event="oninput"
            @bind:after="BuscarPersonas" />
 </div>
 
-@* Resultados *@
 @if (resultados.Any())
 {
     <div class="list-group mt-2">
         @foreach (var persona in resultados)
         {
-            <button type="button" 
+            <button type="button"
                     class="list-group-item list-group-item-action"
                     @onclick="() => SeleccionarPersona(persona)">
-                <strong>@persona.FirstName @persona.LastName</strong>
+                <strong>@($"{persona.FirstName} {persona.LastName}".Trim())</strong>
                 <small class="text-muted d-block">ID: @persona.BusinessEntityId</small>
             </button>
         }
     </div>
 }
 
-@* Persona seleccionada *@
 @if (personaSeleccionada != null)
 {
     <div class="alert alert-success mt-3">
-        <strong>Persona seleccionada:</strong> @personaSeleccionada.FirstName @personaSeleccionada.LastName (Id: @personaSeleccionada.BusinessEntityId)
-        <button class="btn btn-sm btn-link" type="button" @onclick="LimpiarSeleccion">[Cambiar]</button>
+        <strong>Persona seleccionada:</strong>
+        @($"{personaSeleccionada.FirstName} {personaSeleccionada.LastName}".Trim())
+        (Id: @personaSeleccionada.BusinessEntityId)
+
+        <button class="btn btn-sm btn-link" type="button" @onclick="LimpiarSeleccion">
+            [Cambiar]
+        </button>
     </div>
 }
 
@@ -41,16 +48,19 @@
     [Parameter]
     public EventCallback<int?> PersonaIdChanged { get; set; }
 
-    private string nombre = "";
+    private string nombre = string.Empty;
     private List<Person> resultados = new();
-    private Person? personaSeleccionada = null;
+    private Person? personaSeleccionada;
 
     protected override async Task OnInitializedAsync()
     {
         if (PersonaId.HasValue)
         {
-            Person persona = await personService.Buscar(PersonaId.Value);
-            SeleccionarPersona(persona);
+            var persona = await personService.Buscar(PersonaId.Value);
+            if (persona != null)
+            {
+                SeleccionarPersona(persona);
+            }
         }
     }
 
@@ -59,26 +69,30 @@
         if (string.IsNullOrWhiteSpace(nombre))
         {
             resultados.Clear();
+            personaSeleccionada = null;
             return;
         }
+
         resultados = await personService.BuscarPorNombre(nombre);
     }
 
-    private void SeleccionarPersona(Person persona)
+    private async Task SeleccionarPersona(Person persona)
     {
         personaSeleccionada = persona;
-        nombre = $"{persona.FirstName} {persona.LastName}";
+        nombre = $"{persona.FirstName ?? ""} {persona.LastName ?? ""}".Trim();
         resultados.Clear();
 
         PersonaId = persona.BusinessEntityId;
-        PersonaIdChanged.InvokeAsync(PersonaId);
+        await PersonaIdChanged.InvokeAsync(PersonaId);
     }
 
-    private void LimpiarSeleccion()
+    private async Task LimpiarSeleccion()
     {
         personaSeleccionada = null;
-        nombre = "";
+        nombre = string.Empty;
+        resultados.Clear();
         PersonaId = null;
-        PersonaIdChanged.InvokeAsync(null);
+
+        await PersonaIdChanged.InvokeAsync(null);
     }
 }

@@ -1,0 +1,263 @@
+﻿@page "/Person/Edit/{IdPersona:int}"
+@using AdventureWorksDominicana.Data.Models
+@using AdventureWorksDominicana.Services
+
+@inject PersonService personService
+@inject NavigationManager navigationManager
+@inject ToastService toastService
+
+@rendermode InteractiveServer
+
+<PageTitle>Editar Persona</PageTitle>
+
+<Toasts class="p-3" AutoHide="true" Delay="5000" Placement="ToastsPlacement.TopRight" />
+
+@if (persona == null)
+{
+    <div class="d-flex justify-content-center mt-5">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Cargando...</span>
+        </div>
+    </div>
+}
+else
+{
+    <EditForm Model="persona" OnValidSubmit="Guardar">
+        <DataAnnotationsValidator />
+        
+        <div class="container mt-4">
+            <div class="card shadow-sm border" style="border-color: #e5e7eb;">
+                <div class="card-header bg-light border-bottom">
+                    <h5 class="mb-0 text-dark">Editar persona</h5>
+                </div>
+                <div class="card-body p-4">
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <label class="form-label fw-bold" style="font-size: 0.85rem;">ID de Persona</label>
+                            <InputNumber class="form-control" @bind-Value="persona.BusinessEntityId" readonly />
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-bold" style="font-size: 0.85rem;">Tipo de Persona</label>
+                            <InputSelect class="form-select" @bind-Value="persona.PersonType">
+                                <option value="">Seleccione...</option>
+                                <option value="SC">Store Contact (SC)</option>
+                                <option value="IN">Individual (IN)</option>
+                                <option value="SP">Sales Person (SP)</option>
+                                <option value="EM">Employee (EM)</option>
+                                <option value="VC">Vendor Contact (VC)</option>
+                                <option value="GC">General Contact (GC)</option>
+                            </InputSelect>
+                            <ValidationMessage For="@(() => persona.PersonType)" />
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-bold" style="font-size: 0.85rem;">Promocion por Correo</label>
+                            <InputSelect class="form-select" @bind-Value="persona.EmailPromotion">
+                                <option value="0">0 - No recibir promociones</option>
+                                <option value="1">1 - Promociones de AdventureWorks</option>
+                                <option value="2">2 - AdventureWorks y Partners</option>
+                            </InputSelect>
+                            <ValidationMessage For="@(() => persona.EmailPromotion)" />
+                        </div>
+                    </div>
+
+                    <div class="border rounded p-3 mb-4 bg-white" style="border-color: #d1d5db !important;">
+                        <h6 class="mb-4 text-dark">Datos Personales</h6>
+                        
+                        <div class="row">
+                            <div class="col-md-2 mb-3">
+                                <label class="form-label fw-bold" style="font-size: 0.85rem;">Titulo</label>
+                                <InputText class="form-control" @bind-Value="persona.Title" maxlength="8" />
+                                <ValidationMessage For="@(() => persona.Title)" />
+                            </div>
+
+                            <div class="col-md-5 mb-3">
+                                <label class="form-label fw-bold" style="font-size: 0.85rem;">Primer Nombre</label>
+                                <InputText class="form-control" @bind-Value="persona.FirstName" maxlength="50" />
+                                <ValidationMessage For="@(() => persona.FirstName)" />
+                            </div>
+
+                            <div class="col-md-5 mb-3">
+                                <label class="form-label fw-bold" style="font-size: 0.85rem;">Segundo Nombre</label>
+                                <InputText class="form-control" @bind-Value="persona.MiddleName" maxlength="50" />
+                                <ValidationMessage For="@(() => persona.MiddleName)" />
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-bold" style="font-size: 0.85rem;">Apellido</label>
+                                <InputText class="form-control" @bind-Value="persona.LastName" maxlength="50" />
+                                <ValidationMessage For="@(() => persona.LastName)" />
+                            </div>
+
+                            <div class="col-md-3 mb-3">
+                                <label class="form-label fw-bold" style="font-size: 0.85rem;">Sufijo</label>
+                                <InputText class="form-control" @bind-Value="persona.Suffix" maxlength="10" />
+                                <ValidationMessage For="@(() => persona.Suffix)" />
+                            </div>
+
+                            <div class="col-md-3 mb-3 d-flex align-items-center mt-4">
+                                <div class="form-check">
+                                    <InputCheckbox class="form-check-input" @bind-Value="persona.NameStyle" id="nameStyleEdit" />
+                                    <label class="form-check-label fw-bold" style="font-size: 0.85rem;" for="nameStyleEdit">
+                                        Estilo Oriental
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    @if (!string.IsNullOrWhiteSpace(mensaje))
+                    {
+                        <div class="alert alert-danger mt-3 mb-0" style="font-size: 0.9rem;">
+                            @mensaje
+                        </div>
+                    }
+                </div>
+                
+                <div class="card-footer bg-white border-top-0 pb-4 d-flex justify-content-center gap-2">
+                    <a class="btn btn-light border text-secondary px-4 py-1" href="/Person/Index" style="font-size: 0.9rem; background-color: #f9fafb;">
+                        <i class="bi bi-arrow-left"></i> Volver
+                    </a>
+                    <button type="submit" class="btn btn-outline-success px-4 py-1" disabled="@guardando" style="font-size: 0.9rem; border-color: #10b981; color: #10b981;">
+                        <i class="bi bi-floppy"></i> Guardar
+                    </button>
+                    <button type="button" class="btn btn-outline-danger px-4 py-1" disabled="@guardando" @onclick="MostrarModalEliminar" style="font-size: 0.9rem; border-color: #ef4444; color: #ef4444;">
+                        <i class="bi bi-trash"></i> Eliminar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </EditForm>
+
+    @if (mostrarModal)
+    {
+        <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title fw-bold text-danger">Confirmar Eliminacion</h5>
+                        <button type="button" class="btn-close" @onclick="CerrarModalEliminar"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p>Esta seguro que desea eliminar a <strong>@persona.FirstName @persona.LastName</strong>?</p>
+                        <p class="text-muted small">Esta accion no se puede deshacer.</p>
+                    </div>
+                    <div class="modal-footer d-flex justify-content-center">
+                        <button type="button" class="btn btn-light border" @onclick="CerrarModalEliminar">Cancelar</button>
+                        <button type="button" class="btn btn-danger" @onclick="EliminarConfirmado" disabled="@guardando">Si, eliminar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+}
+
+<div class="fixed-bottom p-2 text-start" style="font-size: 0.70rem; color: var(--bs-primary); opacity: 0.4; pointer-events: none; user-select: none;">
+    PumpDev
+</div>
+
+@code {
+    [Parameter]
+    public int IdPersona { get; set; }
+    
+    private Person? persona;
+    private bool guardando = false;
+    private string mensaje = string.Empty;
+    private bool mostrarModal = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        persona = await personService.Buscar(IdPersona);
+        
+        if (persona == null)
+        {
+            navigationManager.NavigateTo("/Person/Index");
+        }
+    }
+
+    private async Task Guardar()
+    {
+        if (persona == null) return;
+
+        guardando = true;
+        mensaje = string.Empty;
+
+        if (string.IsNullOrWhiteSpace(persona.PersonType))
+        {
+            mensaje = "Debe seleccionar un tipo de persona.";
+            guardando = false;
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(persona.FirstName))
+        {
+            mensaje = "El primer nombre es obligatorio.";
+            guardando = false;
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(persona.LastName))
+        {
+            mensaje = "El apellido es obligatorio.";
+            guardando = false;
+            return;
+        }
+
+        try
+        {
+            if (await personService.Guardar(persona))
+            {
+                toastService.ShowSuccess("Persona modificada correctamente.");
+                navigationManager.NavigateTo("/Person/Index");
+            }
+            else
+            {
+                mensaje = "Ocurrio un error al intentar modificar la persona.";
+                guardando = false;
+            }
+        }
+        catch (Exception ex)
+        {
+            mensaje = ex.Message;
+            guardando = false;
+        }
+    }
+
+    private void MostrarModalEliminar()
+    {
+        mostrarModal = true;
+    }
+ 
+    private void CerrarModalEliminar()
+    {
+        mostrarModal = false;
+    }
+ 
+    private async Task EliminarConfirmado()
+    {
+        if (persona == null) return;
+ 
+        guardando = true;
+
+        try
+        {
+            if (await personService.Eliminar(IdPersona))
+            {
+                toastService.ShowSuccess("Persona eliminada correctamente.");
+                navigationManager.NavigateTo("/Person/Index");
+            }
+            else
+            {
+                mensaje = "Ocurrio un error al intentar eliminar la persona.";
+                guardando = false;
+            }
+        }
+        catch (Exception ex)
+        {
+            mensaje = ex.Message;
+            guardando = false;
+        }
+ 
+        mostrarModal = false;
+    }
+}

@@ -28,4 +28,8 @@
     <ProjectReference Include="..\AdventureWorksDominicana.Services\AdventureWorksDominicana.Services.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Components\Pages\PersonPage\" />
+  </ItemGroup>
+
 </Project>
