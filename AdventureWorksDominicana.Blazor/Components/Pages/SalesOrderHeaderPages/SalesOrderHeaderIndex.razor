@@ -1,0 +1,104 @@
+﻿@page "/SalesOrderHeader/Index"
+@rendermode InteractiveServer
+@inject SalesOrderHeaderService salesOrderHeaderService
+
+<PageTitle>SalesOrderHeader Index</PageTitle>
+<div class="container">
+    <div class="card shadow-lg">
+        @*Header*@
+        <div class="card-header d-flex justify-content-between">
+            <h4 class="card-title">Registro de Ordenes de Ventas</h4>
+            <a href="SalesOrderHeader/Create" class="btn btn-primary d-flex gap-2">
+                <i class="bi bi-plus-square"></i>
+                <span>Crear</span>
+            </a>
+        </div>
+        <div class="card-body">
+            @*Filters*@
+            <div class="row">
+                <div class="col-6">
+                    <label class="form-label">Desde</label>
+                    <InputDate class="form-control" @bind-Value="StartDate"/>
+                </div>
+                <div class="col-6">
+                    <label class="form-label">Hasta</label>
+                    <InputDate class="form-control" @bind-Value="EndDate" />
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-6">
+                    <label class="form-label">Seleccione una opci&oacute;n</label>
+                    <InputSelect class="form-select" @bind-Value="Filtro">
+                        <option value="">Seleccione una opci&oacute;n</option>
+                        <option value="Customer">Cliente</option>
+                        <option value="SalesPerson">Vendedor</option>
+                    </InputSelect>
+                </div>
+                <div class="col-6">
+                    <label class="form-label">Buscar</label>
+                    <div class="input-group">
+                        <InputText class="form-control" @bind-Value="ValorFiltro" placeholder="Buscar..."/>
+                        <i class="btn btn-outline-primary bi bi-search" @onclick="Buscar"></i>
+                        <i class="btn btn-outline-primary bi bi-arrow-clockwise" @onclick="Refresh"></i>
+                    </div>
+                </div>
+            </div>
+            @*Table*@
+            <div class="table-responsive mt-3">
+                <QuickGrid Items="SalesOrderHeadersList.AsQueryable()" Pagination="@pages" Class="table table-bordered table-hover">
+                    <PropertyColumn Property="@(s => s.SalesOrderId)" Title="OrdenId" Sortable="true" />
+                    <PropertyColumn Property="@(s => s.OrderDate)" Title="Fecha de Creaci&oacute;n" Sortable="true" />
+                    <PropertyColumn Property="@(s => s.DueDate)" Title="Fecha L&iacute;mite" Format="dd/MM/yyyy" Sortable="true" />
+                    <PropertyColumn Property="@(s => s.TotalDue)" Title="Monto Total" Format="N2" Sortable="true" />
+                    <TemplateColumn Context="state" Title="Estado">
+                        @(state.Status == 1 ? "En Proceso" : state.Status == 2 ? "Enviada" : "Cancelada")
+                    </TemplateColumn>
+                    <TemplateColumn Context="option" Title="Opci&oacute;n">
+                        <a href="SalesOrderHeader/Edit/@option.SalesOrderId" class="btn btn-outline-primary bi bi-pencil"></a>
+                    </TemplateColumn>
+                </QuickGrid>
+                <div class="d-flex justify-content-end">
+                    <Paginator State="@pages" />
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+@code {
+    private List<SalesOrderHeader> SalesOrderHeadersList = new List<SalesOrderHeader>();
+    private PaginationState pages = new PaginationState { ItemsPerPage = 5 };
+    private DateTime? StartDate = DateTime.Today, EndDate = DateTime.Today;
+    private string Filtro = string.Empty, ValorFiltro = string.Empty;
+    protected override async Task OnInitializedAsync()
+    {
+        SalesOrderHeadersList = await salesOrderHeaderService.GetList(s => true);
+    }
+
+    private async Task Refresh()
+    {
+        SalesOrderHeadersList = await salesOrderHeaderService.GetList(s => true);
+    }
+
+    private async Task Buscar()
+    {
+        Expression<Func<SalesOrderHeader, bool>> criterio = e => true;
+
+        if(StartDate.HasValue && EndDate.HasValue)
+        {
+            criterio = criterio.And(s => s.OrderDate >= StartDate.Value.Date && s.OrderDate <= EndDate.Value.Date.AddDays(1).AddTicks(-1));
+        }
+
+        if (Filtro.Trim() != "" && ValorFiltro.Trim() != "")
+        {
+            if (Filtro == "Customer")
+            {
+                criterio = criterio.And(c => (c.Customer!.Person!.FirstName.ToLower().Contains(ValorFiltro.ToLower()) || c.Customer!.Person!.LastName.ToLower().Contains(ValorFiltro.ToLower()) || c.Customer!.Store!.Name.ToLower().Contains(ValorFiltro.ToLower())));
+            }
+            else if (Filtro == "SalesPerson")
+            {
+                criterio = criterio.And(s => (s.SalesPerson!.BusinessEntity.BusinessEntity.FirstName.ToLower().Contains(ValorFiltro.ToLower()) || s.SalesPerson.BusinessEntity.BusinessEntity.LastName.ToLower().Contains(ValorFiltro.ToLower())));
+            }
+        }
+        SalesOrderHeadersList = await salesOrderHeaderService.GetList(criterio);
+    }
+}

@@ -58,6 +58,6 @@ public class SalesTerritoryService(IDbContextFactory<Contexto> DbFactory) : ISer
     public async Task<List<SalesTerritory>> GetList(Expression<Func<SalesTerritory, bool>> criterio)
     {
         await using var contexto = await DbFactory.CreateDbContextAsync();
-        return await contexto.SalesTerritories.Where(criterio).ToListAsync();
+        return await contexto.SalesTerritories.Where(criterio).OrderBy(t => t.Name).ToListAsync();
     }
 }

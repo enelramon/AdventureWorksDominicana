@@ -9,41 +9,33 @@
 	<DataAnnotationsValidator />
 	<div class="container">
 		<div class="card shadow-lg">
-			@* Header *@
 			<div class="card-header">
 				<h5 class="card-title text-black mb-0">Editar Registro de Moneda</h5>
 			</div>
         
 			<div class="card-body">
-
-
-				<div class="row mb-3">
-					<div class="col-md-6">
+				<div class="row mb-3  d-flex gap-2">
+					<div>
 						<label class="form-label fw-bold">Código de Moneda</label>
-
-						<InputText class="form-control" @bind-Value="currency.CurrencyCode" disabled />
+						<InputText class="form-control  form-control-sm w-25" @bind-Value="currency.CurrencyCode" disabled />
 					</div>
                         
-					<div class="col-md-6">
+					<div>
 						<label class="form-label fw-bold">Nombre</label>
-						<InputText class="form-control" @bind-Value="currency.Name" placeholder="Ej: Peso Dominicano" />
+						<InputText class="form-control  form-control-sm w-25" @bind-Value="currency.Name" placeholder="Ej: Peso Dominicano" />
 						<ValidationMessage For="@(() => currency.Name)" />
 					</div>
 				</div>
-
-				@* Botones *@
 				<div class="mt-4 d-flex justify-content-center gap-2">
                         
-					<a href="Currency/Index" class="btn btn-primary">
+					<a href="Currency/Index" class="btn btn-secondary">
 						<i class="bi bi-arrow-left"></i> Volver
 					</a>
 
 					<button type="submit" class="btn btn-primary">
-						<i class="bi bi-floppy"></i> Actualizar
+						<i class="bi bi-floppy"></i> Modificar
 					</button>
 				</div>
-
-			
 			</div>
 		</div>
 	</div>

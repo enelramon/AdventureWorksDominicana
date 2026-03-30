@@ -1,0 +1,130 @@
+﻿@page "/ShipMethods"
+@using AdventureWorksDominicana.Data.Models
+@using AdventureWorksDominicana.Services
+@using Microsoft.AspNetCore.Components.QuickGrid
+
+@inject ShipMethodService shipMethodService
+
+<PageTitle>ShipMethods</PageTitle>
+<div class="container-fluid">
+    <div class="card shadow-lg">
+        <div class="card-header d-flex justify-content-between">
+            <h4>Ship Methods</h4>
+            <a class="btn btn-primary" href="/ShipMethods/Create"><i class="bi bi-plus-square"></i> Crear</a>
+        </div>
+        <div class="card-body">
+            <div class="row g-3 mb-3">
+                <div class="col-md-3">
+                    <label class="form-label">Desde</label>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Hasta</label>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Filtro</label>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Buscar</label>
+                </div>
+            </div>
+
+            <div class="row g-3 mb-3 align-items-end">
+                <div class="col-md-3">
+                    <InputDate class="form-control" @bind-Value="Desde" />
+                </div>
+                <div class="col-md-3">
+                    <InputDate class="form-control" @bind-Value="Hasta" />
+                </div>
+                <div class="col-md-3">
+                    <InputSelect class="form-select" @bind-Value="Filtros">
+                        <option disabled value="">Elige un filtro</option>
+                        <option value="IdCart">ID</option>
+                        <option value="Nombre">Nombre</option>
+                    </InputSelect>
+                </div>
+                <div class="col-md-3">
+                    <div class="d-flex">
+                        <InputText class="form-control me-2" @bind-Value="ValorFiltro" placeholder="Buscar..." />
+                        <button class="btn btn-primary me-2" @onclick="Buscar">
+                            <i class="bi bi-search"></i>
+                        </button>
+                        <button type="button" class="btn btn-outline-primary bi bi-arrow-counterclockwise" @onclick="Restablecer"></button>
+                    </div>
+                </div>
+            </div>
+            <div class="table table-striped table-bordered table-hover">
+                <QuickGrid TGridItem="ShipMethod" Items="@ListaShipMethods" class="table table-striped table-hover table-bordered">
+                    <PropertyColumn Property="e => e.ShipMethodId" Sortable="true" Title="Id" />
+                    <PropertyColumn Property="e => e.Name" Sortable="true" Title="Nombre" />
+                    <PropertyColumn Property="e => e.ShipBase" Sortable="true"  Title="Costo base" />
+                    <PropertyColumn Property="e => e.ShipRate" Sortable="true" Title="Costo adicional" />
+                    <PropertyColumn Property="e => e.ModifiedDate" Sortable="true" Format="dd/MM/yyyy" Title="Fecha de modificacion" />
+                    <TemplateColumn Title="Accion">
+                        <div class="d-flex justify-content-center align-items-center">
+                            <a class="btn btn-outline-primary btn-sm" href="/ShipMethods/Edit/@context.ShipMethodId">
+                                <i class="bi bi-pencil-square"></i> Modificar
+                            </a>
+                        </div>
+                    </TemplateColumn>
+                </QuickGrid>
+            </div>
+        </div>
+        <div class="card-footer text-end">
+            <strong>Conteo Registros: @ListaShipMethods.Count()</strong>
+        </div>
+    </div>
+</div>
+
+@code {
+    public IQueryable<ShipMethod> ListaShipMethods = Enumerable.Empty<ShipMethod>().AsQueryable();
+    public string Filtros { get; set; } = string.Empty;
+    public string ValorFiltro { get; set; } = string.Empty;
+    public DateTime? Desde { get; set; }
+    public DateTime? Hasta { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await Buscar();
+    }
+
+    public async Task Buscar()
+    {
+        List<ShipMethod> resultado;
+
+        if (!string.IsNullOrWhiteSpace(ValorFiltro))
+        {
+            if (Filtros == "Id" && int.TryParse(ValorFiltro, out int id))
+            {
+                resultado = await shipMethodService.GetList(x => x.ShipMethodId == id);
+            }
+            if (Filtros == "Nombre")
+            {
+                resultado = await shipMethodService.GetList(x => x.Name.ToLower().Trim().Contains(ValorFiltro.ToLower().Trim()));
+            }
+            else
+            {
+                resultado = await shipMethodService.GetList(x => true);
+            }
+        }
+        else
+        {
+            resultado = await shipMethodService.GetList(x => true);
+        }
+        if (Desde.HasValue)
+            resultado = resultado.Where(x => x.ModifiedDate >= Desde.Value).ToList();
+
+        if (Hasta.HasValue)
+            resultado = resultado.Where(x => x.ModifiedDate <= Hasta.Value).ToList();
+
+        ListaShipMethods = resultado.AsQueryable();
+    }
+
+    private async Task Restablecer()
+    {
+        Desde = null;
+        Hasta = null;
+        ValorFiltro = string.Empty;
+        Filtros = string.Empty;
+        await Buscar();
+    }
+}

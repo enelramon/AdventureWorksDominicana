@@ -1,0 +1,93 @@
+﻿@page "/ShipMethods/Edit/{Id:int}"
+@using AdventureWorksDominicana.Data.Models
+@using AdventureWorksDominicana.Services
+@inject ToastService toastService
+@inject NavigationManager navigationManager
+@inject ShipMethodService ShipMethodService
+
+<PageTitle>Editar Ship Method</PageTitle>
+<EditForm Model="@metodo" OnValidSubmit="Guardar">
+    <DataAnnotationsValidator />
+    <div class="container">
+        <div class="card shadow-lg">
+            <div class="card-header d-flex justify-content-between">
+                <h4>Editar Ship Method</h4>
+            </div>
+            <div class="card-body bg-light">
+                <div class="justify-content-between">
+                    <div class="mb-3">
+                        <label class="form-label"><strong>Identificador unico:</strong></label>
+                        <label class="form-label"> @metodo.Rowguid</label>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label"><strong>Nombre:</strong></label>
+                        <InputText class="form-control" @bind-Value="@metodo.Name" placeholder="Ingrese el nombre del metodo..."></InputText>
+                        <ValidationMessage For="@(() => metodo.Name)" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label"><strong>Costo base:</strong></label>
+                        <InputNumber class="form-control" min="1" @bind-Value="@metodo.ShipBase" placeholder="Ingrese el valor..."></InputNumber>
+                        <ValidationMessage For="@(() => metodo.ShipBase)" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label"><strong>Tasa por unidad:</strong></label>
+                        <InputNumber class="form-control" min="1" @bind-Value="@metodo.ShipRate" placeholder="Ingrese el valor..."></InputNumber>
+                        <ValidationMessage For="@(() => metodo.ShipRate)" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label"><strong>Fecha de modificaci&oacute;n:</strong></label>
+                        <input class="form-control" type="datetime-local" @bind-value="metodo.ModifiedDate" />
+                        <ValidationMessage For="@(() => metodo.ModifiedDate)" />
+                    </div>
+                </div>
+            </div>
+            <div class="card-footer text-center">
+                <a class="btn btn-secondary bi bi-arrow-left" href="/ShipMethods"> Volver</a>
+                <button class="btn btn-primary bi bi-floppy" type="submit"> Guardar</button>
+                <button class="btn btn-danger bi bi-trash" type="button" @onclick="Eliminar"> Eliminar</button>
+            </div>
+        </div>
+    </div>
+</EditForm>
+
+@code {
+    [Parameter]
+    public int Id { get; set; } = 0;
+    ShipMethod metodo = new ShipMethod();
+
+    protected override async Task OnInitializedAsync()
+    {
+        var shipmethod = await ShipMethodService.Buscar(Id);
+        if (shipmethod != null)
+            metodo = shipmethod;
+    }
+
+    public async Task Guardar()
+    {
+        var guardado = await ShipMethodService.Guardar(metodo);
+        if (guardado)
+        {
+            toastService.ShowSuccess("El metodo ha sido guardado con exito!");
+            navigationManager.NavigateTo("/ShipMethods");
+        }
+        else
+        {
+            toastService.ShowError("Ha ocurrido un error al intentar guardar el metodo.");
+        }
+    }
+    private async Task Eliminar()
+    {
+        bool eliminado = await ShipMethodService.Eliminar(metodo.ShipMethodId);
+        if (eliminado)
+        {
+            toastService.ShowSuccess("El metodo ha sido eliminado con exito!");
+            navigationManager.NavigateTo("/ShipMethods");
+        }
+        else
+        {
+            toastService.ShowError("Ha ocurrido un error al intentar eliminar el metodo.");
+        }
+
+    }
+}
+
