@@ -16,15 +16,13 @@
                 <DataAnnotationsValidator />
                 <ValidationSummary class="text-danger" />
 
-                <div class="row mb-3">
-                    <div class="col-md-6">
-                        <label class="form-label fw-bold">Nombre</label>
-                        <InputText class="form-control" @bind-Value="productModel.Name" placeholder="Ej: Classic Vest" />
-                        <ValidationMessage For="@(() => productModel.Name)" />
-                    </div>
+                <div class="mb-3">
+                    <strong><label class="form-label">Nombre</label></strong>
+                    <InputText class="form-control" @bind-Value="productModel.Name" placeholder="Ej: Classic Vest" />
+                    <ValidationMessage For="@(() => productModel.Name)" />
                 </div>
 
-                <div class="mt-4 d-flex justify-content-center gap-2">
+                <div class="card-footer text-center">
                     <a href="ProductModel/Index" class="btn btn-secondary">
                         <i class="bi bi-arrow-left"></i> Volver
                     </a>

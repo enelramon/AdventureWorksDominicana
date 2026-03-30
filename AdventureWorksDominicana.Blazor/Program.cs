@@ -14,7 +14,6 @@ builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
 // Services
-// Services
 builder.Services.AddScoped<CurrencyService>();
 builder.Services.AddBlazoredToast();
 builder.Services.AddScoped<ShipMethodService>();
