@@ -25,24 +25,28 @@ public partial class StateProvince
     /// <summary>
     /// ISO standard state or province code.
     /// </summary>
-    [StringLength(3)]
+    [StringLength(3, ErrorMessage = "El codigo del estado/provincia debe tener como maximo 3 caracteres.")]
+    [Required(ErrorMessage = "El codigo del estado/provincia es requerido.")]
     public string StateProvinceCode { get; set; } = null!;
 
     /// <summary>
     /// ISO standard country or region code. Foreign key to CountryRegion.CountryRegionCode. 
     /// </summary>
-    [StringLength(3)]
+    [StringLength(3, ErrorMessage = "El codigo del pais/region debe tener como maximo 3 caracteres.")]
+    [Required(ErrorMessage = "El codigo del pais/region es requerido.")]
     public string CountryRegionCode { get; set; } = null!;
 
     /// <summary>
     /// 0 = StateProvinceCode exists. 1 = StateProvinceCode unavailable, using CountryRegionCode.
     /// </summary>
+    [Required(ErrorMessage = "La bandera de estado/provincia unico es requerido.")]
     public bool IsOnlyStateProvinceFlag { get; set; }
 
     /// <summary>
     /// State or province description.
     /// </summary>
-    [StringLength(50)]
+    [Required(ErrorMessage = "El nombre es requerido.")]
+    [StringLength(50, MinimumLength = 3, ErrorMessage = "El nombre debe tener entre 3 y 50 caracteres.")]
     public string Name { get; set; } = null!;
 
     /// <summary>
@@ -61,6 +65,7 @@ public partial class StateProvince
     /// Date and time the record was last updated.
     /// </summary>
     [Column(TypeName = "datetime")]
+    [Required(ErrorMessage = "La fecha de modificacion es requerida.")]
     public DateTime ModifiedDate { get; set; }
 
     [InverseProperty("StateProvince")]

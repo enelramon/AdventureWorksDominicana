@@ -15,9 +15,9 @@ builder.Services.AddRazorComponents()
 
 // Services
 builder.Services.AddScoped<CurrencyService>();
-builder.Services.AddBlazoredToast();
 builder.Services.AddScoped<ShipMethodService>();
 builder.Services.AddScoped<CountryRegionsService>();
+builder.Services.AddScoped<CreditCardService>();
 builder.Services.AddScoped<DepartmentService>();
 builder.Services.AddScoped<PersonService>();
 builder.Services.AddScoped<ShiftService>();

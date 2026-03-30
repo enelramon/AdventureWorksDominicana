@@ -1,0 +1,120 @@
+﻿@page "/Culture/Index"
+@rendermode InteractiveServer
+@inject CultureService cultureService
+
+<PageTitle>Culture Index</PageTitle>
+
+<div class="container mt-4">
+    <div class="card shadow-lg">
+        
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h5 class="card-title mb-0">Registro de Culturas</h5>
+            <a href="Culture/Create" class="btn btn-primary d-flex align-items-center gap-2">
+                <i class="bi bi-plus-square"></i>
+                <span>Crear Nueva</span>
+            </a>
+        </div>
+        
+        <div class="card-body">
+            
+            <div class="row">
+                <div class="col-md-3">
+                    <label class="form-label fw-bold">Desde</label>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label fw-bold">Hasta</label>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label fw-bold">Filtro:</label>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label fw-bold">Buscar:</label>
+                </div>
+            </div>
+
+            <div class="row mb-4">
+                <div class="col-md-3">
+                    <input class="form-control" type="date" @bind="StartDate" />
+                </div>
+                <div class="col-md-3">
+                    <input class="form-control" type="date" @bind="EndDate" />
+                </div>
+                <div class="col-md-3">
+                    <select class="form-select" @bind="Filtro">
+                        <option value="">Seleccione una opci&oacute;n</option>
+                        <option value="CultureId">ID de Cultura</option>
+                        <option value="Name">Nombre</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <div class="input-group">
+                        <input class="form-control" type="text" placeholder="Buscar..." @bind="ValorFiltro" />
+                        <button class="btn btn-primary" type="button" @onclick="Buscar" title="Buscar">
+                            <i class="bi bi-search"></i>
+                        </button>
+                        <button class="btn btn-outline-primary" type="button" @onclick="Restablecer" title="Limpiar Filtros">
+                            <i class="bi bi-arrow-clockwise"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="table-responsive">
+                <QuickGrid Items="CulturesList.AsQueryable()" Pagination="@pages" Class="table table-striped table-bordered table-hover">
+                    <PropertyColumn Property="@(c => c.CultureId)" Title="Culture ID" Sortable="true" />
+                    <PropertyColumn Property="@(c => c.Name)" Title="Nombre" Sortable="true" />
+                    <PropertyColumn Property="@(c => c.ModifiedDate)" Title="Fecha de Modificaci&oacute;n" Format="dd/MM/yyyy" Sortable="true" />
+                    <TemplateColumn Title="Opciones">
+                        <div class="d-flex gap-2">
+                            <a href="Culture/Edit/@context.CultureId" class="btn btn-sm btn-outline-primary" title="Modificar">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                        </div>
+                    </TemplateColumn>
+                </QuickGrid>
+                
+                <Paginator State="@pages" />
+            </div>
+        </div>
+
+        <div class="card-footer text-end fw-bold">
+            Total de Registros: @CulturesList.Count
+        </div>
+    </div>
+</div>
+
+@code {
+    private List<Culture> CulturesList = new List<Culture>();
+    private PaginationState pages = new PaginationState { ItemsPerPage = 5 };
+    private string Filtro = string.Empty;
+    private string ValorFiltro = string.Empty;
+    private DateTime? StartDate = DateTime.Today.Date;
+    private DateTime? EndDate = DateTime.Today.Date.AddDays(1);
+
+    protected override async Task OnInitializedAsync()
+    {
+        CulturesList = await cultureService.GetList(c => true);
+    }
+
+    private async Task Buscar()
+    {
+        CulturesList = await cultureService.GetList(c =>
+            (!StartDate.HasValue || !EndDate.HasValue ||
+            (c.ModifiedDate >= StartDate.Value.Date && c.ModifiedDate <= EndDate.Value.Date.AddDays(1).AddTicks(-1)))
+            &&
+            (string.IsNullOrWhiteSpace(ValorFiltro) || string.IsNullOrWhiteSpace(Filtro) ||
+                (Filtro == "CultureId" && c.CultureId.Contains(ValorFiltro)) ||
+                (Filtro == "Name" && c.Name.Contains(ValorFiltro))
+            )
+        );
+    }
+
+    private async Task Restablecer()
+    {
+        StartDate = DateTime.Today.Date;
+        EndDate = DateTime.Today.Date.AddDays(1);
+        Filtro = string.Empty;
+        ValorFiltro = string.Empty;
+        await Buscar();
+    }
+}

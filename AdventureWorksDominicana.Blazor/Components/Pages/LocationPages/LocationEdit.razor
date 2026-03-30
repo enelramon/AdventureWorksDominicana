@@ -1,0 +1,183 @@
+﻿@page "/Location/Edit/{LocationId:short}"
+@inject NavigationManager navigationManager
+@inject ToastService toastService
+@inject LocationService locationService
+@rendermode InteractiveServer
+
+<PageTitle>Editar Ubicación</PageTitle>
+
+<Toasts class="p-3" AutoHide="true" Delay="5000" Placement="ToastsPlacement.TopRight" />
+
+@if (location == null)
+{
+    <div class="container mt-4">
+        <p>Cargando...</p>
+    </div>
+}
+else
+{
+    <EditForm Model="location" OnValidSubmit="Guardar">
+        <DataAnnotationsValidator />
+        <div class="container mt-4">
+            <div class="card shadow-lg">
+                <div class="card-header">
+                    <h4 class="mb-0">Editar Ubicación</h4>
+                </div>
+                <div class="card-body">
+                    
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">ID de Ubicación</label>
+                        <InputNumber class="form-control" @bind-Value="location.LocationId" readonly />
+                        <ValidationMessage For="() => location.LocationId" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Nombre</label>
+                        <InputText class="form-control" @bind-Value="location.Name" maxlength="50" />
+                        <ValidationMessage For="() => location.Name" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Tarifa de Costo</label>
+                        <InputNumber class="form-control" @bind-Value="location.CostRate" />
+                        <ValidationMessage For="() => location.CostRate" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Disponibilidad</label>
+                        <InputNumber class="form-control" @bind-Value="location.Availability" />
+                        <ValidationMessage For="() => location.Availability" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Última Modificación</label>
+                        <InputDate class="form-control" @bind-Value="location.ModifiedDate" readonly />
+                        <ValidationMessage For="() => location.ModifiedDate" />
+                    </div>
+
+                    @if (!string.IsNullOrWhiteSpace(mensaje))
+                    {
+                        <div class="alert alert-danger mt-3">
+                            @mensaje
+                        </div>
+                    }
+                </div>
+                
+                <div class="card-footer text-center d-flex justify-content-center gap-3">
+                    <a class="btn btn-secondary d-flex align-items-center gap-2" href="/Location/Index">
+                        <i class="bi bi-arrow-left"></i> Volver
+                    </a>
+                    <button type="submit" class="btn btn-primary d-flex align-items-center gap-2">
+                        <i class="bi bi-pencil-square"></i> Guardar
+                    </button>
+                    <button type="button" class="btn btn-danger d-flex align-items-center gap-2" @onclick="MostrarModalEliminar">
+                        <i class="bi bi-trash"></i> Eliminar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </EditForm>
+
+    @if (mostrarModal)
+    {
+        <div class="container mt-3">
+            <div class="alert alert-danger text-center shadow-sm">
+                <p class="fw-bold mb-3">¿Desea eliminar esta ubicación de forma permanente?</p>
+                <button class="btn btn-secondary me-2 d-inline-flex align-items-center gap-1" @onclick="CerrarModalEliminar">
+                    <i class="bi bi-x-circle"></i> Cancelar
+                </button>
+                <button class="btn btn-danger d-inline-flex align-items-center gap-1" @onclick="EliminarConfirmado">
+                    <i class="bi bi-check-circle"></i> Si, eliminar
+                </button>
+            </div>
+        </div>
+    }
+}
+
+@code {
+    [Parameter]
+    public short LocationId { get; set; }
+
+    private Location? location;
+    private string mensaje = string.Empty;
+    private bool mostrarModal = false;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        location = await locationService.Buscar(LocationId);
+        if (location == null)
+        {
+            mensaje = "Ubicación no encontrada";
+        }
+    }
+
+    private async Task Guardar()
+    {
+        if (location == null) return;
+        mensaje = string.Empty;
+
+        var isDuplicated = await locationService.GetList(l => 
+            l.Name.ToLower() == location.Name.ToLower() && 
+            l.LocationId != location.LocationId
+        );
+
+        if (isDuplicated.Any())
+        {
+            mensaje = $"Ya existe otra ubicación registrada con el Nombre ({location.Name}).";
+            return;
+        }
+
+        location.ModifiedDate = DateTime.Now;
+
+        try
+        {
+            if (await locationService.Guardar(location))
+            {
+                toastService.ShowSuccess($"Ubicación {location.Name} actualizada correctamente.");
+                navigationManager.NavigateTo("/Location/Index");
+            }
+            else
+            {
+                mensaje = "Ocurrió un error al intentar actualizar la ubicación.";
+            }
+        }
+        catch (Exception ex)
+        {
+            mensaje = ex.Message;
+        }
+    }
+
+    private void MostrarModalEliminar()
+    {
+        mostrarModal = true;
+    }
+
+    private void CerrarModalEliminar()
+    {
+        mostrarModal = false;
+    }
+
+    private async Task EliminarConfirmado()
+    {
+        if (location == null) return;
+
+        try
+        {
+            if (await locationService.Eliminar(location.LocationId))
+            {
+                toastService.ShowSuccess("Ubicación eliminada correctamente.");
+                navigationManager.NavigateTo("/Location/Index");
+            }
+            else
+            {
+                mensaje = "Ocurrió un error al intentar eliminar la ubicación. Verifique si tiene dependencias asociadas.";
+            }
+        }
+        catch (Exception ex)
+        {
+            mensaje = ex.Message;
+        }
+        
+        mostrarModal = false;
+    }
+}

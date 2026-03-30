@@ -1,4 +1,4 @@
-﻿using AdventureWorksDominicana.Data.Context;
+using AdventureWorksDominicana.Data.Context;
 using AdventureWorksDominicana.Data.Models;
 using Aplicada1.Core;
 using Microsoft.EntityFrameworkCore;

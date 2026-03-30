@@ -13,43 +13,37 @@
     <div class="container">
         <div class="card shadow-lg">
             @*Header*@
-            <div class="card-header d-flex justify-content-center bg-info">
-                <h5 class="card-title text-light">Edici&oacute;n de Departamento</h5>
+            <div class="card-header d-flex justify-content-start">
+                <h5 class="card-title">Creaci&oacute;n de Departamento</h5>
             </div>
         
             <div class="card-body">
                 <div>
-                    <label class="form-label text-bg-info text-white">Nombre Departamento</label>
-                    <InputText class="form-control" @bind-Value="Department.Name" />
-                    <ValidationMessage For="() => Department.Name" />
+                    <label class="form-label fw-bold">Nombre Departamento</label>
+                    <InputText class="form-control" @bind-Value="Department.Name"/>
+                    <ValidationMessage For="()=> Department.Name"/>
                 </div>
                 <div class="mt-2">
-                    <label class="form-label text-bg-info text-white">Nombre del Grupo</label>
+                    <label class="form-label fw-bold">Nombre del Grupo</label>
                     <InputText class="form-control" @bind-Value="Department.GroupName" />
                     <ValidationMessage For="() => Department.GroupName" />
                 </div>
-                <div class="mt-2">
-                    <label class="form-label text-bg-info text-white">Fecha de &Uacute;ltima Modificaci&oacute;n</label>
-                    <input class="form-control" type="datetime-local" @bind="Department.ModifiedDate" disabled/>
-                </div>
-
                 @*Lista de Detalle Empleados*@
-                <div class="mt-2">
-                    <h4 class="form-label text-bg-primary text-white">Lista de Empleados</h4>
+                <div class="mt-2 border border-success p-3 mb-3">
+                    <h4 class="form-label">Lista de Empleados</h4>
                     <div class="row mt-2">
                         <div class="col-5">
-                            <label class="form-label">Seleccione un Empleado</label>
+                            <label class="form-label fw-bold">Seleccione un Empleado</label>
                             <InputSelect class="form-select" @bind-Value="EmployeeDepartmentHistory.BusinessEntityId">
                                 <option value=0>Seleccione un Empleado</option>
-                                @foreach (var p in PersonList)
+                                @foreach (var p in EmployeesList)
                                 {
-                                    <option value="@p.BusinessEntityId">@p.FirstName @p.LastName</option>
+                                    <option value="@p.BusinessEntityId">@p.BusinessEntity.FirstName @p.BusinessEntity.LastName</option>
                                 }
                             </InputSelect>
-                            <label class="text-danger">@businessEntityIdNullMessage</label>
                         </div>
                         <div class="col-5">
-                            <label class="form-label">Seleccione un Horario</label>
+                            <label class="form-label fw-bold">Seleccione un Horario</label>
                             <InputSelect class="form-select" @bind-Value="EmployeeDepartmentHistory.ShiftId">
                                 <option value=0>Seleccione un Horario</option>
                                 @foreach (var s in ShifList)
@@ -57,34 +51,37 @@
                                     <option value="@s.ShiftId">@s.Name @s.StartTime - @s.EndTime</option>
                                 }
                             </InputSelect>
-                            <label class="text-danger">@shiftIdNullMessage</label>
                         </div>
                         <div class="col-2">
-                            <button type="button" class="btn btn-outline-primary d-flex justify-content-center gap-2" @onclick="GuardarDetalle">
-                                <i class="bi bi-plus-square-fill"></i>
+                            <label class="form-label fw-bold"></label>
+                            <button type="button" class="btn btn-primary d-flex justify-content-center gap-2 mt-2" @onclick="GuardarDetalle">
+                                <i class="bi bi-plus-square"></i>
                                 <span>Agregar</span>
                             </button>
                         </div>
                     </div>
                     <div class="row">
                         <div class="col-5">
-                            <label class="form-label">Seleccione una Fecha de Inicio</label>
+                            <label class="form-label fw-bold">Seleccione una Fecha de Inicio</label>
                             <InputDate class="form-control" @bind-Value="EmployeeDepartmentHistory.StartDate" />
-                            <label class="text-danger">@startDateNullMessage</label>
                         </div>
                         <div class="col-5">
-                            <label class="form-label">Seleccione una Fecha de Fin</label>
+                            <label class="form-label fw-bold">Seleccione una Fecha de Fin</label>
                             <InputDate class="form-control" @bind-Value="EmployeeDepartmentHistory.EndDate" />
-                            <label class="text-danger">@endDateMessage</label>
                         </div>
                     </div>
+                    @if(!string.IsNullOrWhiteSpace(message)){
+                        <div class="alert alert-danger">
+                            @message
+                        </div>
+                    }
                     <div class="table-responsive mt-2">
-                        <QuickGrid Items="Department.EmployeeDepartmentHistories.AsQueryable()" Class="table table-bordered">
+                        <QuickGrid Items="Department.EmployeeDepartmentHistories.AsQueryable()" Class="table table-striped table-bordered">
                             <TemplateColumn Context="per" Title="Empleado" Sortable="true">
                                 @{
-                                    var person = PersonList?.FirstOrDefault(p => p.BusinessEntityId == per.BusinessEntityId);
+                                    var person = EmployeesList?.FirstOrDefault(p => p.BusinessEntityId == per.BusinessEntityId);
                                 }
-                                @(person != null ? $"{person.FirstName}" + " " + $"{person?.LastName}" : "N/A")
+                                @(person != null ? $"{person.BusinessEntity.FirstName}" + " " + $"{person.BusinessEntity.LastName}" : "N/A")
                             </TemplateColumn>
                             <TemplateColumn Context="st" Title="Tanda-Horario" Sortable="true">
                                 @{
@@ -100,12 +97,12 @@
                 </div>
             </div>
             <div class="card-footer d-flex justify-content-center gap-2">
-                <a href="Department/Index" class="btn btn-outline-secondary d-flex gap-1">
+                <a href="Department/Index" class="btn btn-secondary d-flex gap-1">
                     <i class="bi bi-arrow-left"></i>
                     <span>Volver</span>
                 </a>
-                <button class="btn btn-outline-primary bi bi-plus-square-fill">Guardar</button>
-                <button type="button" class="btn btn-outline-danger bi bi-trash" @onclick="Eliminar">Eliminar</button>
+                <button class="btn btn-primary bi bi-floppy">Guardar</button>
+                <button type="button" class="btn btn-danger bi bi-trash" @onclick="Eliminar">Eliminar</button>
             </div>
         </div>
     </div>
@@ -116,29 +113,59 @@
     public int DepartmentId { get; set; }
     private Department Department = new Department();
     private EmployeeDepartmentHistory EmployeeDepartmentHistory = new EmployeeDepartmentHistory();
-    private List<Person> PersonList = new List<Person>();
     private List<Shift> ShifList = new List<Shift>();
     private List<Employee> EmployeesList = new List<Employee>();
     private PaginationState pages = new PaginationState { ItemsPerPage = 5 };
-    private string businessEntityIdNullMessage = string.Empty, shiftIdNullMessage = string.Empty, startDateNullMessage = string.Empty, endDateMessage = string.Empty;
+    private string message = string.Empty;
 
     protected override async Task OnInitializedAsync()
     {
         Department = await departmentService.Buscar((short)DepartmentId);
-        PersonList = await personService.GetList(p => true);
         EmployeesList = await employeeService.GetList(p => true);
         ShifList = await shiftService.GetList(s => true);
-        PersonList = PersonList.Where(p => EmployeesList.Any(e => e.BusinessEntityId == p.BusinessEntityId)).ToList();
     }
 
     private async Task GuardarDetalle()
     {
-        if (setValidaciones())
-            return;
-        var isShiftProblem = await departmentService.GetList(e => e.DepartmentId != EmployeeDepartmentHistory.DepartmentId && (e.EmployeeDepartmentHistories.Any(u => u.BusinessEntityId == EmployeeDepartmentHistory.BusinessEntityId && u.ShiftId == EmployeeDepartmentHistory.ShiftId)));
-        if(isShiftProblem.Any())
+        if (EmployeeDepartmentHistory.BusinessEntityId == 0)
         {
-            toastService.ShowWarning($"{PersonList.FirstOrDefault(p => p.BusinessEntityId == EmployeeDepartmentHistory.BusinessEntityId).FirstName} {PersonList.FirstOrDefault(p => p.BusinessEntityId == EmployeeDepartmentHistory.BusinessEntityId).LastName} ya está en el Departamento {isShiftProblem[0].Name} con el mismo Horario");
+            message = "Debe de Seleccionar un Empleado";
+            return;
+        }
+        else if (EmployeeDepartmentHistory.ShiftId == 0)
+        {
+            message = "Debe de Seleccionar un Horario";
+            return;
+        }
+        else if (!EmployeeDepartmentHistory.StartDate.HasValue)
+        {
+            message = "Debe de Seleccionar una Fecha de Inicio de Estadía del Empleado";
+            return;
+        }
+        else if (!EmployeeDepartmentHistory.EndDate.HasValue)
+        {
+            message = "Debe de Seleccionar una Fecha Final de Estadía del Empleado";
+            return;
+        }
+        else if (EmployeeDepartmentHistory.StartDate >= EmployeeDepartmentHistory.EndDate)
+        {
+            message = "Fecha de Inicio de Estadía no debe ser mayor o igual a la Fecha Final de Estadía";
+            return;
+        }
+        else if (EmployeeDepartmentHistory.EndDate <= EmployeeDepartmentHistory.StartDate)
+        {
+            message = "Fecha Final de Estadía no debe ser menor o igual a la Fecha de Inicio de Estadía";
+            return;
+        }
+        else if (Department.EmployeeDepartmentHistories.Any(e => e.BusinessEntityId == EmployeeDepartmentHistory.BusinessEntityId))
+        {
+            toastService.ShowWarning($"Empleado ya está en la lista.");
+            return;
+        }
+        var isShiftProblem = await departmentService.GetList(e => e.DepartmentId != EmployeeDepartmentHistory.DepartmentId && (e.EmployeeDepartmentHistories.Any(u => u.BusinessEntityId == EmployeeDepartmentHistory.BusinessEntityId && u.ShiftId == EmployeeDepartmentHistory.ShiftId)));
+        if (isShiftProblem.Any())
+        {
+            toastService.ShowWarning($"{EmployeesList.FirstOrDefault(p => p.BusinessEntityId == EmployeeDepartmentHistory.BusinessEntityId).BusinessEntity.FirstName} {EmployeesList.FirstOrDefault(p => p.BusinessEntityId == EmployeeDepartmentHistory.BusinessEntityId).BusinessEntity.LastName} ya está en el Departamento {isShiftProblem[0].Name} con el mismo Horario");
             return;
         }
         Department.EmployeeDepartmentHistories.Add(
@@ -150,7 +177,7 @@
                 EndDate = EmployeeDepartmentHistory.EndDate,
             }
         );
-        toastService.ShowSuccess($"{PersonList.FirstOrDefault(p => p.BusinessEntityId == EmployeeDepartmentHistory.BusinessEntityId).FirstName} {PersonList.FirstOrDefault(p => p.BusinessEntityId == EmployeeDepartmentHistory.BusinessEntityId).LastName} se añadió correctamente");
+        toastService.ShowSuccess($"{EmployeesList.FirstOrDefault(p => p.BusinessEntityId == EmployeeDepartmentHistory.BusinessEntityId)?.BusinessEntity.FirstName} {EmployeesList.FirstOrDefault(p => p.BusinessEntityId == EmployeeDepartmentHistory.BusinessEntityId).BusinessEntity.LastName} se añadió correctamente");
         EmployeeDepartmentHistory = new EmployeeDepartmentHistory();
     }
 
@@ -190,58 +217,5 @@
             toastService.ShowSuccess($"Departamento {Department.Name} actualizado correctamente.");
             navigationManager.NavigateTo("Department/Index");
         }
-    }
-
-    bool setValidaciones()
-    {
-        bool isProblem = false;
-        if (EmployeeDepartmentHistory.BusinessEntityId == 0)
-        {
-            businessEntityIdNullMessage = "Debe de Seleccionar un Empleado";
-            isProblem = true;
-        }
-        else
-            businessEntityIdNullMessage = "";
-        if (EmployeeDepartmentHistory.ShiftId == 0)
-        {
-            shiftIdNullMessage = "Debe de Seleccionar un Horario";
-            isProblem = true;
-        }
-        else
-            shiftIdNullMessage = "";
-        if (!EmployeeDepartmentHistory.StartDate.HasValue)
-        {
-            startDateNullMessage = "Debe de Seleccionar una Fecha de Inicio de Estadía del Empleado";
-            isProblem = true;
-        }
-        else
-            startDateNullMessage = "";
-        if (!EmployeeDepartmentHistory.EndDate.HasValue)
-        {
-            endDateMessage = "Debe de Seleccionar una Fecha Final de Estadía del Empleado";
-            isProblem = true;
-        }
-        else
-            endDateMessage = "";
-        if (EmployeeDepartmentHistory.StartDate >= EmployeeDepartmentHistory.EndDate)
-        {
-            startDateNullMessage = "Fecha de Inicio de Estadía no debe ser mayor o igual a la Fecha Final de Estadía";
-            isProblem = true;
-        }
-        else
-            startDateNullMessage = "";
-        if (EmployeeDepartmentHistory.EndDate <= EmployeeDepartmentHistory.StartDate)
-        {
-            endDateMessage = "Fecha Final de Estadía no debe ser menor o igual a la Fecha de Inicio de Estadía";
-            isProblem = true;
-        }
-        else
-            endDateMessage = "";
-        if (Department.EmployeeDepartmentHistories.Any(e => e.BusinessEntityId == EmployeeDepartmentHistory.BusinessEntityId))
-        {
-            toastService.ShowWarning($"{PersonList.FirstOrDefault(p => p.BusinessEntityId == EmployeeDepartmentHistory.BusinessEntityId).FirstName} {PersonList.FirstOrDefault(p => p.BusinessEntityId == EmployeeDepartmentHistory.BusinessEntityId).LastName} ya está en la lista.");
-            isProblem = true;
-        }
-        return isProblem;
     }
 }
