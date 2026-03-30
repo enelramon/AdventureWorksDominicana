@@ -1,0 +1,154 @@
+﻿@page "/Product/Index"
+
+@inject NavigationManager navigationManager
+@inject ProductService productService
+@rendermode InteractiveServer
+
+<PageTitle>Product</PageTitle>
+
+<div class="container-fluid">
+    <div class="card shadow-lg">
+        <div class="card-header d-flex justify-content-between align-content-center">
+            <h3 class="mb-0">Product</h3>
+            <a class="btn btn-primary" href="/Product/Create"><i class="bi bi-plus-square"></i> Crear</a>
+        </div>
+
+        <div class="card-body">
+            <div class="mb-3">
+
+                <div class="row">
+                    <div class="col-3">
+                        <label class="form-label">Filtro:</label>
+                    </div>
+                    <div class="col-3">
+                        <label class="form-label">Buscar:</label>
+                    </div>
+                    <div class="col-2">
+                        <label class="form-label">Desde</label>
+                    </div>
+                    <div class="col-3">
+                        <label class="form-label">Hasta</label>
+                    </div>
+                </div>
+
+                <div class="row">
+
+                    <div class="col-3">
+                        <InputSelect class="form-select" @bind-Value="Filtros">
+                            <option disabled value="">Filtrar...</option>
+                            <option value="Id">ID</option>
+                            <option value="Nombre">Nombre</option>
+                            <option value="Numero">Número producto</option>
+                        </InputSelect>
+                    </div>
+
+                    <div class="col-3">
+                        <div class="input-group">
+                            <InputText class="form-control" @bind-Value="ValorFiltro" placeholder="Buscar..." />
+                            <button class="btn btn-primary" @onclick="Buscar">
+                                <i class="bi bi-search"></i>
+                            </button>
+                            <button type="button" class="btn btn-outline-primary bi bi-arrow-counterclockwise" @onclick="Restablecer"></button>
+                        </div>
+                    </div>
+                    <div class="col-2">
+                        <InputDate class="form-control" @bind-Value="Desde" />
+                    </div>
+                    <div class="col-2">
+                        <InputDate class="form-control" @bind-Value="Hasta" />
+                    </div>
+                </div>
+            </div>
+
+            <div class="table-responsive">
+                <QuickGrid Items="ListaProductos" Class="table table-striped table-bordered table-hover">
+
+                    <PropertyColumn Property="@(e => e.ProductId)" Sortable="true" Title="ID" />
+                    <PropertyColumn Property="@(e => e.Name)" Sortable="true" Title="Nombre" />
+                    <PropertyColumn Property="@(e => e.ProductNumber)" Sortable="true" Title="Número" />
+
+                    <TemplateColumn Title="Precio lista">
+                        @context.ListPrice.ToString("C2")
+                    </TemplateColumn>
+
+                    <TemplateColumn Title="Subcategoría">
+                        @(context.ProductSubcategory?.Name ?? "—")
+                    </TemplateColumn>
+
+                    <PropertyColumn Property="@(e => e.ModifiedDate)" Format="dd/MM/yyyy" Title="Fecha de modificación" Sortable="true" />
+
+                    <TemplateColumn Class="text-center align-middle" Title="Acción">
+                        <a class="btn btn-outline-primary btn-" href="/Product/Edit/@context.ProductId">
+                            <i class="bi bi-pencil-square"></i> Modificar
+                        </a>
+                    </TemplateColumn>
+
+                </QuickGrid>
+            </div>
+        </div>
+
+        <div class="card-footer text-end">
+            <strong>Conteo Registros: </strong> @ListaProductos.Count()
+        </div>
+    </div>
+</div>
+
+@code {
+    public IQueryable<Product> ListaProductos { get; set; } = Enumerable.Empty<Product>().AsQueryable();
+    public string Filtros { get; set; } = string.Empty;
+    public string ValorFiltro { get; set; } = string.Empty;
+    public DateTime? Desde { get; set; }
+    public DateTime? Hasta { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await Buscar();
+    }
+
+    public async Task Buscar()
+    {
+        List<Product> listaResultante;
+
+        if (!string.IsNullOrWhiteSpace(ValorFiltro))
+        {
+            if (Filtros == "Id" && int.TryParse(ValorFiltro, out int id))
+            {
+                listaResultante = await productService.GetList(x => x.ProductId == id);
+            }
+            else if (Filtros == "Nombre")
+            {
+                listaResultante = await productService.GetList(
+                    x => x.Name.ToLower().Contains(ValorFiltro.ToLower()));
+            }
+            else if (Filtros == "Numero")
+            {
+                listaResultante = await productService.GetList(
+                    x => x.ProductNumber.ToLower().Contains(ValorFiltro.ToLower()));
+            }
+            else
+            {
+                listaResultante = await productService.GetList(x => true);
+            }
+        }
+        else
+        {
+            listaResultante = await productService.GetList(x => true);
+        }
+
+        if (Desde.HasValue)
+            listaResultante = listaResultante.Where(x => x.ModifiedDate >= Desde.Value).ToList();
+        if (Hasta.HasValue)
+            listaResultante = listaResultante.Where(x => x.ModifiedDate <= Hasta.Value).ToList();
+
+        ListaProductos = listaResultante.AsQueryable();
+    }
+
+    private async Task Restablecer()
+    {
+        Desde = null;
+        Hasta = null;
+        ValorFiltro = string.Empty;
+        Filtros = string.Empty;
+        await Buscar();
+    }
+}
