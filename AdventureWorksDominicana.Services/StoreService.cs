@@ -3,6 +3,7 @@ using AdventureWorksDominicana.Data.Models;
 using Aplicada1.Core;
 using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
+using System.Xml;
 
 namespace AdventureWorksDominicana.Services;
 
@@ -32,10 +33,39 @@ public class StoreService(IDbContextFactory<Contexto> DbFactory) : IService<Stor
 
         if (entidad.SalesPerson != null)
         {
-            contexto.Attach(entidad.SalesPerson);
             contexto.Entry(entidad.SalesPerson).State = EntityState.Unchanged;
         }
+        if (entidad.BusinessEntity == null && entidad.BusinessEntityId == 0)
+        {
+            var newBe = new BusinessEntity
+            {
+                Rowguid = Guid.NewGuid(),
+                ModifiedDate = DateTime.UtcNow
+            };
 
+            contexto.BusinessEntities.Add(newBe);
+            await contexto.SaveChangesAsync();
+
+            entidad.BusinessEntityId = newBe.BusinessEntityId;
+            entidad.BusinessEntity = newBe;
+        }
+        if (string.IsNullOrWhiteSpace(entidad.Demographics))
+        {
+            entidad.Demographics = null; 
+        }
+        else
+        {
+            try
+            {
+                var doc = new XmlDocument();
+                doc.LoadXml(entidad.Demographics);
+                entidad.Demographics = doc.OuterXml;
+            }
+            catch (XmlException)
+            {
+                throw new ArgumentException("Demographics must be well-formed XML with a single root element.");
+            }
+        }
         contexto.Stores.Add(entidad);
         return await contexto.SaveChangesAsync() > 0;
     }
@@ -43,11 +73,40 @@ public class StoreService(IDbContextFactory<Contexto> DbFactory) : IService<Stor
     private async Task<bool> Modificar(Store entidad)
     {
         await using var contexto = await DbFactory.CreateDbContextAsync();
-
         if (entidad.SalesPerson != null)
         {
-            contexto.Attach(entidad.SalesPerson);
             contexto.Entry(entidad.SalesPerson).State = EntityState.Unchanged;
+        }
+        if (entidad.BusinessEntity == null && entidad.BusinessEntityId == 0)
+        {
+            var newBe = new BusinessEntity
+            {
+                Rowguid = Guid.NewGuid(),
+                ModifiedDate = DateTime.UtcNow
+            };
+
+            contexto.BusinessEntities.Add(newBe);
+            await contexto.SaveChangesAsync();
+
+            entidad.BusinessEntityId = newBe.BusinessEntityId;
+            entidad.BusinessEntity = newBe;
+        }
+        if (string.IsNullOrWhiteSpace(entidad.Demographics))
+        {
+            entidad.Demographics = null;
+        }
+        else
+        {
+            try
+            {
+                var doc = new XmlDocument();
+                doc.LoadXml(entidad.Demographics);
+                entidad.Demographics = doc.OuterXml;
+            }
+            catch (XmlException)
+            {
+                throw new ArgumentException("Demographics must be well-formed XML with a single root element.");
+            }
         }
 
         contexto.Stores.Update(entidad);
