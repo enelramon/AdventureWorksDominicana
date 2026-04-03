@@ -25,7 +25,7 @@ public partial class ContactType
     /// Contact type description.
     /// </summary>
     [Required(ErrorMessage = "El nombre es obligatorio.")]
-    [StringLength(50, ErrorMessage = "El nombre debe contener entre 3 y 50 caracteres.")]
+    [StringLength(50, MinimumLength = 2, ErrorMessage = "El nombre debe contener entre 2 y 50 caracteres.")]
     public string Name { get; set; } = null!;
 
     /// <summary>
