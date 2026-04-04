@@ -1,0 +1,138 @@
+﻿@page "/BillOfMaterial/Edit/{BomId:int}"
+@rendermode InteractiveServer
+@inject BillOfMaterialService BOMService
+@inject ProductService ProductService
+@inject UnitMeasureService UnitMeasureService
+@inject NavigationManager NavigationManager
+@inject ToastService Toast
+
+<PageTitle>Editar BOM</PageTitle>
+
+<div class="container">
+	<div class="card shadow-lg">
+		<div class="card-header">
+			<h5 class="card-title text-black mb-0">Editar Lista de Materiales</h5>
+		</div>
+        
+		<div class="card-body">
+			<EditForm Model="@bom" OnValidSubmit="Guardar">
+				<DataAnnotationsValidator />
+				<ValidationSummary class="text-danger" />
+
+				<div class="row mb-3">
+					<div class="col-md-6">
+						<label class="form-label fw-bold">Producto Ensamblaje (Padre)</label>
+						<InputSelect class="form-select" @bind-Value="bom.ProductAssemblyId">
+							<option value="">Nivel Superior </option>
+							@foreach (var p in productos)
+							{
+								<option value="@p.ProductId">@p.Name</option>
+							}
+						</InputSelect>
+					</div>
+                        
+					<div class="col-md-6">
+						<label class="form-label fw-bold">Componente</label>
+						<InputSelect class="form-select" @bind-Value="bom.ComponentId" disabled>
+							@foreach (var p in productos)
+							{
+								<option value="@p.ProductId">@p.Name</option>
+							}
+						</InputSelect>
+						<small class="text-muted">El componente base no se puede alterar.</small>
+					</div>
+				</div>
+
+				<div class="row mb-3">
+					<div class="col-md-6">
+						<label class="form-label fw-bold">Fecha de Inicio *</label>
+						<InputDate class="form-control" @bind-Value="bom.StartDate" />
+					</div>
+                        
+					<div class="col-md-6">
+						<label class="form-label fw-bold">Fecha de Fin</label>
+						<InputDate class="form-control" @bind-Value="bom.EndDate" />
+					</div>
+				</div>
+
+				<div class="row mb-3">
+					<div class="col-md-4">
+						<label class="form-label fw-bold">Nivel BOM (Profundidad)</label>
+						<InputNumber class="form-control" @bind-Value="bom.Bomlevel" />
+					</div>
+                        
+					<div class="col-md-4">
+						<label class="form-label fw-bold">Cantidad por Ensamblaje *</label>
+						<InputNumber class="form-control" @bind-Value="bom.PerAssemblyQty" />
+					</div>
+
+					<div class="col-md-4">
+						<label class="form-label fw-bold">Código Unidad Medida *</label>
+						<InputSelect class="form-select" @bind-Value="bom.UnitMeasureCode">
+							@foreach (var u in unidades)
+							{
+								<option value="@u.UnitMeasureCode">@u.UnitMeasureCode - @u.Name</option>
+							}
+						</InputSelect>
+					</div>
+				</div>
+
+				<div class="mt-4">
+					<button type="submit" class="btn btn-primary">
+						<i class="bi bi-floppy"></i> Modificar
+					</button>
+					<button type="button" class="btn btn-secondary" @onclick="Volver">
+						<i class="bi bi-arrow-left"></i> Volver
+					</button>
+				</div>
+			</EditForm>
+		</div>
+	</div>
+</div>
+
+@code {
+	[Parameter]
+	public int BomId { get; set; }
+
+	private BillOfMaterial? bom;
+	private List<Product>? productos;
+	private List<UnitMeasure>? unidades;
+
+	protected override async Task OnInitializedAsync()
+	{
+		var bomTask = BOMService.Buscar(BomId);
+		var prodTask = ProductService.GetList(p => true);
+		var unitTask = UnitMeasureService.GetList(u => true);
+
+		await Task.WhenAll(bomTask, prodTask, unitTask);
+
+		bom = bomTask.Result;
+		productos = prodTask.Result;
+		unidades = unitTask.Result;
+        
+		if (bom == null)
+		{
+			Toast.ShowError("No se encontró el registro.");
+			Volver();
+		}
+	}
+
+	private async Task Guardar()
+	{
+		if (bom != null)
+		{
+			var guardo = await BOMService.Guardar(bom);
+            
+			if (guardo)
+			{
+				Toast.ShowSuccess("Registro actualizado correctamente.");
+				Volver();
+			}
+			else
+			{
+				Toast.ShowError("Error al actualizar el registro.");
+			}
+		}
+	}
+	private void Volver() => NavigationManager.NavigateTo("/BillOfMaterial/Index");
+}

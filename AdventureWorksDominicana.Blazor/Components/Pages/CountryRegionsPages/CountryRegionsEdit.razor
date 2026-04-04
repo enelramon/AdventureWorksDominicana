@@ -14,7 +14,7 @@
             <div class="card-body">
                 <div class="mb-3">
                     <label class="form-label"><strong>C&oacute;digo de pa&iacute;s</strong></label>
-                    <input class="form-control" type="text" maxlength="3" @bind-value="CountryRegion.CountryRegionCode" placeholder="Escriba el codigo del pais/region..." />
+                    <input class="form-control" type="text" maxlength="3" disabled readonly @bind-value="CountryRegion.CountryRegionCode" placeholder="Escriba el codigo del pais/region..." />
                     <ValidationMessage For="(() => CountryRegion.CountryRegionCode)" />
                 </div>
                 <div class="mb-3">
@@ -22,15 +22,11 @@
                     <input class="form-control" type="text" maxlength="100" @bind-value="CountryRegion.Name" placeholder="Escriba el nombre del pais/region..." />
                     <ValidationMessage For="(() => CountryRegion.Name)" />
                 </div>
-                <div class="mb-3">
-                    <label class="form-label"><strong>Fecha de modificaci&oacute;n</strong></label>
-                    <input class="form-control" type="datetime-local" @bind-value="CountryRegion.ModifiedDate" disabled />
-                    <ValidationMessage For="(() => CountryRegion.ModifiedDate)" />
-                </div>
             </div>
             <div class="card-footer text-center">
                 <a class="btn btn-secondary bi bi-arrow-left" href="/CountryRegions/Index"> Volver</a>
                 <button class="btn btn-primary bi bi-floppy" type="submit"> Modificar</button>
+                <button class="btn btn-danger bi bi-trash" type="button" @onclick="Eliminar"> Eliminar</button>
             </div>
         </div>
     </div>
@@ -40,24 +36,40 @@
 @code {
     [Parameter]
     public string? CountryCode { get; set; } = string.Empty;
+    public string? NombrePasado { get; set; } = string.Empty;
 
     public CountryRegion CountryRegion { get; set; } = new CountryRegion();
 
     protected override async Task OnInitializedAsync()
     {
-        CountryRegion = await countryRegionsService.Buscar(CountryCode);
-        CountryRegion.ModifiedDate = DateTime.Now;
+        CountryRegion = await countryRegionsService.Buscar(CountryCode) ?? null;
+        if (CountryRegion == null)
+        {
+            toastService.ShowError("El pais/region no existe.");
+            navigationManager.NavigateTo("/CountryRegions/Index");
+            return;
+        }
+        NombrePasado = CountryRegion.Name;
     }
 
     public async Task Modificar()
     {
-        var countryRepetido = await countryRegionsService.Buscar(CountryRegion.CountryRegionCode);
+        var countryRepetido = await countryRegionsService.BuscarDuplicado(CountryRegion.CountryRegionCode, CountryCode ?? "");
         if (countryRepetido != null)
         {
             toastService.ShowError("Ya existe un pais/region con este codigo: " + countryRepetido.CountryRegionCode + "; " + countryRepetido.Name);
             return;
         }
-        Console.WriteLine("\nCodigo: " + CountryRegion.CountryRegionCode + "; Nombre: " + CountryRegion.Name + "FechaMod: " + CountryRegion.ModifiedDate.ToString() + "\n");
+
+        var nombreRepetido = await countryRegionsService.GetList(c => c.Name.Equals(CountryRegion.Name) && !c.Name.ToLower().Equals(NombrePasado));
+        if (nombreRepetido.Any())
+        {
+            toastService.ShowError("El nombre " + CountryRegion.Name + " ya está en uso");
+            return;
+        }
+
+        CountryRegion.CountryRegionCode = CountryRegion.CountryRegionCode.ToUpper();
+        CountryRegion.ModifiedDate = DateTime.Now;
         bool modificado = await countryRegionsService.Guardar(CountryRegion);
         if (modificado)
         {
@@ -67,6 +79,23 @@
         else
         {
             toastService.ShowError("No se pudo modificar el country region correctamente.");
+        }
+    }
+
+    public async Task Eliminar()
+    {
+        try
+        {
+            bool eliminado = await countryRegionsService.Eliminar(CountryRegion.CountryRegionCode);
+            if (eliminado)
+            {
+                toastService.ShowSuccess("País/región eliminado correctamente");
+                navigationManager.NavigateTo("/CountryRegions/Index");
+            }
+        }
+        catch (InvalidOperationException ex)
+        {
+            toastService.ShowError(ex.Message);
         }
     }
 }

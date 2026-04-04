@@ -1,10 +1,8 @@
 ﻿@inherits LayoutComponentBase
 
+<Toasts class="p-3" AutoHide="true" StackLength="3" Placement="ToastsPlacement.TopRight" />
 
 <div class="page">
-    <BlazoredToasts Position="Blazored.Toast.Configuration.ToastPosition.TopRight"
-                    Timeout="5"
-                    @rendermode="InteractiveServer" />
     <div class="sidebar">
         <NavMenu />
     </div>

@@ -55,6 +55,19 @@ public class PhoneNumberTypeService(IDbContextFactory<Contexto> DbFactory) : ISe
     public async Task<bool> Eliminar(int id)
     {
         await using var contexto = await DbFactory.CreateDbContextAsync();
+
+        var existe = await contexto.PhoneNumberTypes.AnyAsync(p => p.PhoneNumberTypeId == id);
+        if (!existe)
+        {
+            throw new InvalidOperationException("No se puede eliminar: el tipo de numeros de telefono no existe");
+        }
+
+        var tienePersonPhones = await contexto.PersonPhones.AnyAsync(p => p.PhoneNumberTypeId == id);
+        if (tienePersonPhones)
+        {
+            throw new InvalidOperationException("No se puede eliminar: el tipo de numeros de telefono tiene numeros asignados");
+        }
+
         return await contexto.PhoneNumberTypes.Where(p => p.PhoneNumberTypeId == id).ExecuteDeleteAsync() > 0;
     }
 

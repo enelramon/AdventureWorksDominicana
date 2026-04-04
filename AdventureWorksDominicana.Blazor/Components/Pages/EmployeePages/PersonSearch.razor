@@ -1,0 +1,84 @@
+﻿@inject PersonService personService;
+
+<div class="mb-3">
+    <input type="text" 
+           class="form-control" 
+           placeholder="Escriba nombre o apellido..."
+           @bind="nombre"
+           @bind:event="oninput"
+           @bind:after="BuscarPersonas" />
+</div>
+
+@* Resultados *@
+@if (resultados.Any())
+{
+    <div class="list-group mt-2">
+        @foreach (var persona in resultados)
+        {
+            <button type="button" 
+                    class="list-group-item list-group-item-action"
+                    @onclick="() => SeleccionarPersona(persona)">
+                <strong>@persona.FirstName @persona.LastName</strong>
+                <small class="text-muted d-block">ID: @persona.BusinessEntityId</small>
+            </button>
+        }
+    </div>
+}
+
+@* Persona seleccionada *@
+@if (personaSeleccionada != null)
+{
+    <div class="alert alert-success mt-3">
+        <strong>Persona seleccionada:</strong> @personaSeleccionada.FirstName @personaSeleccionada.LastName (Id: @personaSeleccionada.BusinessEntityId)
+        <button class="btn btn-sm btn-link" type="button" @onclick="LimpiarSeleccion">[Cambiar]</button>
+    </div>
+}
+
+@code {
+    [Parameter]
+    public int? PersonaId { get; set; }
+
+    [Parameter]
+    public EventCallback<int?> PersonaIdChanged { get; set; }
+
+    private string nombre = "";
+    private List<Person> resultados = new();
+    private Person? personaSeleccionada = null;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (PersonaId.HasValue)
+        {
+            Person persona = await personService.Buscar(PersonaId.Value);
+            SeleccionarPersona(persona);
+        }
+    }
+
+    private async Task BuscarPersonas()
+    {
+        if (string.IsNullOrWhiteSpace(nombre))
+        {
+            resultados.Clear();
+            return;
+        }
+        resultados = await personService.BuscarPorNombre(nombre);
+    }
+
+    private void SeleccionarPersona(Person persona)
+    {
+        personaSeleccionada = persona;
+        nombre = $"{persona.FirstName} {persona.LastName}";
+        resultados.Clear();
+
+        PersonaId = persona.BusinessEntityId;
+        PersonaIdChanged.InvokeAsync(PersonaId);
+    }
+
+    private void LimpiarSeleccion()
+    {
+        personaSeleccionada = null;
+        nombre = "";
+        PersonaId = null;
+        PersonaIdChanged.InvokeAsync(null);
+    }
+}

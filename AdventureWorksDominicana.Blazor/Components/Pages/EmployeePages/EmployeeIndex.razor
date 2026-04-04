@@ -1,0 +1,141 @@
+﻿@page "/Employee/Index"
+
+@inject EmployeeService employeeService;
+
+<div class="container">
+    <div class="card shadow-lg">
+        <div class="card-header d-flex justify-content-between">
+            <h4>Employees</h4>
+            <a class="btn btn-primary bi bi-plus-square" href="/Employee/Create"> Crear</a>
+        </div>
+        <div class="card-body">
+            @* Encabezados *@
+            <div class="row">
+                <div class="col-3">
+                    <label>Desde:</label>
+                </div>
+                <div class="col-3">
+                    <label>Hasta:</label>
+                </div>
+                <div class="col-3">
+                    <label>Filtro:</label>
+                </div>
+                <div class="col-3">
+                    <label>Buscar:</label>
+                </div>
+            </div>
+
+            @* Inputs *@
+            <div class="row pb-3">
+                <div class="col-3">
+                    <input class="form-control" type="datetime-local" @bind-value="FechaHasta" />
+                </div>
+                <div class="col-3">
+                    <input class="form-control" type="datetime-local" @bind-value="FechaDesde" />
+                </div>
+                <div class="col-3">
+                    <select class="form-select" @bind="Filtro">
+                        <option value="" disabled selected hidden>Seleccione un filtro...</option>
+                        <option value="Nombre">Nombre</option>
+                        <option value="Apellido">Apellido</option>
+                        <option value="Puesto">Puesto</option>
+                    </select>
+                </div>
+                <div class="col-3">
+                    <div class="input-group">
+                        <input class="form-control" type="text" @bind-value="ValorFiltro" placeholder="Buscar..." />
+                        <button class="btn btn-primary bi bi-search" type="button" @onclick="Filtrar"></button>
+                        <button class="btn btn-outline-primary bi bi-arrow-clockwise" type="button" @onclick="Restablecer"></button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="table-responsive">
+                <QuickGrid Class="table table-striped table-bordered table-hover" Pagination="@pages" Items="ListaEmployees.AsQueryable()" ItemKey="@(e => e.BusinessEntityId)">
+                    <PropertyColumn Property="@(e => e.BusinessEntityId)" Sortable="true" Title="Id"></PropertyColumn>
+                    <PropertyColumn Property="@(e => e.BusinessEntity.FirstName)" Sortable="true" Title="Nombre"></PropertyColumn>
+                    <PropertyColumn Property="@(e => e.BusinessEntity.LastName)" Sortable="true" Title="Apellido"></PropertyColumn>
+                    <PropertyColumn Property="@(e => e.JobTitle)" Sortable="true" Title="Puesto"></PropertyColumn>
+                    <PropertyColumn Property="@(e => e.Gender)" Sortable="true" Title="G&eacute;nero"></PropertyColumn>
+                    <PropertyColumn Property="@(e => e.HireDate)" Sortable="true" Format="dd-MM-yyyy" Title="Contrataci&oacute;n"></PropertyColumn>
+                    <TemplateColumn Class="text-center" Context="employee" Title="Estado">
+                        @if (employee.CurrentFlag == true)
+                        {
+                            <span>Activo</span>
+                        }
+                        else
+                        {
+                            <span>Inactivo</span>
+                        }
+                    </TemplateColumn>
+                    <TemplateColumn Class="text-center" Context="options" Title="Acci&oacute;n">
+                        <a href="/Employee/Edit/@options.BusinessEntityId" class="btn btn-outline-primary bi bi-pencil-square"> Modificar</a>
+                    </TemplateColumn>
+                </QuickGrid>
+            </div>
+            @*Pagination*@
+            <Paginator State="@pages" />
+        </div>
+    </div>
+</div>
+
+@code {
+    public List<Employee> ListaEmployees { get; set; } = new List<Employee>();
+    public DateTime? FechaDesde { get; set; }
+    public DateTime? FechaHasta { get; set; }
+    public string Filtro { get; set; } = "";
+    public string ValorFiltro { get; set; } = "";
+    private PaginationState pages = new PaginationState { ItemsPerPage = 5 };
+
+    protected override async Task OnInitializedAsync()
+    {
+        ListaEmployees = await employeeService.GetList(e => e.BusinessEntityId > 0);
+        ListaEmployees = ListaEmployees.OrderByDescending(e => e.ModifiedDate).ToList();
+    }
+
+    public async Task Filtrar()
+    {
+        Expression<Func<Employee, bool>> criterio = e => e.BusinessEntityId > 0;
+
+        if (FechaDesde.HasValue && FechaHasta.HasValue)
+        {
+            DateTime fechaHasta = FechaHasta.Value.Date.AddDays(1).AddTicks(-1);
+            criterio = criterio.And(e => e.ModifiedDate >= FechaDesde.Value && e.ModifiedDate <= fechaHasta);
+        }
+        else if (FechaDesde.HasValue)
+        {
+            criterio = criterio.And(e => e.ModifiedDate >= FechaDesde.Value);
+        }
+        else if (FechaHasta.HasValue)
+        {
+            var fechaHasta = FechaHasta.Value.Date.AddDays(1).AddTicks(-1);
+            criterio = criterio.And(e => e.ModifiedDate <= fechaHasta);
+        }
+        if (Filtro != "" && ValorFiltro != "")
+        {
+            if (Filtro == "Nombre")
+            {
+                criterio = criterio.And(e => e.BusinessEntity.FirstName.Trim().ToLower().Contains(ValorFiltro.ToLower()));
+            }
+            if (Filtro == "Apellido")
+            {
+                criterio = criterio.And(e => e.BusinessEntity.LastName.Trim().ToLower().Contains(ValorFiltro.ToLower()));
+            }
+            if (Filtro == "Puesto")
+            {
+                criterio = criterio.And(e => e.JobTitle.Trim().ToLower().Contains(ValorFiltro.ToLower()));
+            }
+        }
+        ListaEmployees = await employeeService.GetList(criterio);
+        ListaEmployees = ListaEmployees.OrderByDescending(s => s.ModifiedDate).ToList();
+    }
+
+    public async Task Restablecer()
+    {
+        FechaDesde = null;
+        FechaHasta = null;
+        Filtro = "";
+        ValorFiltro = "";
+        await Filtrar();
+    }
+}

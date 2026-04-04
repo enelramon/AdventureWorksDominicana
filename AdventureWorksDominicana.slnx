@@ -1,10 +1,12 @@
 <Solution>
   <Folder Name="/Solution Items/">
     <File Path=".github/workflows/dotnet.yml" />
+    <File Path="README.md" />
   </Folder>
   <Project Path="AdventureWorksDominicana.Api/AdventureWorksDominicana.Api.csproj" />
   <Project Path="AdventureWorksDominicana.Blazor/AdventureWorksDominicana.Blazor.csproj" />
   <Project Path="AdventureWorksDominicana.Data/AdventureWorksDominicana.Data.csproj" />
   <Project Path="AdventureWorksDominicana.Services/AdventureWorksDominicana.Services.csproj" />
   <Project Path="AdventureWorksDominicana.Tests/AdventureWorksDominicana.Tests.csproj" />
+  <Project Path="AdventureWorksIdentity/AdventureWorksIdentity.csproj" Id="174e154b-eb18-49b0-bdcd-660cfce20713" />
 </Solution>

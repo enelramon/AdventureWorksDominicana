@@ -1,0 +1,181 @@
+﻿@page "/Employee/Edit/{EmployeeId:int}"
+
+@inject EmployeeService employeeService;
+@inject ToastService toastService;
+@inject NavigationManager navigationManager;
+
+<EditForm Model="Employee" FormName="crearEmployee" OnValidSubmit="Guardar">
+    <DataAnnotationsValidator />
+
+    <div class="container">
+        <div class="card shadow-lg">
+            <div class="card-header text-center">
+                <h4>Crear Employee</h4>
+            </div>
+            <div class="card-body">
+                <h5 class="pb-3">Datos Personales</h5>
+                @* Persona *@
+                <div class="mb-3">
+                    <label><strong>Persona</strong></label>
+                    <input class="form-control" value="@NombreCompleto" disabled />
+                    <ValidationMessage For="(() => Employee.BusinessEntityId)" />
+                </div>
+
+                @* Numero de cedula *@
+                <div class="mb-3">
+                    <label><strong>N&uacute;mero de c&eacute;dula</strong></label>
+                    <input class="form-control" type="text" maxlength="15" @bind="Employee.NationalIdnumber" placeholder="Escriba el numero de cedula..." />
+                    <ValidationMessage For="(() => Employee.NationalIdnumber)" />
+                </div>
+
+                @* Genero *@
+                <div class="mb-3">
+                    <label><strong>G&eacute;nero</strong></label>
+                    <select class="form-select" @bind="Employee.Gender">
+                        <option value="" selected hidden disabled>Seleccione un g&eacute;nero...</option>
+                        <option value="M">Masculino</option>
+                        <option value="F">Femenino</option>
+                    </select>
+                    <ValidationMessage For="(() => Employee.Gender)" />
+                </div>
+
+                @* Estado civil *@
+                <div class="mb-3">
+                    <label><strong>Estado civil</strong></label>
+                    <select class="form-select" @bind="Employee.MaritalStatus">
+                        <option value="" selected hidden disabled>Seleccione un g&eacute;nero...</option>
+                        <option value="M">Casado/a</option>
+                        <option value="S">Soltero/a</option>
+                    </select>
+                    <ValidationMessage For="(() => Employee.MaritalStatus)" />
+                </div>
+
+                @* Fecha de nacimiento *@
+                <div class="mb-3">
+                    <label><strong>Fecha de nacimiento</strong></label>
+                    <input class="form-control" type="date" @bind="Employee.BirthDate" />
+                    <ValidationMessage For="(() => Employee.BirthDate)" />
+                </div>
+
+                <h5 class="py-3">Datos Laborales</h5>
+                @* Puesto *@
+                <div class="mb-3">
+                    <label><strong>Puesto</strong></label>
+                    <input class="form-control" type="text" maxlength="50" @bind="Employee.JobTitle" placeholder="Ej: Software Enginieer" />
+                    <ValidationMessage For="(() => Employee.JobTitle)" />
+                </div>
+
+                @* LoginId *@
+                <div class="mb-3">
+                    <label><strong>Usuario (Login)</strong></label>
+                    <input class="form-control" type="text" maxlength="256" @bind="Employee.LoginId" placeholder="Ej: dominio\usuario" />
+                    <ValidationMessage For="(() => Employee.LoginId)" />
+                </div>
+
+                @* Fecha de contratacion *@
+                <div class="mb-3">
+                    <label><strong>Fecha de contrataci&oacute;n</strong></label>
+                    <input class="form-control" type="date" @bind="Employee.HireDate" />
+                    <ValidationMessage For="(() => Employee.HireDate)" />
+                </div>
+
+                @* Empleado asalariado *@
+                <div class="mb-3 form-check">
+                    <input class="form-check-input" type="checkbox" @bind="Employee.SalariedFlag" />
+                    <label><strong>¿Empleado asalariado?</strong></label>
+                    <ValidationMessage For="(() => Employee.SalariedFlag)" />
+                </div>
+
+                @* Empleado activo *@
+                <div class="mb-3 form-check">
+                    <input class="form-check-input" type="checkbox" @bind="Employee.CurrentFlag" />
+                    <label><strong>¿Empleado activo?</strong></label>
+                    <ValidationMessage For="(() => Employee.CurrentFlag)" />
+                </div>
+
+                @* Horas de vacaciones *@
+                <div class="mb-3">
+                    <label><strong>Horas Vacaciones</strong></label>
+                    <input class="form-control" type="number" @bind="Employee.VacationHours" />
+                    <ValidationMessage For="(() => Employee.VacationHours)" />
+                </div>
+
+                @* Horas enfermo *@
+                <div class="mb-3">
+                    <label><strong>Horas Enfermedad</strong></label>
+                    <input class="form-control" type="number" @bind="Employee.SickLeaveHours" />
+                    <ValidationMessage For="(() => Employee.SickLeaveHours)" />
+                </div>
+            </div>
+            <div class="card-footer text-center">
+                <a class="btn btn-secondary bi bi-arrow-left" href="/Employee/Index"> Volver</a>
+                <button class="btn btn-primary bi bi-floppy" type="submit"> Modificar</button>
+                <button class="btn btn-danger bi bi-trash" type="button" @onclick="Eliminar"> Eliminar</button>
+            </div>
+        </div>
+    </div>
+</EditForm>
+
+@code {
+    [Parameter]
+    public int EmployeeId { get; set; }
+
+    public Employee Employee { get; set; } = new Employee();
+    private int? SelectedPersonId;
+    private string NombreCompleto = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        Employee = await employeeService.Buscar(EmployeeId);
+        if (Employee == null)
+        {
+            toastService.ShowError("No se pudo encontrar al empleado.");
+            navigationManager.NavigateTo("/Employee/Index");
+        }
+        SelectedPersonId = Employee.BusinessEntityId;
+        NombreCompleto = Employee.BusinessEntity.FirstName + " " + Employee.BusinessEntity.LastName;
+    }
+
+    public async Task Guardar()
+    {
+        if (!SelectedPersonId.HasValue)
+        {
+            toastService.ShowWarning("Elije una persona antes de guardar.");
+            return;
+        }
+
+        var empleado = await employeeService.Buscar(SelectedPersonId.Value, Employee.BusinessEntityId);
+        if (empleado != null)
+        {
+            toastService.ShowWarning("Esta persona ya es empleado, elija otra persona.");
+            return;
+        }
+
+        Employee.BusinessEntityId = SelectedPersonId.Value;
+        Employee.ModifiedDate = DateTime.Now;
+        bool guardado = await employeeService.Guardar(Employee);
+        if (guardado)
+        {
+            toastService.ShowSuccess("El empleado se ha guardado correctamente.");
+            navigationManager.NavigateTo("/Employee/Index");
+        }
+        else
+        {
+            toastService.ShowError("Ha ocurrido un error inesperado al guardar el empleado.");
+        }
+    }
+
+    public async Task Eliminar()
+    {
+        bool eliminado = await employeeService.Eliminar(Employee.BusinessEntityId);
+        if (eliminado)
+        {
+            toastService.ShowSuccess("El empleado se ha eliminado correctamente.");
+            navigationManager.NavigateTo("/Employee/Index");
+        }
+        else
+        {
+            toastService.ShowError("Ha ocurrido un error inesperado al eliminar el empleado.");
+        }
+    }
+}
