@@ -9,6 +9,22 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDbContextFactory<Contexto>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("ConStr")));
 
+builder.Services.AddDbContext<SecurityContext>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("ConStr")));
+
+
+
+builder.Services.AddDefaultIdentity<IdentityUser>(options => {
+    options.SignIn.RequireConfirmedAccount = false;
+    options.Password.RequireDigit = false;
+    options.Password.RequiredLength = 8;
+    options.Password.RequireNonAlphanumeric = false; 
+    options.Password.RequireUppercase = false;
+})
+.AddEntityFrameworkStores<SecurityContext>();
+
+
+
 // Add services to the container.
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
