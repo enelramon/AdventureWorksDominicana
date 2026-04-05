@@ -8,72 +8,87 @@
 
 <div class="nav-scrollable" onclick="document.querySelector('.navbar-toggler').click()">
     <nav class="nav flex-column">
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="SalesOrderHeader/Index" Match="NavLinkMatch.All">
-                <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> SalesOrderHeader
-            </NavLink>
-        </div>
+        
+        @* ========== HOME MODULE ========== *@
         <div class="nav-item px-3">
             <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
-                <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> Home
-            </NavLink>
-        </div>
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="/Product/Index" Match="NavLinkMatch.All">
-                <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> Products
-            </NavLink>
-        </div>
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="Department/Index">
-                <span class="bi bi-plus-square-fill-nav-menu" aria-hidden="true"></span> Departments
-            </NavLink>
-        </div>
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="Currency/Index">
-                <span class="bi bi-plus-square-fill-nav-menu" aria-hidden="true"></span> Currency
-            </NavLink>
-        </div>
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="/ContactType/Index">
-                <span class="bi bi-plus-square-fill-nav-menu" aria-hidden="true"></span> Contact Types
-            </NavLink>
-        </div>
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="/ShipMethods">
-                <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Ship Methods
-            </NavLink>
-        </div>
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="/Vendor/Index">
-                <span class="bi bi-plus-square-fill-nav-menu" aria-hidden="true"></span> Vendors
-            </NavLink>
-        </div>
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="ProductCategory/Index">
-                <span class="bi bi-plus-square-fill-nav-menu" aria-hidden="true"></span> Product Category
-            </NavLink>
-        </div>
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="ProductDescription/Index">
-                <span class="bi bi-plus-square-fill-nav-menu" aria-hidden="true"></span> Product Description
+                <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> <small>Home</small>
             </NavLink>
         </div>
 
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="/PhoneNumberType/Index">
-                <span class="bi bi-plus-square-fill-nav-menu" aria-hidden="true"></span> Phone Number Types
-            </NavLink>
-        </div>
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="/ShoppingCartItem/Index">
-                <span class="bi bi-plus-square-fill-nav-menu" aria-hidden="true"></span> Shopping Cart Item
-            </NavLink>
+        @* ========== SALES MODULE ========== *@
+        <div class="accordion px-3 nav-item" id="accordionSales">
+            <div class="accordion-item bg-transparent border-0">
+                <div class="accordion-header">
+                    <button class="accordion-button collapsed bg-transparent px-3" type="button" data-bs-toggle="collapse" data-bs-target="#collapseSales">
+                        <span class="bi bi-cart-fill-nav-menu"></span> <small>Sales</small>
+                    </button>
+                </div>
+                <div id="collapseSales" class="accordion-collapse collapse" data-bs-parent="#accordionSales">
+                    <div class="accordion-body p-0 ps-3">
+                        <div class="nav-item pt-2">
+                            <NavLink class="nav-link" href="/SalesOrderHeader/Index">
+                                <span class="bi bi-receipt-nav-menu"></span> <small>Sales Orders</small>
+                            </NavLink>
+                        </div>
+                        <div class="nav-item">
+                            <NavLink class="nav-link" href="/SalesTerritory/Index">
+                                <span class="bi bi-map-fill-nav-menu"></span> <small>Sales Territories</small>
+                            </NavLink>
+                        </div>
+                        <div class="nav-item">
+                            <NavLink class="nav-link" href="/Currency/Index">
+                                <span class="bi bi-currency-dollar-nav-menu"></span> <small>Currencies</small>
+                            </NavLink>
+                        </div>
+                        <div class="nav-item">
+                            <NavLink class="nav-link" href="/ShoppingCartItem/Index">
+                                <span class="bi bi-cart-plus-nav-menu"></span> <small>Shopping Cart</small>
+                            </NavLink>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
 
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="/Culture/Index">
-                <span class="bi bi-plus-square-fill-nav-menu" aria-hidden="true"></span> Culture
-            </NavLink>
+        @* ========== PRODUCTS MODULE ========== *@
+        <div class="accordion px-3 nav-item" id="accordionProducts">
+            <div class="accordion-item bg-transparent border-0">
+                <div class="accordion-header">
+                    <button class="accordion-button collapsed bg-transparent px-3" type="button" data-bs-toggle="collapse" data-bs-target="#collapseProducts">
+                        <span class="bi bi-bicycle-nav-menu"></span> <small>Products</small>
+                    </button>
+                </div>
+                <div id="collapseProducts" class="accordion-collapse collapse" data-bs-parent="#accordionProducts">
+                    <div class="accordion-body p-0 ps-3">
+                        <div class="nav-item pt-2">
+                            <NavLink class="nav-link" href="/Product/Index">
+                                <span class="bi bi-box-seam-nav-menu"></span> <small>Products</small>
+                            </NavLink>
+                        </div>
+                        <div class="nav-item">
+                            <NavLink class="nav-link" href="/ProductCategory/Index">
+                                <span class="bi bi-folder-nav-menu"></span> <small>Categories</small>
+                            </NavLink>
+                        </div>
+                        <div class="nav-item">
+                            <NavLink class="nav-link" href="/ProductDescription/Index">
+                                <span class="bi bi-file-text-nav-menu"></span> <small>Descriptions</small>
+                            </NavLink>
+                        </div>
+                        <div class="nav-item">
+                            <NavLink class="nav-link" href="/Culture/Index">
+                                <span class="bi bi-translate-nav-menu"></span> <small>Cultures</small>
+                            </NavLink>
+                        </div>
+                        <div class="nav-item">
+                            <NavLink class="nav-link" href="/Location/Index">
+                                <span class="bi bi-pin-map-nav-menu"></span> <small>Locations</small>
+                            </NavLink>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <div class="nav-item px-3">
@@ -111,36 +126,104 @@
             <NavLink class="nav-link" href="/Location/Index">
                 <span class="bi bi-plus-square-fill-nav-menu" aria-hidden="true"></span> Location
             </NavLink>
-        </div>
-
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="/Employee/Index">
-                <span class="bi bi-plus-square-fill-nav-menu" aria-hidden="true"></span> Employees
-            </NavLink>
-        </div>
-
-        <div class="accordion px-3 nav-item" id="accordionUbicaciones">
+        @* ========== GEOGRAPHY MODULE ========== *@
+        <div class="accordion px-3 nav-item" id="accordionGeography">
             <div class="accordion-item bg-transparent border-0">
                 <div class="accordion-header">
-                    <button class="accordion-button collapsed bg-transparent px-3" type="button" data-bs-toggle="collapse" data-bs-target="#collapseUbicaciones" aria-expanded="false">
-                        <span class="bi bi-geo-alt-fill-nav-menu"></span> Locations
+                    <button class="accordion-button collapsed bg-transparent px-3" type="button" data-bs-toggle="collapse" data-bs-target="#collapseGeography">
+                        <span class="bi bi-globe-americas-nav-menu"></span> <small>Geography</small>
                     </button>
                 </div>
-                <div id="collapseUbicaciones" class="accordion-collapse collapse" data-bs-parent="#accordionUbicaciones">
+                <div id="collapseGeography" class="accordion-collapse collapse" data-bs-parent="#accordionGeography">
                     <div class="accordion-body p-0 ps-3">
                         <div class="nav-item pt-2">
                             <NavLink class="nav-link" href="/CountryRegions/Index">
-                                <span class="bi bi-flag-fill-nav-menu"></span> Country Regions
+                                <span class="bi bi-flag-fill-nav-menu"></span> <small>Countries/Regions</small>
                             </NavLink>
                         </div>
                         <div class="nav-item">
                             <NavLink class="nav-link" href="/StateProvince/Index">
-                                <span class="bi bi-building-fill-nav-menu"></span> State Provinces
+                                <span class="bi bi-building-fill-nav-menu"></span> <small>States/Provinces</small>
+                            </NavLink>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        @* ========== HUMAN RESOURCES MODULE ========== *@
+        <div class="accordion px-3 nav-item" id="accordionHR">
+            <div class="accordion-item bg-transparent border-0">
+                <div class="accordion-header">
+                    <button class="accordion-button collapsed bg-transparent px-3" type="button" data-bs-toggle="collapse" data-bs-target="#collapseHR">
+                        <span class="bi bi-people-fill-nav-menu"></span> <small>Human Resources</small>
+                    </button>
+                </div>
+                <div id="collapseHR" class="accordion-collapse collapse" data-bs-parent="#accordionHR">
+                    <div class="accordion-body p-0 ps-3">
+                        <div class="nav-item pt-2">
+                            <NavLink class="nav-link" href="/Employee/Index">
+                                <span class="bi bi-person-badge-nav-menu"></span> <small>Employees</small>
                             </NavLink>
                         </div>
                         <div class="nav-item">
-                            <NavLink class="nav-link" href="/SalesTerritory/Index">
-                                <span class="bi bi-map-fill-nav-menu"></span> Sales Territories
+                            <NavLink class="nav-link" href="/Department/Index">
+                                <span class="bi bi-building-nav-menu"></span> <small>Departments</small>
+                            </NavLink>
+                        </div>
+                        <div class="nav-item">
+                            <NavLink class="nav-link" href="/Person/Index">
+                                <span class="bi bi-person-add-nav-menu"></span> <small>Person</small>
+                            </NavLink>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        @* ========== PURCHASING MODULE ========== *@
+        <div class="accordion px-3 nav-item" id="accordionPurchasing">
+            <div class="accordion-item bg-transparent border-0">
+                <div class="accordion-header">
+                    <button class="accordion-button collapsed bg-transparent px-3" type="button" data-bs-toggle="collapse" data-bs-target="#collapsePurchasing">
+                        <span class="bi bi-truck-nav-menu"></span> <small>Purchasing</small>
+                    </button>
+                </div>
+                <div id="collapsePurchasing" class="accordion-collapse collapse" data-bs-parent="#accordionPurchasing">
+                    <div class="accordion-body p-0 ps-3">
+                        <div class="nav-item pt-2">
+                            <NavLink class="nav-link" href="/Vendor/Index">
+                                <span class="bi bi-shop-nav-menu"></span> <small>Vendors</small>
+                            </NavLink>
+                        </div>
+                        <div class="nav-item">
+                            <NavLink class="nav-link" href="/ShipMethods">
+                                <span class="bi bi-send-plus-nav-menu"></span> <small>Ship Methods</small>
+                            </NavLink>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        @* ========== CONFIGURATION MODULE ========== *@
+        <div class="accordion px-3 nav-item" id="accordionConfig">
+            <div class="accordion-item bg-transparent border-0">
+                <div class="accordion-header">
+                    <button class="accordion-button collapsed bg-transparent px-3" type="button" data-bs-toggle="collapse" data-bs-target="#collapseConfig">
+                        <span class="bi bi-gear-fill-nav-menu"></span> <small>Configuration</small>
+                    </button>
+                </div>
+                <div id="collapseConfig" class="accordion-collapse collapse" data-bs-parent="#accordionConfig">
+                    <div class="accordion-body p-0 ps-3">
+                        <div class="nav-item pt-2">
+                            <NavLink class="nav-link" href="/PhoneNumberType/Index">
+                                <span class="bi bi-telephone-plus-nav-menu"></span> <small>Phone Number Types</small>
+                            </NavLink>
+                        </div>
+                        <div class="nav-item">
+                            <NavLink class="nav-link" href="/ContactType/Index">
+                                <span class="bi bi-person-lines-fill-nav-menu"></span> <small>Contact Types</small>
                             </NavLink>
                         </div>
                     </div>

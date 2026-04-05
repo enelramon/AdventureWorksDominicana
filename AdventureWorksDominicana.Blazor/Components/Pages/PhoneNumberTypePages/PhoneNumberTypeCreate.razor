@@ -19,11 +19,6 @@
                     <input class="form-control" type="text" @bind-value="PhoneNumberType.Name" />
                     <ValidationMessage For="(() => PhoneNumberType.Name)" />
                 </div>
-                <div class="mb-3">
-                    <label class="form-label"><strong>Fecha de modificaci&oacute;n</strong></label>
-                    <input class="form-control" type="datetime-local" @bind-value="PhoneNumberType.ModifiedDate" disabled />
-                    <ValidationMessage For="(() => PhoneNumberType.ModifiedDate)" />
-                </div>
             </div>
             <div class="card-footer text-center">
                 <a class="btn btn-secondary bi bi-arrow-left" href="/PhoneNumberType/Index"> Volver</a>

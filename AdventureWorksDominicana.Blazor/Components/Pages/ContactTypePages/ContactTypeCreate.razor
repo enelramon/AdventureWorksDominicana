@@ -4,9 +4,8 @@
 @inject ToastService toastService;
 @inject NavigationManager navigationManager;
 
-
-
 <EditForm Model="ContactType" FormName="crearContactType" OnValidSubmit="Guardar">
+    <DataAnnotationsValidator />
     <div class="container">
         <div class="card">
             <div class="card-header text-center">
@@ -15,13 +14,8 @@
             <div class="card-body">
                 <div class="mb-3">
                     <label class="form-label"><strong>Nombre</strong></label>
-                    <input class="form-control" type="text" maxlength="50" @bind-value="ContactType.Name"/>
+                    <input class="form-control" type="text" maxlength="50" @bind-value="ContactType.Name" placeholder="Escriba el nombre..." />
                     <ValidationMessage For="(() => ContactType.Name)" />
-                </div>
-                <div class="mb-3">
-                    <label class="form-label"><strong>Fecha de modificaci&oacute;n</strong></label>
-                    <input class="form-control" type="datetime-local" disabled @bind-value="ContactType.ModifiedDate"/>
-                    <ValidationMessage For="(() => ContactType.ModifiedDate)" />
                 </div>
             </div>
             <div class="card-footer text-center">
