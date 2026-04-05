@@ -9,42 +9,39 @@
 
 <div class="container-fluid">
     <div class="card shadow-lg">
-        <div class="card-header d-flex justify-content-between align-content-center">
-            <h3 class="mb-0">Product Category</h3>
+        <div class="card-header d-flex justify-content-between">
+            <h4>Product Category</h4>
             <a class="btn btn-primary" href="/ProductCategory/Create"><i class="bi bi-plus-square"></i> Crear</a>
         </div>
 
         <div class="card-body">
-            <div class="mb-3">
-                <div class="row">
-                    <div class="col-md-6">
-                        <div class="input-group">
-                            <span class="input-group-text">Desde</span>
-                            <InputDate class="form-control" @bind-Value="Desde" />
-                            <span class="input-group-text">Hasta</span>
-                            <InputDate class="form-control" @bind-Value="Hasta" />
-                        </div>
-
-                    </div>
-
+            <div class="row mb-3 align-items-end">
+                <div class="col-md-3">
+                    <label class="form-label">Desde</label>
+                    <input class="form-control" type="date" @bind="Desde" />
                 </div>
-                <div class="row mb-4">
-                    <div class="col-md-3">
-                        <InputSelect class="form-select" @bind-Value="Filtros">
-                            <option disabled value="">Elige un filtro</option>
-                            <option value="Id">ID</option>
-                            <option value="Nombre"> Nombre</option>
-                        </InputSelect>
-                    </div>
-
-                    <div class="col-md-5">
-                        <div class="input-group">
-                            <InputText class="form-control" @bind-Value="ValorFiltro" placeholder="Buscar..." />
-                            <button class="btn btn-primary" @onclick="Buscar">
-                                <i class="bi bi-search"></i> Buscar
-                            </button>
-                            <button type="button" class="btn btn-outline-primary bi bi-arrow-counterclockwise" @onclick="Restablecer"></button>
-                        </div>
+                <div class="col-md-3">
+                    <label class="form-label">Hasta</label>
+                    <input class="form-control" type="date" @bind="Hasta" />
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Filtrar por</label>
+                    <select class="form-select" @bind="Filtros">
+                        <option value="">Seleccione una opci&oacute;n</option>
+                        <option value="Id">Id</option>
+                        <option value="Nombre">Nombre</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Buscar</label>
+                    <div class="input-group">
+                        <input class="form-control" type="text" placeholder="Buscar..." @bind="ValorFiltro" />
+                        <button class="btn btn-outline-primary" type="button" @onclick="Buscar">
+                            <i class="bi bi-search"></i>
+                        </button>
+                        <button class="btn btn-outline-secondary" type="button" title="Limpiar Filtros" @onclick="Restablecer">
+                            <i class="bi bi-arrow-counterclockwise"></i>
+                        </button>
                     </div>
                 </div>
             </div>
@@ -57,7 +54,7 @@
 
                     <TemplateColumn Title="Acciones">
                         <a class="btn btn-outline-primary btn-sm" href="/ProductCategory/Edit/@context.ProductCategoryId">
-                            <i class="bi bi-pencil-square"></i>
+                            <i class="bi bi-pencil-square"></i> Modificar
                         </a>
                     </TemplateColumn>
                 </QuickGrid>

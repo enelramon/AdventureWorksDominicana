@@ -5,6 +5,8 @@
 @inject NavigationManager navigationManager;
 
 <EditForm Model="ContactType" FormName="modificarContactType" OnValidSubmit="Guardar">
+    <DataAnnotationsValidator />
+
     <div class="container">
         <div class="card">
             <div class="card-header text-center">
@@ -13,13 +15,8 @@
             <div class="card-body">
                 <div class="mb-3">
                     <label class="form-label"><strong>Nombre</strong></label>
-                    <input class="form-control" type="text" maxlength="50" @bind-value="ContactType.Name" />
+                    <input class="form-control" type="text" maxlength="50" @bind-value="ContactType.Name" placeholder="Escriba el nombre..." />
                     <ValidationMessage For="(() => ContactType.Name)" />
-                </div>
-                <div class="mb-3">
-                    <label class="form-label"><strong>Fecha de modificaci&oacute;n</strong></label>
-                    <input class="form-control" type="datetime-local" disabled @bind-value="ContactType.ModifiedDate" />
-                    <ValidationMessage For="(() => ContactType.ModifiedDate)" />
                 </div>
             </div>
             <div class="card-footer text-center">
@@ -39,8 +36,11 @@
 
     protected override async Task OnInitializedAsync()
     {
-        ContactType = await contactTypeService.Buscar(ContactTypeId);
-        ContactType.ModifiedDate = DateTime.Now;
+        ContactType = await contactTypeService.Buscar(ContactTypeId) ?? null;
+        if (ContactType == null)
+        {
+            navigationManager.NavigateTo("/ContactType/Index");
+        }
     }
 
     public async Task Guardar()
@@ -51,6 +51,8 @@
             toastService.ShowWarning("El nombre \"" + ContactType.Name + "\" ya esta en uso");
             return;
         }
+
+        ContactType.ModifiedDate = DateTime.Now;
         bool guardado = await contactTypeService.Guardar(ContactType);
         if (guardado)
         {
@@ -64,15 +66,22 @@
     }
     public async Task Eliminar()
     {
-        bool eliminado = await contactTypeService.Eliminar(ContactType.ContactTypeId);
-        if (eliminado)
+        try
         {
-            toastService.ShowSuccess("Se ha eliminado el tipo de contacto correctamente.");
-            navigationManager.NavigateTo("/ContactType/Index");
+            bool eliminado = await contactTypeService.Eliminar(ContactType.ContactTypeId);
+            if (eliminado)
+            {
+                toastService.ShowSuccess("Se ha eliminado el tipo de contacto correctamente.");
+                navigationManager.NavigateTo("/ContactType/Index");
+            }
         }
-        else
+        catch (InvalidOperationException ex)
         {
-            toastService.ShowError("Ha ocurrido un error inesperado o hay contactos relacionados a este tipo.");
+            toastService.ShowError(ex.Message);
+        }
+        catch (Exception ex)
+        {
+            toastService.ShowError("Error inesperado al eliminar");
         }
     }
 }

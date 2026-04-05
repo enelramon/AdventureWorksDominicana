@@ -9,6 +9,22 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDbContextFactory<Contexto>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("ConStr")));
 
+builder.Services.AddDbContext<SecurityContext>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("ConStr")));
+
+
+
+builder.Services.AddDefaultIdentity<IdentityUser>(options => {
+    options.SignIn.RequireConfirmedAccount = false;
+    options.Password.RequireDigit = false;
+    options.Password.RequiredLength = 8;
+    options.Password.RequireNonAlphanumeric = false; 
+    options.Password.RequireUppercase = false;
+})
+.AddEntityFrameworkStores<SecurityContext>();
+
+
+
 // Add services to the container.
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
@@ -31,7 +47,11 @@ builder.Services.AddScoped<VendorService>();
 builder.Services.AddScoped<ProductDescriptionService>();
 builder.Services.AddScoped<AddressTypeService>();
 builder.Services.AddScoped<ProductModelService>();
-builder.Services.AddScoped<ShoppingCartItemService>();
+builder.Services.AddScoped<UnitMeasureService>();
+builder.Services.AddScoped<ProductSubcategoryService>();
+builder.Services.AddScoped<StateProvinceService>();
+builder.Services.AddScoped<CultureService>();
+builder.Services.AddScoped<LocationService>();
 
 builder.Services.AddBlazorBootstrap();
 var app = builder.Build();
