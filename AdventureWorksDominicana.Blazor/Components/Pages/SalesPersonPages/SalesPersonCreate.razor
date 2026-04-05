@@ -1,0 +1,168 @@
+﻿@page "/sales-people/create"
+@using AdventureWorksDominicana.Data.Models
+@using AdventureWorksDominicana.Services
+@inject SalesPersonService SalesPersonService
+@inject NavigationManager NavigationManager
+@rendermode InteractiveServer
+
+<PageTitle>Asignar Nuevo Vendedor</PageTitle>
+
+<div class="container mt-4">
+    <div class="card shadow-lg border-0">
+        <div class="card-header bg-white py-3">
+            <h5 class="mb-0 fw-bold text-dark">Asignar Nuevo Vendedor</h5>
+        </div>
+        
+        <div class="card-body p-4">
+            
+            <div class="mb-4">
+                <label class="form-label"><strong>Seleccionar Empleado</strong></label>
+                <select class="form-select shadow-sm @(errores.Contains("ID") ? "is-invalid" : "")" @onchange="OnEmployeeSelected">
+                    <option value="0">-- Seleccione un empleado para promover --</option>
+                    @foreach (var emp in listaEmpleados)
+                    {
+                        <option value="@emp.BusinessEntityId">
+                            @emp.BusinessEntity.FirstName @emp.BusinessEntity.LastName (ID: @emp.BusinessEntityId)
+                        </option>
+                    }
+                </select>
+                @if (errores.Contains("ID"))
+                {
+                    <div class="invalid-feedback">Debe seleccionar un empleado.</div>
+                }
+            </div>
+
+            @if (empleadoSeleccionado != null)
+            {
+                
+                <div class="alert alert-info border-0 shadow-sm mb-4" style="background-color: #f0f7ff;">
+                    <div class="row align-items-center">
+                        <div class="col-md-7">
+                            <h6 class="fw-bold mb-2">Datos Actuales del Empleado:</h6>
+                            <p class="mb-1 text-dark"><strong>Cargo:</strong> @empleadoSeleccionado.JobTitle</p>
+                            <p class="mb-0 text-dark">
+                                <strong>Email:</strong>
+                                <span class="badge bg-white text-primary border shadow-sm px-2 py-1">
+                                    @(empleadoSeleccionado.BusinessEntity?.EmailAddresses?.FirstOrDefault()?.EmailAddress1 ?? "No registrado en DB")
+                                </span>
+                            </p>
+                        </div>
+                        <div class="col-md-5 text-md-end border-start">
+                            <p class="mb-1 small"><strong>Contratado:</strong> @empleadoSeleccionado.HireDate.ToShortDateString()</p>
+                            <p class="mb-0 small"><strong>Género:</strong> @(empleadoSeleccionado.Gender == "M" ? "Masculino" : "Femenino")</p>
+                        </div>
+                    </div>
+                </div>
+
+                <hr class="my-4" />
+
+                
+                <EditForm Model="vendedor" OnSubmit="IntentarGuardar">
+                    <h6 class="fw-bold text-primary mb-3">Configuración de Nuevo Vendedor</h6>
+                    
+                    <div class="row">
+                       
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label"><strong>Territorio (ID)</strong></label>
+                            <InputNumber @bind-Value="vendedor.TerritoryId" class="form-control" placeholder="Ej: 1" />
+                            @if (errores.Contains("Territorio"))
+                            {
+                                <span class="text-danger small">El territorio es obligatorio.</span>
+                            }
+                            <div class="form-text small">Ingrese el código de región (1-10).</div>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label"><strong>Comisión</strong></label>
+                            <div class="input-group">
+                                <InputNumber @bind-Value="vendedor.CommissionPct" class="form-control" step="0.01" />
+                                <span class="input-group-text">%</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label"><strong>Cuota de Ventas</strong></label>
+                            <div class="input-group">
+                                <span class="input-group-text">$</span>
+                                <InputNumber @bind-Value="vendedor.SalesQuota" class="form-control" />
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label"><strong>Bono</strong></label>
+                            <div class="input-group">
+                                <span class="input-group-text">$</span>
+                                <InputNumber @bind-Value="vendedor.Bonus" class="form-control" />
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card-footer text-center bg-white border-top pt-4 mt-3">
+                        <button type="button" class="btn btn-outline-secondary px-4 me-2" @onclick="Volver">
+                            <i class="bi bi-arrow-left"></i> Cancelar
+                        </button>
+                        <button type="submit" class="btn btn-primary px-4 shadow-sm">
+                            <i class="bi bi-person-check"></i> Confirmar Asignación
+                        </button>
+                    </div>
+                </EditForm>
+            }
+            else
+            {
+                <div class="text-center py-5 text-muted border rounded-3 bg-light shadow-sm">
+                    <i class="bi bi-person-plus" style="font-size: 3rem; color: #dee2e6;"></i>
+                    <p class="mt-2">Seleccione un empleado de la lista para proceder con la asignación.</p>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@code {
+    private SalesPerson vendedor = new SalesPerson { CommissionPct = 0, Bonus = 0, SalesQuota = 0 };
+    private List<Employee> listaEmpleados = new List<Employee>();
+    private Employee? empleadoSeleccionado;
+    private List<string> errores = new List<string>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        
+        listaEmpleados = await SalesPersonService.GetAvailableEmployeesAsync();
+    }
+
+    private void OnEmployeeSelected(ChangeEventArgs e)
+    {
+        int id = int.Parse(e.Value?.ToString() ?? "0");
+        if (id > 0)
+        {
+            empleadoSeleccionado = listaEmpleados.FirstOrDefault(x => x.BusinessEntityId == id);
+            vendedor.BusinessEntityId = id;
+        }
+        else
+        {
+            empleadoSeleccionado = null;
+            vendedor.BusinessEntityId = 0;
+        }
+        errores.Clear();
+    }
+
+    private async Task IntentarGuardar()
+    {
+        errores.Clear();
+        if (vendedor.BusinessEntityId <= 0) errores.Add("ID");
+        if (vendedor.TerritoryId == null || vendedor.TerritoryId <= 0) errores.Add("Territorio");
+
+        if (errores.Any()) return;
+
+        vendedor.SalesYtd = 0;
+        vendedor.SalesLastYear = 0;
+        vendedor.Rowguid = Guid.NewGuid();
+        vendedor.ModifiedDate = DateTime.Now;
+
+        if (await SalesPersonService.CreateAsync(vendedor))
+            Volver();
+    }
+
+    private void Volver() => NavigationManager.NavigateTo("/sales-people");
+}

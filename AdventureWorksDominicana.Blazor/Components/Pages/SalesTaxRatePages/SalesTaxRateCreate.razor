@@ -1,0 +1,86 @@
+﻿@page "/sales-tax-rates/create"
+@using AdventureWorksDominicana.Data.Models
+@using AdventureWorksDominicana.Services
+@inject SalesTaxRateService TaxService
+@inject NavigationManager Nav
+@rendermode InteractiveServer
+
+<div class="container mt-4">
+    <div class="card shadow-lg border-0 mx-auto" style="max-width: 800px;">
+        <div class="card-header bg-white py-3 border-bottom">
+            <h5 class="mb-0 fw-bold text-dark"><i class="bi bi-percent me-2 text-primary"></i>Configurar Nueva Tasa de Impuesto</h5>
+        </div>
+        
+        <div class="card-body p-4">
+            <EditForm Model="nuevoTax" OnValidSubmit="Guardar">
+                <DataAnnotationsValidator />
+
+                <div class="alert alert-light border-0 shadow-sm mb-4 d-flex align-items-center" style="background-color: #f8f9fa;">
+                    <i class="bi bi-info-circle-fill text-primary fs-4 me-3"></i>
+                    <div>
+                        <p class="mb-0 text-dark fw-bold">Información de Jurisdicción</p>
+                        <small class="text-muted">Seleccione el estado y el tipo de transacción para aplicar la tasa correctamente.</small>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Nombre del Impuesto</label>
+                    <InputText @bind-Value="nuevoTax.Name" class="form-control" />
+                    <ValidationMessage For="@(() => nuevoTax.Name)" class="text-danger" />
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">Estado / Provincia</label>
+                        <InputSelect @bind-Value="nuevoTax.StateProvinceId" class="form-select">
+                            <option value="0">-- Seleccione ubicación --</option>
+                            @foreach (var s in estados)
+                            {
+                                <option value="@s.StateProvinceId">@s.Name</option>
+                            }
+                        </InputSelect>
+                        @if (errorProvincia)
+                        {
+                            <span class="text-danger small">Debe seleccionar una provincia</span>
+                        }
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">Tipo de Aplicación</label>
+                        <InputSelect @bind-Value="nuevoTax.TaxType" class="form-select">
+                            <option value="1">Retail</option>
+                            <option value="2">Wholesale</option>
+                            <option value="3">All Sales</option>
+                        </InputSelect>
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <label class="form-label fw-bold">Tasa Porcentual (%)</label>
+                    <InputNumber @bind-Value="nuevoTax.TaxRate" class="form-control" />
+                </div>
+
+                <div class="card-footer bg-white border-top-0 pt-4 text-center">
+                    <button type="button" class="btn btn-secondary px-4 me-2" style="background-color: #6c757d;" @onclick='() => Nav.NavigateTo("/sales-tax-rates")'>
+                        <i class="bi bi-arrow-left"></i> Volver
+                    </button>
+                    <button type="submit" class="btn btn-primary px-4">Guardar</button>
+                </div>
+            </EditForm>
+        </div>
+    </div>
+</div>
+
+@code {
+    private SalesTaxRate nuevoTax = new() { TaxType = 1, Name = "" };
+    private List<StateProvince> estados = new();
+    private bool errorProvincia = false;
+
+    protected override async Task OnInitializedAsync() => estados = await TaxService.GetStateProvincesAsync();
+
+    private async Task Guardar()
+    {
+        if (nuevoTax.StateProvinceId == 0) { errorProvincia = true; return; }
+        errorProvincia = false;
+        if (await TaxService.CreateAsync(nuevoTax)) Nav.NavigateTo("/sales-tax-rates");
+    }
+}

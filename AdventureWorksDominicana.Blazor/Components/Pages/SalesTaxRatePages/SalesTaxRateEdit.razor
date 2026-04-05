@@ -1,0 +1,103 @@
+﻿@page "/sales-tax-rates/edit/{id:int}"
+@using AdventureWorksDominicana.Data.Models
+@using AdventureWorksDominicana.Services
+@inject SalesTaxRateService TaxService
+@inject NavigationManager Nav
+@rendermode InteractiveServer
+
+<div class="container mt-4">
+    <div class="card shadow-lg border-0 mx-auto" style="max-width: 800px;">
+        <div class="card-header bg-white py-3 border-bottom d-flex justify-content-between align-items-center">
+            <h5 class="mb-0 fw-bold text-dark">Modificar Tasa de Impuesto</h5>
+            <span class="text-muted small">ID: @id</span>
+        </div>
+        
+        <div class="card-body p-4">
+            @if (taxModificar != null)
+            {
+                <EditForm Model="taxModificar" OnValidSubmit="Actualizar">
+                    <DataAnnotationsValidator />
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Nombre del Impuesto</label>
+                        <InputText @bind-Value="taxModificar.Name" class="form-control" />
+                        <ValidationMessage For="@(() => taxModificar.Name)" class="text-danger" />
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Estado / Provincia</label>
+                            <InputSelect @bind-Value="taxModificar.StateProvinceId" class="form-select">
+                                <option value="0">-- Seleccione ubicación --</option>
+                                @foreach (var s in estados)
+                                {
+                                    <option value="@s.StateProvinceId">@s.Name</option>
+                                }
+                            </InputSelect>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Tasa (%)</label>
+                            <InputNumber @bind-Value="taxModificar.TaxRate" class="form-control" step="0.01" />
+                        </div>
+                    </div>
+
+                    
+                    <div class="card-footer bg-white border-top-0 pt-4 text-center">
+                        
+                        <button type="button" class="btn btn-secondary px-4 me-2"
+                                style="background-color: #6c757d; border-color: #6c757d;"
+                                @onclick='() => Nav.NavigateTo("/sales-tax-rates")'>
+                            <i class="bi bi-arrow-left me-1"></i> Volver
+                        </button>
+
+                        
+                        <button type="submit" class="btn btn-primary px-4 me-2">
+                            <i class="bi bi-floppy me-1"></i> Guardar
+                        </button>
+
+                       
+                        <button type="button" class="btn btn-danger px-4" @onclick="Eliminar">
+                            <i class="bi bi-trash me-1"></i> Eliminar
+                        </button>
+                    </div>
+                </EditForm>
+            }
+            else
+            {
+                <div class="text-center py-5">
+                    <div class="spinner-border text-primary" role="status"></div>
+                    <p class="mt-2 text-muted">Cargando datos...</p>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter] public int id { get; set; }
+    private SalesTaxRate? taxModificar;
+    private List<StateProvince> estados = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        estados = await TaxService.GetStateProvincesAsync();
+        taxModificar = await TaxService.GetSalesTaxRateByIdAsync(id);
+    }
+
+    private async Task Actualizar()
+    {
+        if (taxModificar != null && await TaxService.UpdateAsync(taxModificar))
+        {
+            Nav.NavigateTo("/sales-tax-rates");
+        }
+    }
+
+    private async Task Eliminar()
+    {
+       
+        if (await TaxService.DeleteAsync(id))
+        {
+            Nav.NavigateTo("/sales-tax-rates");
+        }
+    }
+}

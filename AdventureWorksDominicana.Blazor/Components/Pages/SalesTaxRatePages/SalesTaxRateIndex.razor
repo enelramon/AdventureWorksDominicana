@@ -1,0 +1,89 @@
+﻿@page "/sales-tax-rates"
+@using AdventureWorksDominicana.Data.Models
+@using AdventureWorksDominicana.Services
+@using Microsoft.AspNetCore.Components.QuickGrid
+@inject SalesTaxRateService TaxService
+@inject NavigationManager NavigationManager
+@rendermode InteractiveServer
+
+<PageTitle>Registro de Tasas de Impuestos</PageTitle>
+
+<div class="container-fluid">
+    <div class="card shadow-lg">
+        <div class="card-header bg-white d-flex justify-content-between align-items-center">
+            <h5 class="mb-0 fw-bold">Registro de Tasas de Impuestos</h5>
+            <button class="btn btn-primary btn-sm px-4" @onclick="IrACrear">
+                <i class="bi bi-plus-square"></i> Crear
+            </button>
+        </div>
+
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-4">
+                    <label><strong>Buscar por Nombre o Provincia:</strong></label>
+                </div>
+            </div>
+            <div class="row mb-4">
+                <div class="col-md-4">
+                    <input type="text" class="form-control" placeholder="Ej: Duarte o ITBIS..." @bind="textoBusqueda" @bind:event="oninput" />
+                </div>
+                <div class="col-md-8 d-flex gap-2">
+                    <button class="btn btn-primary" @onclick="AplicarFiltro"><i class="bi bi-search"></i> Buscar</button>
+                    <button class="btn btn-outline-primary" @onclick="LimpiarBusqueda"><i class="bi bi-arrow-clockwise"></i> Limpiar</button>
+                </div>
+            </div>
+
+            @if (listaTax != null)
+            {
+                <div class="table-responsive">
+                    <QuickGrid Items="@FilteredTaxRates" Pagination="@paginacion" Class="table table-striped table-bordered table-hover">
+                        <PropertyColumn Property="@(t => t.SalesTaxRateId)" Title="ID" Sortable="true" />
+                        <PropertyColumn Property="@(t => t.Name)" Title="Nombre del Impuesto" Sortable="true" />
+                        <PropertyColumn Property="@(t => t.StateProvince.Name)" Title="Estado / Provincia" Sortable="true" />
+                        <PropertyColumn Property="@(t => t.TaxRate)" Title="Tasa (%)" Format="N2" Sortable="true" />
+                        <TemplateColumn Title="Opciones" Class="text-center">
+                            <button class="btn btn-outline-primary btn-sm" @onclick="() => IrAEditar(context.SalesTaxRateId)">
+                                <i class="bi bi-pencil-square"></i> Modificar
+                            </button>
+                        </TemplateColumn>
+                    </QuickGrid>
+                </div>
+                <Paginator State="@paginacion" />
+            }
+        </div>
+        <div class="card-footer text-end bg-white">
+            <strong>Registros: @(FilteredTaxRates?.Count() ?? 0)</strong>
+        </div>
+    </div>
+</div>
+
+@code {
+    private List<SalesTaxRate>? listaTax;
+    private string textoBusqueda = "";
+    private IQueryable<SalesTaxRate>? filteredList;
+    PaginationState paginacion = new PaginationState { ItemsPerPage = 5 };
+
+    protected override async Task OnInitializedAsync()
+    {
+        listaTax = await TaxService.GetSalesTaxRatesAsync();
+        AplicarFiltro();
+    }
+
+    private IQueryable<SalesTaxRate> FilteredTaxRates => filteredList ?? Enumerable.Empty<SalesTaxRate>().AsQueryable();
+
+    private void AplicarFiltro()
+    {
+        if (listaTax == null) return;
+        var query = listaTax.AsQueryable();
+        if (!string.IsNullOrWhiteSpace(textoBusqueda))
+        {
+            
+            query = query.Where(t => t.Name.Contains(textoBusqueda, StringComparison.OrdinalIgnoreCase) ||
+                (t.StateProvince != null && t.StateProvince.Name.Contains(textoBusqueda, StringComparison.OrdinalIgnoreCase)));
+        }
+        filteredList = query;
+    }
+    private void LimpiarBusqueda() { textoBusqueda = ""; AplicarFiltro(); }
+    private void IrACrear() => NavigationManager.NavigateTo("/sales-tax-rates/create");
+    private void IrAEditar(int id) => NavigationManager.NavigateTo($"/sales-tax-rates/edit/{id}");
+}
