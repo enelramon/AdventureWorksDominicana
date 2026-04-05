@@ -1,0 +1,92 @@
+﻿@page "/ProductModel/Edit/{ProductModelId:int}"
+@rendermode InteractiveServer
+@inject ProductModelService ProductModelService
+@inject NavigationManager NavigationManager
+@inject ToastService toastService
+
+<PageTitle>Editar Product Model</PageTitle>
+
+<div class="container">
+    <div class="card shadow-lg">
+        <div class="card-header">
+            <h5 class="card-title text-black mb-0">Editar Registro de Product Model</h5>
+        </div>
+
+        <div class="card-body">
+            <EditForm Model="@productModel" OnValidSubmit="Guardar">
+                <DataAnnotationsValidator />
+                <ValidationSummary class="text-danger" />
+
+                <div class="mb-3">
+                    <strong><label class="form-label">Nombre</label></strong>
+                    <InputText class="form-control" @bind-Value="productModel.Name" placeholder="Ej: Classic Vest" />
+                    <ValidationMessage For="@(() => productModel.Name)" />
+                </div>
+
+                <div class="card-footer text-center">
+                    <a href="ProductModel/Index" class="btn btn-secondary">
+                        <i class="bi bi-arrow-left"></i> Volver
+                    </a>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-floppy"></i> Modificar
+                    </button>
+                    <button type="button" class="btn btn-danger" @onclick="Eliminar">
+                        <i class="bi bi-trash"></i> Eliminar
+                    </button>
+                </div>
+            </EditForm>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public int ProductModelId { get; set; }
+
+    private ProductModel productModel = new ProductModel();
+
+    protected override async Task OnInitializedAsync()
+    {
+        var encontrado = await ProductModelService.Buscar(ProductModelId);
+        if (encontrado != null)
+            productModel = encontrado;
+        else
+            toastService.ShowError("No se encontró el Product Model.");
+    }
+
+    private async Task Guardar()
+    {
+        bool esRepetido = await ProductModelService.BuscarDuplicado(productModel.Name, productModel.ProductModelId);
+        if (esRepetido)
+        {
+            toastService.ShowWarning("El nombre \"" + productModel.Name + "\" ya está en uso.");
+            return;
+        }
+
+        var guardo = await ProductModelService.Guardar(productModel);
+
+        if (guardo)
+        {
+            toastService.ShowSuccess("Product Model actualizado correctamente.");
+            NavigationManager.NavigateTo("/ProductModel/Index");
+        }
+        else
+        {
+            toastService.ShowError("Error al actualizar el Product Model.");
+        }
+    }
+
+    private async Task Eliminar()
+    {
+        var eliminado = await ProductModelService.Eliminar(productModel.ProductModelId);
+        if (eliminado)
+        {
+            toastService.ShowSuccess("Product Model eliminado correctamente.");
+            NavigationManager.NavigateTo("/ProductModel/Index");
+        }
+        else
+        {
+            toastService.ShowError("Error al eliminar el Product Model.");
+        }
+    }
+}
