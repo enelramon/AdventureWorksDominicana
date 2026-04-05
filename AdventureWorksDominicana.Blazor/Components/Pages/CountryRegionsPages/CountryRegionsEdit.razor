@@ -3,6 +3,7 @@
 @inject CountryRegionsService countryRegionsService;
 @inject ToastService toastService;
 @inject NavigationManager navigationManager;
+@rendermode InteractiveServer
 
 <EditForm Model="CountryRegion" FormName="modificarCountryRegion" OnValidSubmit="Modificar">
     <DataAnnotationsValidator />
