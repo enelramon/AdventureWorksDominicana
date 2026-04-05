@@ -21,11 +21,6 @@
                     <input class="form-control" type="text" maxlength="50" @bind-value="CountryRegion.Name" placeholder="Escriba el nombre del pais/region..." />
                     <ValidationMessage For="(() => CountryRegion.Name)" />
                 </div>
-                <div class="mb-3">
-                    <label class="form-label"><strong>Fecha de modificaci&oacute;n</strong></label>
-                    <input class="form-control" type="datetime-local" @bind-value="CountryRegion.ModifiedDate" disabled/>
-                    <ValidationMessage For="(() => CountryRegion.ModifiedDate)" />
-                </div>
             </div>
             <div class="card-footer text-center">
                 <a class="btn btn-secondary bi bi-arrow-left" href="/CountryRegions/Index"> Volver</a>
@@ -41,7 +36,6 @@
 
     protected override async Task OnInitializedAsync()
     {
-        CountryRegion.ModifiedDate = DateTime.Now;
     }
 
     public async Task Guardar()
@@ -49,10 +43,19 @@
         var countryRepetido = await countryRegionsService.Buscar(CountryRegion.CountryRegionCode);
         if (countryRepetido != null)
         {
-            toastService.ShowError("Ya existe un pais/region con este codigo: " + countryRepetido.CountryRegionCode + "; " + countryRepetido.Name);
+            toastService.ShowError("El código " + CountryRegion.CountryRegionCode + " ya está en uso");
             return;
         }
-        Console.WriteLine("\nCodigo: " + CountryRegion.CountryRegionCode + "; Nombre: " + CountryRegion.Name + "FechaMod: " + CountryRegion.ModifiedDate.ToString() + "\n");
+
+        var nombreRepetido = await countryRegionsService.GetList(c => c.Name.Equals(CountryRegion.Name));
+        if (nombreRepetido.Any())
+        {
+            toastService.ShowError("El nombre " + CountryRegion.Name + " ya está en uso");
+            return;
+        }
+
+        CountryRegion.CountryRegionCode = CountryRegion.CountryRegionCode.ToUpper();
+        CountryRegion.ModifiedDate = DateTime.Now;
         bool guardado = await countryRegionsService.Guardar(CountryRegion);
         if (guardado)
         {

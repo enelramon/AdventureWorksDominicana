@@ -3,91 +3,70 @@
 @inject SalesTerritoryService salesTerritoryService;
 
 <div class="container">
-    <div class="card">
+    <div class="card shadow-lg">
         <div class="card-header d-flex justify-content-between">
             <h3>Sales Territories</h3>
             <a class="btn btn-primary bi bi-plus-square" href="/SalesTerritory/Create"> Crear</a>
         </div>
         <div class="card-body">
-            @* Filtro por fechas *@
+            @* Encabezados *@
             <div class="row">
                 <div class="col-3">
-                    <label class="form-label">Desde</label>
+                    <label>Desde:</label>
                 </div>
                 <div class="col-3">
-                    <label class="form-label">Hasta</label>
+                    <label>Hasta:</label>
+                </div>
+                <div class="col-3">
+                    <label>Filtro:</label>
+                </div>
+                <div class="col-3">
+                    <label>Buscar:</label>
                 </div>
             </div>
-            <div class="row mb-3">
+
+            @* Inputs *@
+            <div class="row pb-3">
                 <div class="col-3">
                     <input class="form-control" type="datetime-local" @bind-value="FechaDesde" />
                 </div>
                 <div class="col-3">
                     <input class="form-control" type="datetime-local" @bind-value="FechaHasta" />
                 </div>
-            </div>
-
-            @* Busqueda y filtro *@
-            <div class="row">
-                <div class="col-3">
-                    <label class="form-label">Filtro</label>
-                </div>
-                <div class="col-4">
-                    <label class="form-label">B&uacute;squeda</label>
-                </div>
-            </div>
-            <div class="row">
                 <div class="col-3">
                     <select class="form-select" @bind="Filtro">
-                        <option value="" disabled hidden selected>Seleccione un filtro...</option>
+                        <option value="" disabled selected hidden>Seleccione un filtro...</option>
                         <option value="Nombre">Nombre</option>
                         <option value="Grupo">Grupo</option>
+                        <option value="Codigo">Codigo pa&iacute;s/regi&oacute;n</option>
                     </select>
                 </div>
-                <div class="col-4">
+                <div class="col-3">
                     <div class="input-group">
-                        <input class="form-control" type="text" placeholder="Buscar..." @bind-value="ValorFiltro" />
-                        <button class="btn btn-outline-primary bi bi-search" @onclick="Filtrar"></button>
+                        <input class="form-control" type="text" @bind-value="ValorFiltro" placeholder="Buscar..." />
+                        <button class="btn btn-primary bi bi-search" type="button" @onclick="Filtrar"></button>
+                        <button class="btn btn-outline-primary bi bi-arrow-clockwise" type="button" @onclick="Restablecer"></button>
                     </div>
                 </div>
             </div>
 
-            <table class="table table-striped mt-3">
-                <thead>
-                    <tr>
-                        <th>Id</th>
-                        <th>Nombre</th>
-                        <th>Pa&iacute;s/regi&oacute;n</th>
-                        <th>Grupo</th>
-                        <th>Ventas</th>
-                        <th>Ventas LY</th>
-                        <th>Costos</th>
-                        <th>Costos LY</th>
-                        <th>Acciones</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach (var salesTerritory in ListaSalesTerritory)
-                    {
-                        <tr>
-                            <td>@salesTerritory.TerritoryId</td>
-                            <td>@salesTerritory.Name</td>
-                            <td>@salesTerritory.CountryRegionCode</td>
-                            <td>@salesTerritory.Group</td>
-                            <td>@salesTerritory.SalesYtd.ToString("N2")</td>
-                            <td>@salesTerritory.SalesLastYear.ToString("N2")</td>
-                            <td>@salesTerritory.CostYtd.ToString("N2")</td>
-                            <td>@salesTerritory.CostLastYear.ToString("N2")</td>
-                            <td>
-                                <a class="btn btn-outline-warning bi bi-pencil-square" href="/SalesTerritory/Edit/@salesTerritory.TerritoryId"></a>
-                            </td>
-                        </tr>
-                    }
-                </tbody>
-            </table>
-        </div>
-        <div class="card-footer">
-            <strong>Cantidad:</strong> @ListaSalesTerritory.Count
+            <div class="table-responsive">
+                <QuickGrid Class="table table-striped table-bordered table-hover" Pagination="@pages" Items="ListaSalesTerritory.AsQueryable()" ItemKey="@(e => e.TerritoryId)">
+                    <PropertyColumn Property="@(s => s.TerritoryId)" Sortable="true" Title="Id"></PropertyColumn>
+                    <PropertyColumn Property="@(s => s.Name)" Sortable="true" Title="Nombre"></PropertyColumn>
+                    <PropertyColumn Property="@(s => s.CountryRegionCode)" Sortable="true" Title="Pa&iacute;s/regi&oacute;n"></PropertyColumn>
+                    <PropertyColumn Property="@(s => s.Group)" Sortable="true" Title="Grupo"></PropertyColumn>
+                    <PropertyColumn Property="@(s => s.SalesYtd)" Sortable="true" Format="F2" Title="Ventas"></PropertyColumn>
+                    <PropertyColumn Property="@(s => s.SalesLastYear)" Sortable="true" Format="F2" Title="Ventas LY"></PropertyColumn>
+                    <PropertyColumn Property="@(s => s.CostYtd)" Sortable="true" Format="F2" Title="Costos"></PropertyColumn>
+                    <PropertyColumn Property="@(s => s.CostLastYear)" Sortable="true" Format="F2" Title="Costos LY"></PropertyColumn>
+                    <TemplateColumn Class="text-center" Context="options" Title="Acci&oacute;n">
+                        <a href="/SalesTerritory/Edit/@options.TerritoryId" class="btn btn-outline-primary bi bi-pencil-square"> Modificar</a>
+                    </TemplateColumn>
+                </QuickGrid>
+            </div>
+            @*Pagination*@
+            <Paginator State="@pages" />
         </div>
     </div>
 </div>
@@ -98,6 +77,7 @@
     public DateTime? FechaHasta { get; set; }
     public string Filtro { get; set; } = "";
     public string ValorFiltro { get; set; } = "";
+    private PaginationState pages = new PaginationState { ItemsPerPage = 5 };
 
     protected override async Task OnInitializedAsync()
     {
@@ -133,8 +113,21 @@
             {
                 criterio = criterio.And(s => s.Group.Trim().ToLower().Contains(ValorFiltro.ToLower()));
             }
+            if (Filtro == "Codigo")
+            {
+                criterio = criterio.And(s => s.CountryRegionCode.Trim().ToLower().Contains(ValorFiltro.ToLower()));
+            }
         }
         ListaSalesTerritory = await salesTerritoryService.GetList(criterio);
         ListaSalesTerritory = ListaSalesTerritory.OrderByDescending(s => s.ModifiedDate).ToList();
+    }
+
+    public async Task Restablecer()
+    {
+        FechaDesde = null;
+        FechaHasta = null;
+        Filtro = "";
+        ValorFiltro = "";
+        await Filtrar();
     }
 }

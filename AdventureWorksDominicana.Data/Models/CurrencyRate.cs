@@ -24,30 +24,37 @@ public partial class CurrencyRate
     /// Date and time the exchange rate was obtained.
     /// </summary>
     [Column(TypeName = "datetime")]
+    [Required(ErrorMessage = "La fecha es requerida.")]
     public DateTime CurrencyRateDate { get; set; }
 
     /// <summary>
     /// Exchange rate was converted from this currency code.
     /// </summary>
     [StringLength(3)]
+    [Required(ErrorMessage = "El código de origen es requerido.")]
     public string FromCurrencyCode { get; set; } = null!;
 
     /// <summary>
     /// Exchange rate was converted to this currency code.
     /// </summary>
     [StringLength(3)]
+    [Required(ErrorMessage = "El código de destino es requerido.")]
     public string ToCurrencyCode { get; set; } = null!;
 
     /// <summary>
     /// Average exchange rate for the day.
     /// </summary>
     [Column(TypeName = "money")]
+    [Required(ErrorMessage = "La tasa promedio es requerida.")]
+    [Range(0.01, double.MaxValue, ErrorMessage = "La tasa debe ser un número mayor a 0.")]
     public decimal AverageRate { get; set; }
 
     /// <summary>
     /// Final exchange rate for the day.
     /// </summary>
     [Column(TypeName = "money")]
+    [Required(ErrorMessage = "La tasa de cierre es requerida.")]
+    [Range(0.01, double.MaxValue, ErrorMessage = "La tasa debe ser un número mayor a 0.")]
     public decimal EndOfDayRate { get; set; }
 
     /// <summary>

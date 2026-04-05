@@ -61,6 +61,6 @@ public class EmployeeService(IDbContextFactory<Contexto> DbFactory) : IService<E
     public async Task<List<Employee>> GetList(Expression<Func<Employee, bool>> criterio)
     {
         await using var contexto = await DbFactory.CreateDbContextAsync();
-        return await contexto.Employees.Include(e => e.BusinessEntity).Where(criterio).ToListAsync();
+        return await contexto.Employees.Include(e => e.BusinessEntity).ThenInclude(p => p.BusinessEntity).Where(criterio).ToListAsync();
     }
 }

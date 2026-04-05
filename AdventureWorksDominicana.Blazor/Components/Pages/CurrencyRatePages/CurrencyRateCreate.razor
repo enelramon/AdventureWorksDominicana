@@ -1,0 +1,117 @@
+﻿@page "/CurrencyRate/Create"
+@inject CurrencyRateService currencyRateService
+@inject CurrencyService currencyService
+@inject NavigationManager navigationManager
+@inject ToastService toastService
+
+@rendermode InteractiveServer
+
+<PageTitle>Crear Tasa de Cambio</PageTitle>
+
+<EditForm Model="tasa" OnValidSubmit="Guardar">
+    <DataAnnotationsValidator />
+
+    <div class="container mt-4">
+        <div class="card shadow-lg">
+
+            <div class="card-header bg-white">
+                <h4 class="mb-0">Registro de Tasa de Cambio</h4>
+            </div>
+
+            <div class="card-body">
+
+                <div class="mb-3">
+                    <strong>Fecha de Tasa</strong>
+                    <InputDate class="form-control" @bind-Value="tasa.CurrencyRateDate" />
+                    <ValidationMessage For="() => tasa.CurrencyRateDate" />
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <strong>Moneda Origen</strong>
+                        <InputSelect class="form-select" @bind-Value="tasa.FromCurrencyCode">
+                            <option value="">Seleccione una moneda...</option>
+                            @foreach (var moneda in listaMonedas)
+                            {
+                                <option value="@moneda.CurrencyCode">@moneda.CurrencyCode - @moneda.Name</option>
+                            }
+                        </InputSelect>
+                        <ValidationMessage For="() => tasa.FromCurrencyCode" />
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <strong>Moneda Destino</strong>
+                        <InputSelect class="form-select" @bind-Value="tasa.ToCurrencyCode">
+                            <option value="">Seleccione una moneda...</option>
+                            @foreach (var moneda in listaMonedas)
+                            {
+                                <option value="@moneda.CurrencyCode">@moneda.CurrencyCode - @moneda.Name</option>
+                            }
+                        </InputSelect>
+                        <ValidationMessage For="() => tasa.ToCurrencyCode" />
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <strong>Tasa Promedio del Día</strong>
+                        <InputNumber class="form-control" @bind-Value="tasa.AverageRate" />
+                        <ValidationMessage For="() => tasa.AverageRate" />
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <strong>Tasa al Cierre del Día</strong>
+                        <InputNumber class="form-control" @bind-Value="tasa.EndOfDayRate" />
+                        <ValidationMessage For="() => tasa.EndOfDayRate" />
+                    </div>
+                </div>
+
+                @if (!string.IsNullOrWhiteSpace(mensajeError))
+                {
+                    <div class="alert alert-danger mt-3">@mensajeError</div>
+                }
+
+            </div>
+
+            <div class="card-footer text-center bg-white">
+                <a href="/CurrencyRate/Index" class="btn btn-secondary bi bi-arrow-left"> Volver</a>
+                <button type="submit" class="btn btn-primary bi bi-floppy"> Guardar</button>
+            </div>
+        </div>
+    </div>
+</EditForm>
+
+@code {
+    private CurrencyRate tasa = new() { CurrencyRateDate = DateTime.Now };
+    private List<Currency> listaMonedas = new();
+    private string mensajeError = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        listaMonedas = await currencyService.GetList(c => true);
+    }
+
+    private async Task Guardar()
+    {
+        tasa.ModifiedDate = DateTime.Now;
+        mensajeError = string.Empty;
+
+        try
+        {
+            if (await currencyRateService.Guardar(tasa))
+            {
+                toastService.ShowSuccess("Cambios guardados correctamente.");
+                navigationManager.NavigateTo("/CurrencyRate/Index");
+            }
+            else
+            {
+                mensajeError = "No se pudo guardar el registro.";
+            }
+        }
+        catch (Exception ex)
+        {
+            string errorReal = ex.InnerException != null ? ex.InnerException.Message : ex.Message;
+            mensajeError = $"La base de datos rechazó el registro. Detalle: {errorReal}";
+        }
+    }
+}

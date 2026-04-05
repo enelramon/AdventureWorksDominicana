@@ -59,9 +59,19 @@ public class ContactTypeService(IDbContextFactory<Contexto> DbFactory) : IServic
     public async Task<bool> Eliminar(int id)
     {
         await using var contexto = await DbFactory.CreateDbContextAsync();
-        var contactType = await Buscar(id);
-        // Evita eliminar un tipo de contacto que tenga BusinessEntityContacts
-        if (contactType.BusinessEntityContacts.Count != 0) return false;
+
+        var existe = await contexto.ContactTypes.AnyAsync(c => c.ContactTypeId == id);
+        if (!existe)
+        {
+            throw new InvalidOperationException("No se puede eliminar: el tipo de contacto no existe");
+        }
+
+        var tieneContacts = await contexto.BusinessEntityContacts.AnyAsync(p => p.ContactTypeId == id);
+        if (tieneContacts)
+        {
+            throw new InvalidOperationException("No se puede eliminar: el tipo de contacto tiene contactos asignados");
+        }
+
         return await contexto.ContactTypes.Where(c => c.ContactTypeId == id).ExecuteDeleteAsync() > 0;
     }
 

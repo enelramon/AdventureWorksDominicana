@@ -1,5 +1,6 @@
 ﻿using AdventureWorksDominicana.Data.Context;
 using AdventureWorksDominicana.Data.Models;
+Issue/73/Sales_Person
 using Microsoft.EntityFrameworkCore;
 
 namespace AdventureWorksDominicana.Services
@@ -95,3 +96,5 @@ namespace AdventureWorksDominicana.Services
         }
     }
 }
+
+

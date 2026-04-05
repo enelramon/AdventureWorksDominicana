@@ -19,6 +19,7 @@
                     <input class="form-control" type="text" maxlength="50" placeholder="Escriba el nombre..." @bind-value="@SalesTerritory.Name" />
                     <ValidationMessage For="(() => SalesTerritory.Name)" />
                 </div>
+
                 <div class="mb-3">
                     <label class="form-label"><strong>C&oacute;digo de pa&iacute;s/regi&oacute;n</strong></label>
                     <select class="form-select" @bind="@SalesTerritory.CountryRegionCode">
@@ -30,20 +31,29 @@
                     </select>
                     <ValidationMessage For="(() => SalesTerritory.CountryRegionCode)" />
                 </div>
+
                 <div class="mb-3">
                     <label class="form-label"><strong>Grupo</strong></label>
-                    <input class="form-control" type="text" maxlength="50" placeholder="Escriba el Grupo..." @bind-value="@SalesTerritory.Group" />
+                    <select class="form-select" @bind="SalesTerritory.Group">
+                        <option value="" disabled hidden>Seleccione un grupo...</option>
+                        <option value="Norteamerica">Norteam&eacute;rica</option>
+                        <option value="Europa">Europa</option>
+                        <option value="Pacifico">Pac&iacute;fico</option>
+                        <option value="Asia">Asia</option>
+                        <option value="Sudamerica">Sudam&eacute;rica</option>
+                        <option value="Centroamerica">Centroam&eacute;rica</option>
+                        <option value="Africa">&Aacute;frica</option>
+                        <option value="Medio Oriente">Medio Oriente</option>
+                        <option value="Oceania">Ocean&iacute;a</option>
+                        <option value="Caribe">Caribe</option>
+                    </select>
                     <ValidationMessage For="(() => SalesTerritory.Group)" />
-                </div>
-                <div class="mb-3">
-                    <label class="form-label"><strong>Fecha de modificaci&oacute;n</strong></label>
-                    <input class="form-control" type="datetime-local" disabled @bind-value="@SalesTerritory.ModifiedDate"/>
-                    <ValidationMessage For="(() => SalesTerritory.ModifiedDate)" />
                 </div>
             </div>
             <div class="card-footer text-center">
                 <a class="btn btn-secondary bi bi-arrow-left" href="/SalesTerritory/Index"> Volver</a>
                 <button class="btn btn-primary bi bi-floppy" type="submit"> Guardar</button>
+                <button class="btn btn-danger bi bi-trash" type="button" @onclick="Eliminar"> Eliminar</button>
             </div>
         </div>
     </div>
@@ -66,6 +76,13 @@
 
     public async Task Modificar()
     {
+        bool nombreDuplicado = await salesTerritoryService.BuscarDuplicado(SalesTerritory.Name, SalesTerritory.CountryRegionCode, SalesTerritory.TerritoryId);
+        if (nombreDuplicado)
+        {
+            toastService.ShowWarning("El nombre \"" + SalesTerritory.Name + "\" ya esta en uso en " + SalesTerritory.CountryRegionCode + ".");
+            return;
+        }
+
         bool modificado = await salesTerritoryService.Guardar(SalesTerritory);
         if (modificado)
         {
@@ -75,6 +92,27 @@
         else
         {
             toastService.ShowError("Ha ocurrido un error inesperado al modificar.");
+        }
+    }
+
+    public async Task Eliminar()
+    {
+        try
+        {
+            bool eliminado = await salesTerritoryService.Eliminar(SalesTerritory.TerritoryId);
+            if (eliminado)
+            {
+                toastService.ShowSuccess("Territorio eliminado correctamente");
+                navigationManager.NavigateTo("/SalesTerritory/Index");
+            }
+        }
+        catch (InvalidOperationException ex)
+        {
+            toastService.ShowError(ex.Message);
+        }
+        catch (Exception ex)
+        {
+            toastService.ShowError("Error inesperado al eliminar");
         }
     }
 }

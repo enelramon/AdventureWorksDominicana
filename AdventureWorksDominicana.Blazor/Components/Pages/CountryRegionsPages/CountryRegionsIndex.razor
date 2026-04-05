@@ -11,75 +11,57 @@
             </div>
         </div>
         <div class="card-body">
-            @* Filtro por fechas *@
+            @* Encabezados *@
             <div class="row">
                 <div class="col-3">
-                    <label class="form-label">Desde</label>
+                    <label>Desde:</label>
                 </div>
                 <div class="col-3">
-                    <label class="form-label">Hasta</label>
+                    <label>Hasta:</label>
+                </div>
+                <div class="col-3">
+                    <label>Filtro:</label>
+                </div>
+                <div class="col-3">
+                    <label>Buscar:</label>
                 </div>
             </div>
-            <div class="row mb-3">
+
+            @* Inputs *@
+            <div class="row pb-3">
                 <div class="col-3">
                     <input class="form-control" type="datetime-local" @bind-value="FechaDesde" />
                 </div>
                 <div class="col-3">
                     <input class="form-control" type="datetime-local" @bind-value="FechaHasta" />
                 </div>
-            </div>
-
-            @* Busqueda y filtro *@
-            <div class="row">
-                <div class="col-3">
-                    <label class="form-label">Filtro</label>
-                </div>
-                <div class="col-4">
-                    <label class="form-label">B&uacute;squeda</label>
-                </div>
-            </div>
-            <div class="row">
                 <div class="col-3">
                     <select class="form-select" @bind="Filtro">
-                        <option value="" disabled hidden selected>Seleccione un filtro...</option>
-                        <option value="CountryRegionCode">Codigo</option>
+                        <option value="" disabled selected hidden>Seleccione un filtro...</option>
+                        <option value="CountryRegionCode">C&oacute;digo</option>
                         <option value="Nombre">Nombre</option>
                     </select>
                 </div>
-                <div class="col-4">
+                <div class="col-3">
                     <div class="input-group">
-                        <input class="form-control" type="text" @bind-value="ValorFiltro"/>
-                        <button class="btn btn-outline-primary bi bi-search" @onclick="Filtrar"></button>
+                        <input class="form-control" type="text" @bind-value="ValorFiltro" placeholder="Buscar..." />
+                        <button class="btn btn-primary bi bi-search" type="button" @onclick="Filtrar"></button>
+                        <button class="btn btn-outline-primary bi bi-arrow-clockwise" type="button" @onclick="Restablecer"></button>
                     </div>
                 </div>
             </div>
 
-            <table class="table table-striped">
-                <thead>
-                    <tr>
-                        <th>C&oacute;digo del pa&iacute;s</th>
-                        <th>Nombre</th>
-                        <th>Fecha de modificaci&oacute;n</th>
-                        <th>Acciones</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach (var country in ListaCountryRegions)
-                    {
-                        <tr>
-                            <td>@country.CountryRegionCode</td>
-                            <td>@country.Name</td>
-                            <td>@country.ModifiedDate</td>
-                            <td>
-                                <a class="btn btn-outline-warning bi bi-pencil-square" href="/CountryRegions/Edit/@country.CountryRegionCode"></a>
-                            </td>
-                        </tr>
-                    }
-                </tbody>
-            </table>
-        </div>
-        <div class="card-footer">
-            <strong>Cantidad:</strong> @ListaCountryRegions.Count
+            <div class="table-responsive">
+                <QuickGrid Class="table table-striped table-bordered table-hover" Pagination="@pages" Items="ListaCountryRegions.AsQueryable()" ItemKey="@(s => s.CountryRegionCode)">
+                    <PropertyColumn Property="@(s => s.CountryRegionCode)" Sortable="true" Title="C&oacute;digo"></PropertyColumn>
+                    <PropertyColumn Property="@(s => s.Name)" Sortable="true" Title="Nombre"></PropertyColumn>
+                    <TemplateColumn Class="text-center" Context="options" Title="Acci&oacute;n">
+                        <a href="/CountryRegions/Edit/@options.CountryRegionCode" class="btn btn-outline-primary bi bi-pencil-square"> Modificar</a>
+                    </TemplateColumn>
+                </QuickGrid>
+            </div>
+            @*Pagination*@
+            <Paginator State="@pages" />
         </div>
     </div>
 </div>
@@ -90,10 +72,12 @@
     public DateTime? FechaHasta { get; set; }
     public string Filtro { get; set; } = "";
     public string ValorFiltro { get; set; } = "";
+    private PaginationState pages = new PaginationState { ItemsPerPage = 5 };
 
     protected override async Task OnInitializedAsync()
     {
         ListaCountryRegions = await countryRegionsService.GetList(c => !c.CountryRegionCode.Equals(""));
+        ListaCountryRegions = ListaCountryRegions.OrderByDescending(s => s.ModifiedDate).ToList();
     }
 
     public async Task Filtrar()
@@ -128,5 +112,15 @@
             }
         }
         ListaCountryRegions = await countryRegionsService.GetList(criterio);
+        ListaCountryRegions = ListaCountryRegions.OrderByDescending(s => s.ModifiedDate).ToList();
+    }
+
+    public async Task Restablecer()
+    {
+        FechaDesde = null;
+        FechaHasta = null;
+        Filtro = "";
+        ValorFiltro = "";
+        await Filtrar();
     }
 }
