@@ -1,0 +1,111 @@
+﻿@page "/specialoffer"
+
+@using AdventureWorksDominicana.Data.Models
+@using AdventureWorksDominicana.Services
+@inject SpecialOfferService SpecialOfferService
+@inject NavigationManager Navigation
+
+<PageTitle>SpecialOffer</PageTitle>
+
+<div class="container mt-4">
+    <div class="card shadow-lg">
+
+        <!-- HEADER -->
+        <div class="card-header d-flex justify-content-between">
+            <h4 class="mb-0">SpecialOffer</h4>
+
+            <button class="btn btn-primary" @onclick="Nuevo">
+                <i class="bi bi-plus-square"></i> Crear
+            </button>
+        </div>
+
+        <!-- BODY -->
+        <div class="card-body">
+
+            <!-- FILA LABELS -->
+            <div class="row">
+                <div class="col-md-3"><label>Id</label></div>
+                <div class="col-md-5"><label>Descripción</label></div>
+                <div class="col-md-4"><label>Acciones</label></div>
+            </div>
+
+            <!-- FILA INPUTS -->
+            <div class="row mb-3">
+                <div class="col-md-3">
+                    <InputNumber class="form-control" @bind-Value="filtroId" />
+                </div>
+
+                <div class="col-md-5">
+                    <InputText class="form-control" @bind-Value="filtroDescripcion" />
+                </div>
+
+                <div class="col-md-4 d-flex gap-2">
+                    <button class="btn btn-primary w-100" @onclick="Buscar">
+                        <i class="bi bi-search"></i> Buscar
+                    </button>
+
+                    <button class="btn btn-outline-primary w-100" @onclick="Limpiar">
+                        <i class="bi bi-arrow-clockwise"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- TABLA -->
+            <QuickGrid Items="lista.AsQueryable()" Class="table table-striped table-bordered table-hover">
+
+                <PropertyColumn Property="@(x => x.SpecialOfferId)" Title="Id" />
+                <PropertyColumn Property="@(x => x.Description)" Title="Descripción" />
+                <PropertyColumn Property="@(x => x.DiscountPct)" Title="Descuento" />
+
+                <TemplateColumn Title="Acciones">
+                    <ChildContent Context="item">
+                        <button class="btn btn-outline-primary btn-sm"
+                                @onclick="() => Editar(item.SpecialOfferId)">
+                            <i class="bi bi-pencil-square"></i>
+                        </button>
+                    </ChildContent>
+                </TemplateColumn>
+
+            </QuickGrid>
+
+        </div>
+
+        <!-- FOOTER -->
+        <div class="card-footer text-end fw-bold">
+            Cantidad: @lista.Count
+        </div>
+
+    </div>
+</div>
+
+@code {
+    private List<SpecialOffer> lista = new();
+    private int? filtroId;
+    private string filtroDescripcion = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        await Cargar();
+    }
+
+    private async Task Cargar()
+    {
+        lista = await SpecialOfferService.Listar(s =>
+            (!filtroId.HasValue || s.SpecialOfferId == filtroId) &&
+            (string.IsNullOrWhiteSpace(filtroDescripcion) ||
+             (s.Description ?? "").Contains(filtroDescripcion)));
+    }
+
+    private async Task Buscar() => await Cargar();
+
+    private async Task Limpiar()
+    {
+        filtroId = null;
+        filtroDescripcion = "";
+        await Cargar();
+    }
+
+    private void Nuevo() => Navigation.NavigateTo("/specialoffer/create");
+
+    private void Editar(int id) => Navigation.NavigateTo($"/specialoffer/edit/{id}");
+}

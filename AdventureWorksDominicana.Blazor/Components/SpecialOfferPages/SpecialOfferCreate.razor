@@ -1,0 +1,77 @@
+﻿@page "/specialoffer/create"
+
+@using AdventureWorksDominicana.Data.Models
+@using AdventureWorksDominicana.Services
+@inject SpecialOfferService SpecialOfferService
+@inject NavigationManager Navigation
+
+<PageTitle>Crear SpecialOffer</PageTitle>
+
+<div class="container mt-4">
+    <div class="card shadow-lg">
+
+        <div class="card-header">
+            <h4 class="mb-0">Crear SpecialOffer</h4>
+        </div>
+
+        <EditForm Model="model" OnValidSubmit="Guardar">
+            <DataAnnotationsValidator />
+
+            <div class="card-body">
+
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Descripción</label>
+                    <InputText class="form-control" @bind-Value="model.Description" />
+                    <ValidationMessage For="() => model.Description" />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Descuento</label>
+                    <InputNumber class="form-control" @bind-Value="model.DiscountPct" />
+                    <ValidationMessage For="() => model.DiscountPct" />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Tipo</label>
+                    <InputText class="form-control" @bind-Value="model.Type" />
+                    <ValidationMessage For="() => model.Type" />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Categoría</label>
+                    <InputText class="form-control" @bind-Value="model.Category" />
+                    <ValidationMessage For="() => model.Category" />
+                </div>
+
+            </div>
+
+            <div class="card-footer text-center">
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-floppy"></i> Guardar
+                </button>
+
+                <button type="button" class="btn btn-secondary" @onclick="Volver">
+                    <i class="bi bi-arrow-left"></i> Volver
+                </button>
+            </div>
+
+        </EditForm>
+
+    </div>
+</div>
+
+@code {
+    private SpecialOffer model = new()
+    {
+        StartDate = DateTime.Today,
+        EndDate = DateTime.Today
+    };
+
+    private async Task Guardar()
+    {
+        await SpecialOfferService.Guardar(model);
+        Navigation.NavigateTo("/specialoffer");
+    }
+
+    private void Volver() => Navigation.NavigateTo("/specialoffer");
+}
