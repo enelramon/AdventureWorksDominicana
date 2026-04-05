@@ -50,6 +50,12 @@ public class AddressTypeService(IDbContextFactory<Contexto> DbFactory) : IServic
         await using var contexto = await DbFactory.CreateDbContextAsync();
         return await contexto.AddressTypes.FirstOrDefaultAsync(a => a.AddressTypeId == id);
     }
+    public async Task<bool> BuscarDuplicado(string nombre, int id)
+    {
+        await using var contexto = await DbFactory.CreateDbContextAsync();
+        return await contexto.AddressTypes
+            .AnyAsync(a => a.Name.ToLower() == nombre.ToLower() && a.AddressTypeId != id);
+    }
 
     public async Task<bool> Eliminar(int id)
     {
