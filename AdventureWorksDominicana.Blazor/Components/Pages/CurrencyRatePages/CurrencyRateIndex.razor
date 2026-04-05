@@ -1,0 +1,116 @@
+﻿@page "/CurrencyRate/Index"
+@inject CurrencyRateService currencyService
+@inject ToastService toastService
+@rendermode InteractiveServer
+
+<PageTitle>Tasas de Cambio</PageTitle>
+
+<div class="container-fluid mt-4">
+    <div class="card shadow-lg">
+
+        <div class="card-header bg-white d-flex justify-content-between align-items-center">
+            <h4 class="mb-0"> Registro de Tasas de Cambio</h4>
+            <a class="btn btn-primary" href="/CurrencyRate/Create">
+                <i class="bi bi-plus-square"></i> Crear
+            </a>
+        </div>
+
+        <div class="card-body">
+
+            <div class="row mb-4 align-items-end">
+                <div class="col-md-3">
+                    <label class="form-label">Desde</label>
+                    <input class="form-control" type="date" @bind="Desde" />
+                </div>
+
+                <div class="col-md-3">
+                    <label class="form-label ">Hasta</label>
+                    <input class="form-control" type="date" @bind="Hasta" />
+                </div>
+
+                <div class="col-md-3">
+                    <label class="form-label ">Filtrar por</label>
+                    <select class="form-select" @bind="Filtros">
+                        <option value="">Seleccione una opci&oacute;n</option>
+                        <option value="Id">Id</option>
+                        <option value="From">Moneda Origen</option>
+                        <option value="To">Moneda Destino</option>
+                    </select>
+                </div>
+
+                <div class="col-md-3">
+                    <label class="form-label ">Buscar</label>
+                    <div class="input-group">
+                        <input class="form-control" type="text" placeholder="Buscar..." @bind="ValorFiltro" />
+                        <button class="btn btn-outline-primary" type="button" @onclick="Buscar">
+                            <i class="bi bi-search"></i>
+                        </button>
+                        <button class="btn btn-outline-secondary" type="button" title="Limpiar Filtros" @onclick="Restablecer">
+                            <i class="bi bi-arrow-counterclockwise"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div class="table-responsive">
+                <QuickGrid Items="listaTasas.AsQueryable()" Class="table table-striped table-bordered table-hover">
+                    <PropertyColumn Property="@(c => c.CurrencyRateId)" Title="ID" />
+                    <PropertyColumn Property="@(c => c.CurrencyRateDate.ToString("dd/MM/yyyy"))" Title="Fecha Tasa" />
+                    <PropertyColumn Property="@(c => c.FromCurrencyCode)" Title="Origen" />
+                    <PropertyColumn Property="@(c => c.ToCurrencyCode)" Title="Destino" />
+                    <PropertyColumn Property="@(c => c.AverageRate)" Title="Tasa Promedio" />
+
+                    <TemplateColumn Title="Acciones">
+                        <a class="btn btn-outline-primary btn-sm" href="/CurrencyRate/Edit/@context.CurrencyRateId">
+                            <i class="bi bi-pencil-square"></i> Modificar
+                        </a>
+                    </TemplateColumn>
+                </QuickGrid>
+            </div>
+
+
+        </div>
+
+        <div class="card-footer text-end fw-bold bg-white">
+            Total de Registros: @listaTasas.Count
+        </div>
+    </div>
+</div>
+
+@code {
+    private List<CurrencyRate> listaTasas = new();
+    private DateTime? Desde;
+    private DateTime? Hasta;
+    private string Filtros = "";
+    private string ValorFiltro = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CargarDatos();
+    }
+
+    private async Task CargarDatos()
+    {
+        listaTasas = await currencyService.GetList(c => true);
+    }
+
+    private async Task Buscar()
+    {
+        listaTasas = await currencyService.GetList(c =>
+            (!Desde.HasValue || c.CurrencyRateDate >= Desde.Value) &&
+            (!Hasta.HasValue || c.CurrencyRateDate <= Hasta.Value) &&
+            (string.IsNullOrEmpty(ValorFiltro) ||
+                (Filtros == "Id" && c.CurrencyRateId.ToString() == ValorFiltro) ||
+                (Filtros == "From" && c.FromCurrencyCode.Contains(ValorFiltro)) ||
+                (Filtros == "To" && c.ToCurrencyCode.Contains(ValorFiltro))
+            ));
+    }
+
+    private async Task Restablecer()
+    {
+        Desde = null;
+        Hasta = null;
+        Filtros = "";
+        ValorFiltro = "";
+        await CargarDatos();
+    }
+}
