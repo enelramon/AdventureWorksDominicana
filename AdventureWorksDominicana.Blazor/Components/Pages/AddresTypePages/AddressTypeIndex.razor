@@ -1,0 +1,117 @@
+﻿@page "/AddressType/Index"
+@inject AddressTypeService addressTypeService;
+
+<div class="container">
+    <div class="card shadow-lg">
+        <div class="card-header d-flex justify-content-between">
+            <h3>Address Types</h3>
+            <a class="btn btn-primary bi bi-plus-square" href="/AddressType/Create"> Crear</a>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-3">
+                    <label class="form-label">Desde</label>
+                </div>
+                <div class="col-3">
+                    <label class="form-label">Hasta</label>
+                </div>
+            </div>
+            <div class="row mb-3">
+                <div class="col-3">
+                    <input class="form-control" type="datetime-local" @bind-value="FechaDesde" />
+                </div>
+                <div class="col-3">
+                    <input class="form-control" type="datetime-local" @bind-value="FechaHasta" />
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-3">
+                    <label class="form-label">Filtro</label>
+                </div>
+                <div class="col-4">
+                    <label class="form-label">B&uacute;squeda</label>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-3">
+                    <select class="form-select" @bind="Filtro">
+                        <option value="" disabled hidden selected>Seleccione un filtro...</option>
+                        <option value="Nombre">Nombre</option>
+                    </select>
+                </div>
+                <div class="col-4">
+                    <div class="input-group">
+                        <input class="form-control" type="text" @bind-value="ValorFiltro" />
+                        <button class="btn btn-outline-primary bi bi-search" @onclick="Filtrar"></button>
+                    </div>
+                </div>
+            </div>
+
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Id</th>
+                        <th>Nombre</th>
+                        <th>Fecha de modificaci&oacute;n</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var addressType in ListaAddressType)
+                    {
+                        <tr>
+                            <td>@addressType.AddressTypeId</td>
+                            <td>@addressType.Name</td>
+                            <td>@addressType.ModifiedDate</td>
+                            <td>
+                                <a class="btn btn-outline-warning bi bi-pencil-square" href="/AddressType/Edit/@addressType.AddressTypeId"></a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+        <div class="card-footer">
+            <strong>Cantidad:</strong> @ListaAddressType.Count
+        </div>
+    </div>
+</div>
+
+@code {
+    public List<AddressType> ListaAddressType { get; set; } = new List<AddressType>();
+    public DateTime? FechaDesde { get; set; }
+    public DateTime? FechaHasta { get; set; }
+    public string Filtro { get; set; } = "";
+    public string ValorFiltro { get; set; } = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        ListaAddressType = await addressTypeService.Listar(a => a.AddressTypeId > 0);
+        ListaAddressType = ListaAddressType.OrderByDescending(a => a.ModifiedDate).ToList();
+    }
+
+    public async Task Filtrar()
+    {
+        if (Filtro == "Nombre" && !string.IsNullOrEmpty(ValorFiltro))
+        {
+            ListaAddressType = await addressTypeService.Listar(a => a.Name.ToLower().Contains(ValorFiltro.ToLower()));
+        }
+        else
+        {
+            ListaAddressType = await addressTypeService.Listar(a => a.AddressTypeId > 0);
+        }
+
+        if (FechaDesde.HasValue)
+        {
+            ListaAddressType = ListaAddressType.Where(a => a.ModifiedDate >= FechaDesde.Value).ToList();
+        }
+
+        if (FechaHasta.HasValue)
+        {
+            ListaAddressType = ListaAddressType.Where(a => a.ModifiedDate <= FechaHasta.Value).ToList();
+        }
+
+        ListaAddressType = ListaAddressType.OrderByDescending(a => a.ModifiedDate).ToList();
+    }
+}
