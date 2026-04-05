@@ -1,0 +1,73 @@
+﻿@page "/Order/Review/{SalesOrderId:int}"
+@rendermode InteractiveServer
+@inject SalesOrderHeaderService salesOrderHeaderService
+@inject NavigationManager navigationManager
+@inject ToastService toastService
+<PageTitle>Order Review</PageTitle>
+<div class="">
+    <div class="shopping-container">
+        @*Header*@
+        <div class="shopping-header">
+            <div class="shopping-header-logo">
+                <i class="btn btn-primary bi bi-arrow-left" @onclick="GoToOrders"></i>
+                <img src="/AdventureLogo.png" alt="AdventureWorksDominicana Logo" />
+                <h4 class="card-title">Order Review</h4>
+            </div>
+        </div>
+        <div class="shopping-body">
+            <div class="shopping-products">
+                @foreach (var s in SalesOrderHeaders.SalesOrderDetails)
+                {
+                    <div class="shopping-product-card">
+                        <div class="shopping-product-img">
+                            <img src="https://www.svgrepo.com/show/486796/product-management.svg" alt="Product Image" />
+                            <span>@s.SpecialOfferProduct.Product.Color</span>
+                        </div>
+                        <div class="shopping-product-info">
+                            <div class="shopping-product-header">
+                                <span>@(s.SpecialOfferProduct.Product.ProductSubcategory?.ProductCategory?.Name ?? "N/A")</span>
+                            </div>
+                            <div>
+                                <p>@s.SpecialOfferProduct.Product.Name</p>
+                            </div>
+                            <div class="quantity-product-action">
+                                <span>@s.OrderQty</span>
+                            </div>
+                            <div>
+                                <span>RD$ @s.LineTotal.ToString("N2")</span>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+            <div class="balance-general">
+                <p>Contabilidad</p>
+                <hr />
+                <div>
+                    <span>Impuestos:</span>
+                    <span>RD$@SalesOrderHeaders.TaxAmt.ToString("N2")</span>
+                    <span>Flete:</span>
+                    <span>RD$@SalesOrderHeaders.Freight.ToString("N2")</span>
+                    <span>Subtotal:</span>
+                    <span>RD$@SalesOrderHeaders.SubTotal.ToString("N2")</span>
+                    <span>Total:</span>
+                    <span>RD$@SalesOrderHeaders.TotalDue.ToString("N2")</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+</div>
+
+@code {
+    [Parameter]
+    public int SalesOrderId { get; set; }
+    private SalesOrderHeader SalesOrderHeaders = new SalesOrderHeader();
+
+    protected override async Task OnInitializedAsync()
+    {
+        SalesOrderHeaders = await salesOrderHeaderService.Buscar(SalesOrderId);
+    }
+
+    private void GoToOrders() => navigationManager.NavigateTo("/Orders");
+}

@@ -1,0 +1,22 @@
+﻿.order-header {
+    padding: 5px 30px;
+}
+.order-header-logo h4{
+    font-size: 4vw;
+}
+.card-body{
+    display:flex;
+    flex-direction:column;
+    justify-content:left;
+    gap:20px;
+    padding: 5px 30px;
+}
+.order-card {
+    border: 1px solid #4cff00;
+    border-radius: 10px;
+    padding:30px;
+    width: 60%;
+}
+.header-card{
+    display:flex;
+}

@@ -1,0 +1,44 @@
+﻿@page "/Orders"
+@rendermode InteractiveServer
+@inject SalesOrderHeaderService salesOrderHeaderService
+@inject NavigationManager navigationManager
+<PageTitle>Orders</PageTitle>
+<div class="">
+    <div class=" shadow-lg">
+        @*Header*@
+        <div class="order-header">
+            <div class="order-header-logo">
+                <i class="btn btn-primary bi bi-arrow-left" @onclick="GoToSale"></i>
+                <h4 class="card-title">Orders</h4>
+            </div>
+        </div>
+        <hr/>
+        <div class="card-body">
+            @foreach(var s in SalesOrderHeadersList)
+            {
+                <div class="order-card" @onclick="() => GoToOrderReview(s.SalesOrderId)">
+                    <div class="header-card">
+                        <p>@(s.ShipDate?.ToString("dd/MM/yyyy") ?? "")</p>
+                        <span>@(s.Status == 1 ? "En proceso" : "Cancelado")</span>
+                    </div>
+                    <div>
+                        <p>@s.TotalDue</p>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+@code {
+    private List<SalesOrderHeader> SalesOrderHeadersList = new List<SalesOrderHeader>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        SalesOrderHeadersList = await salesOrderHeaderService.GetList(s => true);
+    }
+
+    private void GoToSale() => navigationManager.NavigateTo("/Sales");
+
+    private void GoToOrderReview(int saleId) => navigationManager.NavigateTo($"Order/Review/{saleId}");
+
+}
