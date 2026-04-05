@@ -1,0 +1,164 @@
+﻿@page "/Person/Create"
+@using AdventureWorksDominicana.Data.Models
+@using AdventureWorksDominicana.Services
+
+@inject PersonService personService
+@inject NavigationManager navigationManager
+@inject ToastService toastService
+
+@rendermode InteractiveServer
+
+<PageTitle>Crear Persona</PageTitle>
+
+<Toasts class="p-3" AutoHide="true" Delay="5000" Placement="ToastsPlacement.TopRight" />
+
+<EditForm Model="persona" OnValidSubmit="Guardar">
+    <DataAnnotationsValidator />
+    <div class="container mt-4">
+        <div class="card shadow-lg">
+            <div class="card-header">
+                <h4 class="mb-0">Registro de persona</h4>
+            </div>
+            <div class="card-body">
+                
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label fw-bold">Tipo de Persona</label>
+                        <InputSelect class="form-select" @bind-Value="persona.PersonType">
+                            <option value="">Seleccione...</option>
+                            <option value="SC">Store Contact (SC)</option>
+                            <option value="IN">Individual (IN)</option>
+                            <option value="SP">Sales Person (SP)</option>
+                            <option value="EM">Employee (EM)</option>
+                            <option value="VC">Vendor Contact (VC)</option>
+                            <option value="GC">General Contact (GC)</option>
+                        </InputSelect>
+                        <ValidationMessage For="@(() => persona.PersonType)" />
+                    </div>
+                    
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label fw-bold">Promocion por Correo</label>
+                        <InputSelect class="form-select" @bind-Value="persona.EmailPromotion">
+                            <option value="0">0 - No recibir promociones</option>
+                            <option value="1">1 - Promociones de AdventureWorks</option>
+                            <option value="2">2 - AdventureWorks y Partners</option>
+                        </InputSelect>
+                        <ValidationMessage For="@(() => persona.EmailPromotion)" />
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-2 mb-3">
+                        <label class="form-label fw-bold">Titulo</label>
+                        <InputText class="form-control" @bind-Value="persona.Title" maxlength="8" />
+                        <ValidationMessage For="@(() => persona.Title)" />
+                    </div>
+
+                    <div class="col-md-5 mb-3">
+                        <label class="form-label fw-bold">Primer Nombre</label>
+                        <InputText class="form-control" @bind-Value="persona.FirstName" maxlength="50" />
+                        <ValidationMessage For="@(() => persona.FirstName)" />
+                    </div>
+
+                    <div class="col-md-5 mb-3">
+                        <label class="form-label fw-bold">Segundo Nombre</label>
+                        <InputText class="form-control" @bind-Value="persona.MiddleName" maxlength="50" />
+                        <ValidationMessage For="@(() => persona.MiddleName)" />
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label fw-bold">Apellido</label>
+                        <InputText class="form-control" @bind-Value="persona.LastName" maxlength="50" />
+                        <ValidationMessage For="@(() => persona.LastName)" />
+                    </div>
+
+                    <div class="col-md-3 mb-3">
+                        <label class="form-label fw-bold">Sufijo</label>
+                        <InputText class="form-control" @bind-Value="persona.Suffix" maxlength="10" />
+                        <ValidationMessage For="@(() => persona.Suffix)" />
+                    </div>
+
+                    <div class="col-md-3 mb-3 d-flex align-items-center mt-4">
+                        <div class="form-check">
+                            <InputCheckbox class="form-check-input" @bind-Value="persona.NameStyle" id="nameStyleCheck" />
+                            <label class="form-check-label fw-bold" for="nameStyleCheck">
+                                Estilo Oriental
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                @if (!string.IsNullOrWhiteSpace(mensaje))
+                {
+                    <div class="alert alert-danger mt-3 mb-0">
+                        @mensaje
+                    </div>
+                }
+            </div>
+            <div class="card-footer text-center">
+                <a class="btn btn-outline-secondary" href="/Person/Index">
+                    <i class="bi bi-arrow-left"></i> Volver
+                </a>
+                <button type="submit" class="btn btn-outline-success" disabled="@guardando">
+                    <i class="bi bi-file-earmark"></i> Guardar
+                </button>
+            </div>
+        </div>
+    </div>
+</EditForm>
+
+<div class="fixed-bottom p-2 text-start" style="font-size: 0.70rem; color: var(--bs-primary); opacity: 0.4; pointer-events: none; user-select: none;">
+    PumpDev
+</div>
+
+@code {
+    private Person persona { get; set; } = new Person();
+    private bool guardando { get; set; } = false;
+    private string mensaje = string.Empty;
+
+    private async Task Guardar()
+    {
+        guardando = true;
+        mensaje = string.Empty;
+        
+        if (string.IsNullOrWhiteSpace(persona.PersonType))
+        {
+            mensaje = "Debe seleccionar un tipo de persona.";
+            guardando = false;
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(persona.FirstName))
+        {
+            mensaje = "El primer nombre es obligatorio.";
+            guardando = false;
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(persona.LastName))
+        {
+            mensaje = "El apellido es obligatorio.";
+            guardando = false;
+            return;
+        }
+
+        try
+        {
+            if (await personService.Guardar(persona))
+            {
+                toastService.ShowSuccess("Persona guardada correctamente.");
+                navigationManager.NavigateTo("/Person/Index");
+            }
+            else
+            {
+                mensaje = "Ocurrio un error al intentar guardar la persona.";
+                guardando = false;
+            }
+        }
+        catch (Exception ex)
+        {
+            mensaje = ex.Message;
+            guardando = false;
+        }
+    }
+}
