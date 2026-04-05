@@ -1,0 +1,144 @@
+﻿@page "/EmailAddress/Index"
+
+@using AdventureWorksDominicana.Data.Models
+@using AdventureWorksDominicana.Services
+@using Microsoft.AspNetCore.Components.QuickGrid
+@inject EmailAddressService Service
+@inject NavigationManager Navigation
+
+<PageTitle>EmailAddress</PageTitle>
+
+<div class="container mt-4">
+    <div class="card shadow-lg">
+
+        <!-- HEADER -->
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h4 class="mb-0">EmailAddress</h4>
+
+            <button class="btn btn-primary" @onclick="Crear">
+                <i class="bi bi-plus-square"></i> Crear
+            </button>
+        </div>
+
+        <!-- BODY -->
+        <div class="card-body">
+
+            <!-- LABELS -->
+            <div class="row">
+                <div class="col-md-3">
+                    <label class="form-label fw-bold">Id Persona</label>
+                </div>
+                <div class="col-md-5">
+                    <label class="form-label fw-bold">Email</label>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label fw-bold">Nombre</label>
+                </div>
+            </div>
+
+            <!-- INPUTS -->
+            <div class="row mb-3">
+                <div class="col-md-3">
+                    <InputNumber class="form-control" @bind-Value="filtroBusinessEntityId" />
+                </div>
+
+                <div class="col-md-5">
+                    <InputText class="form-control" @bind-Value="filtroEmail" />
+                </div>
+
+                <div class="col-md-4">
+                    <InputText class="form-control" @bind-Value="filtroNombre" />
+                </div>
+            </div>
+
+            <!-- BOTONES -->
+            <div class="row mb-3">
+                <div class="col-md-12 d-flex gap-2">
+                    <button class="btn btn-primary w-100" @onclick="Buscar">
+                        <i class="bi bi-search"></i> Buscar
+                    </button>
+
+                    <button class="btn btn-outline-primary w-100" @onclick="Reestablecer">
+                        <i class="bi bi-arrow-clockwise"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- TABLA -->
+            <QuickGrid Items="lista.AsQueryable()" Class="table table-striped table-bordered table-hover">
+
+                <PropertyColumn Property="@(x => x.BusinessEntityId)" Title="Id Persona" />
+                <PropertyColumn Property="@(x => x.EmailAddressId)" Title="Id Email" />
+                <PropertyColumn Property="@(x => x.EmailAddress1)" Title="Email" />
+
+                <TemplateColumn Title="Nombre">
+                    <ChildContent Context="item">
+                        @ObtenerNombrePersona(item.BusinessEntityId)
+                    </ChildContent>
+                </TemplateColumn>
+
+                <TemplateColumn Title="Acciones">
+                    <ChildContent Context="item">
+                        <button class="btn btn-outline-primary btn-sm"
+                                @onclick="() => Editar(item.BusinessEntityId, item.EmailAddressId)">
+                            <i class="bi bi-pencil-square"></i>
+                        </button>
+                    </ChildContent>
+                </TemplateColumn>
+
+            </QuickGrid>
+
+        </div>
+
+        <!-- FOOTER -->
+        <div class="card-footer text-end fw-bold">
+            Cantidad: @lista.Count
+        </div>
+
+    </div>
+</div>
+
+@code {
+    private List<EmailAddress> lista = new();
+    private List<Person> personas = new();
+
+    private int? filtroBusinessEntityId;
+    private string filtroEmail = string.Empty;
+    private string filtroNombre = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        personas = await Service.GetPersonas();
+        await Cargar();
+    }
+
+    private string ObtenerNombrePersona(int businessEntityId)
+    {
+        var persona = personas.FirstOrDefault(p => p.BusinessEntityId == businessEntityId);
+        return persona is null ? string.Empty : $"{persona.FirstName} {persona.LastName}";
+    }
+
+    private async Task Cargar()
+    {
+        lista = await Service.Listar(e =>
+            (!filtroBusinessEntityId.HasValue || e.BusinessEntityId == filtroBusinessEntityId.Value) &&
+            (string.IsNullOrWhiteSpace(filtroEmail) || (e.EmailAddress1 ?? string.Empty).Contains(filtroEmail)) &&
+            (string.IsNullOrWhiteSpace(filtroNombre) || ObtenerNombrePersona(e.BusinessEntityId).Contains(filtroNombre))
+        );
+    }
+
+    private async Task Buscar() => await Cargar();
+
+    private async Task Reestablecer()
+    {
+        filtroBusinessEntityId = null;
+        filtroEmail = string.Empty;
+        filtroNombre = string.Empty;
+        await Cargar();
+    }
+
+    private void Crear() => Navigation.NavigateTo("/EmailAddress/Create");
+
+    private void Editar(int businessEntityId, int emailAddressId)
+        => Navigation.NavigateTo($"/EmailAddress/Edit/{businessEntityId}/{emailAddressId}");
+}

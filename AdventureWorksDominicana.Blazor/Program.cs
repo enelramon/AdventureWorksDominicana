@@ -78,6 +78,12 @@ builder.Services.AddScoped<CurrencyRateService>();
 builder.Services.AddScoped<SpecialOfferProductService>();
 builder.Services.AddScoped<ProductDescriptionService>();
 builder.Services.AddScoped<ShoppingCartItemService>();
+builder.Services.AddScoped<EmailAddressService>();
+builder.Services.AddScoped<VStoreWithContactService>();
+builder.Services.AddScoped<SpecialOfferService>();
+builder.Services.AddScoped<AddressService>();
+builder.Services.AddScoped<VStateProvinceCountryRegionService>();
+
 builder.Services.AddScoped<ProductService>();
 builder.Services.AddScoped<ProductModelService>();
 builder.Services.AddScoped<UnitMeasureService>();

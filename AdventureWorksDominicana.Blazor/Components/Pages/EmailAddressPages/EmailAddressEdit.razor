@@ -1,0 +1,175 @@
+﻿@page "/EmailAddress/Edit/{BusinessEntityId:int}/{EmailAddressId:int}"
+
+@using AdventureWorksDominicana.Data.Models
+@using AdventureWorksDominicana.Services
+@using Microsoft.AspNetCore.Components.Forms
+@inject EmailAddressService Service
+@inject NavigationManager Navigation
+
+@rendermode InteractiveServer
+
+<PageTitle>Editar EmailAddress</PageTitle>
+
+@if (model == null)
+{
+    <p>Cargando...</p>
+}
+else
+{
+    <div class="container mt-4">
+        <EditForm Model="model" OnValidSubmit="Guardar">
+            <DataAnnotationsValidator />
+
+            <div class="card shadow-lg">
+                <div class="card-header">
+                    <h4 class="mb-0">Editar EmailAddress</h4>
+                </div>
+
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Id Email</label>
+                        <InputNumber class="form-control" @bind-Value="model.EmailAddressId" readonly />
+                        <ValidationMessage For="() => model.EmailAddressId" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Persona</label>
+                        <InputSelect class="form-select" @bind-Value="model.BusinessEntityId" disabled>
+                            <option value="0">Seleccione...</option>
+                            @foreach (var persona in personas)
+                            {
+                                <option value="@persona.BusinessEntityId">
+                                    @persona.FirstName @persona.LastName
+                                </option>
+                            }
+                        </InputSelect>
+                        <ValidationMessage For="() => model.BusinessEntityId" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Email</label>
+                        <InputText class="form-control" @bind-Value="model.EmailAddress1" />
+                        <ValidationMessage For="() => model.EmailAddress1" />
+                    </div>
+
+                    @if (!string.IsNullOrWhiteSpace(mensaje))
+                    {
+                        <div class="alert alert-danger mb-0">
+                            @mensaje
+                        </div>
+                    }
+                </div>
+
+                <div class="card-footer text-center">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-floppy"></i> Modificar
+                    </button>
+
+                    <button type="button" class="btn btn-secondary" @onclick="Volver">
+                        <i class="bi bi-arrow-left"></i> Volver
+                    </button>
+
+                    <button type="button" class="btn btn-danger" @onclick="MostrarEliminar">
+                        <i class="bi bi-trash"></i> Eliminar
+                    </button>
+                </div>
+            </div>
+        </EditForm>
+    </div>
+
+    @if (mostrarConfirmacion)
+    {
+        <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,.5);">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Confirmar eliminación</h5>
+                        <button type="button" class="btn-close" @onclick="CerrarEliminar"></button>
+                    </div>
+                    <div class="modal-body">
+                        ¿Desea eliminar este email?
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" @onclick="CerrarEliminar">Cancelar</button>
+                        <button type="button" class="btn btn-danger" @onclick="EliminarConfirmado">
+                            Sí, eliminar
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+}
+
+@code {
+    [Parameter] public int BusinessEntityId { get; set; }
+    [Parameter] public int EmailAddressId { get; set; }
+
+    private EmailAddress? model;
+    private List<Person> personas = new();
+    private string mensaje = string.Empty;
+    private bool mostrarConfirmacion = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        personas = await Service.GetPersonas();
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        model = await Service.Buscar(BusinessEntityId, EmailAddressId);
+
+        if (model is null)
+        {
+            mensaje = "Registro no encontrado.";
+        }
+    }
+
+    private async Task Guardar()
+    {
+        if (model is null)
+            return;
+
+        mensaje = string.Empty;
+
+        if (string.IsNullOrWhiteSpace(model.EmailAddress1))
+        {
+            mensaje = "Debe completar el email.";
+            return;
+        }
+
+        var guardado = await Service.Guardar(model);
+
+        if (guardado)
+        {
+            Navigation.NavigateTo("/EmailAddress/Index");
+        }
+        else
+        {
+            mensaje = "No se pudo actualizar el registro.";
+        }
+    }
+
+    private void Volver() => Navigation.NavigateTo("/EmailAddress/Index");
+
+    private void MostrarEliminar() => mostrarConfirmacion = true;
+
+    private void CerrarEliminar() => mostrarConfirmacion = false;
+
+    private async Task EliminarConfirmado()
+    {
+        if (model is null)
+            return;
+
+        var eliminado = await Service.Eliminar(model.BusinessEntityId, model.EmailAddressId);
+
+        if (eliminado)
+        {
+            Navigation.NavigateTo("/EmailAddress/Index");
+        }
+        else
+        {
+            mensaje = "No se pudo eliminar el registro.";
+        }
+    }
+}

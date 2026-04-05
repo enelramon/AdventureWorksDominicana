@@ -208,6 +208,9 @@ public partial class Contexto : DbContext
 
     public virtual DbSet<WorkOrderRouting> WorkOrderRoutings { get; set; }
 
+    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
+        => optionsBuilder.UseSqlServer("Server=EnelXps;Database=AdventureWorksDb;Trusted_Connection=True;TrustServerCertificate=True");
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
@@ -593,10 +596,10 @@ public partial class Contexto : DbContext
             entity.HasKey(e => e.BusinessEntityId).HasName("PK_Employee_BusinessEntityID");
 
             entity.ToTable("Employee", "HumanResources", tb =>
-                {
-                    tb.HasComment("Employee information such as salary, department, and title.");
-                    tb.HasTrigger("dEmployee");
-                });
+            {
+                tb.HasComment("Employee information such as salary, department, and title.");
+                tb.HasTrigger("dEmployee");
+            });
 
             entity.Property(e => e.BusinessEntityId)
                 .ValueGeneratedNever()
@@ -757,10 +760,10 @@ public partial class Contexto : DbContext
             entity.HasKey(e => e.BusinessEntityId).HasName("PK_Person_BusinessEntityID");
 
             entity.ToTable("Person", "Person", tb =>
-                {
-                    tb.HasComment("Human beings involved with AdventureWorks: employees, customer contacts, and vendor contacts.");
-                    tb.HasTrigger("iuPerson");
-                });
+            {
+                tb.HasComment("Human beings involved with AdventureWorks: employees, customer contacts, and vendor contacts.");
+                tb.HasTrigger("iuPerson");
+            });
 
             entity.Property(e => e.BusinessEntityId)
                 .ValueGeneratedNever()
@@ -1143,11 +1146,11 @@ public partial class Contexto : DbContext
             entity.HasKey(e => new { e.PurchaseOrderId, e.PurchaseOrderDetailId }).HasName("PK_PurchaseOrderDetail_PurchaseOrderID_PurchaseOrderDetailID");
 
             entity.ToTable("PurchaseOrderDetail", "Purchasing", tb =>
-                {
-                    tb.HasComment("Individual products associated with a specific purchase order. See PurchaseOrderHeader.");
-                    tb.HasTrigger("iPurchaseOrderDetail");
-                    tb.HasTrigger("uPurchaseOrderDetail");
-                });
+            {
+                tb.HasComment("Individual products associated with a specific purchase order. See PurchaseOrderHeader.");
+                tb.HasTrigger("iPurchaseOrderDetail");
+                tb.HasTrigger("uPurchaseOrderDetail");
+            });
 
             entity.Property(e => e.PurchaseOrderId).HasComment("Primary key. Foreign key to PurchaseOrderHeader.PurchaseOrderID.");
             entity.Property(e => e.PurchaseOrderDetailId)
@@ -1179,10 +1182,10 @@ public partial class Contexto : DbContext
             entity.HasKey(e => e.PurchaseOrderId).HasName("PK_PurchaseOrderHeader_PurchaseOrderID");
 
             entity.ToTable("PurchaseOrderHeader", "Purchasing", tb =>
-                {
-                    tb.HasComment("General purchase order information. See PurchaseOrderDetail.");
-                    tb.HasTrigger("uPurchaseOrderHeader");
-                });
+            {
+                tb.HasComment("General purchase order information. See PurchaseOrderDetail.");
+                tb.HasTrigger("uPurchaseOrderHeader");
+            });
 
             entity.Property(e => e.PurchaseOrderId).HasComment("Primary key.");
             entity.Property(e => e.EmployeeId).HasComment("Employee who created the purchase order. Foreign key to Employee.BusinessEntityID.");
@@ -1218,10 +1221,10 @@ public partial class Contexto : DbContext
             entity.HasKey(e => new { e.SalesOrderId, e.SalesOrderDetailId }).HasName("PK_SalesOrderDetail_SalesOrderID_SalesOrderDetailID");
 
             entity.ToTable("SalesOrderDetail", "Sales", tb =>
-                {
-                    tb.HasComment("Individual products associated with a specific sales order. See SalesOrderHeader.");
-                    tb.HasTrigger("iduSalesOrderDetail");
-                });
+            {
+                tb.HasComment("Individual products associated with a specific sales order. See SalesOrderHeader.");
+                tb.HasTrigger("iduSalesOrderDetail");
+            });
 
             entity.Property(e => e.SalesOrderId).HasComment("Primary key. Foreign key to SalesOrderHeader.SalesOrderID.");
             entity.Property(e => e.SalesOrderDetailId)
@@ -1253,10 +1256,10 @@ public partial class Contexto : DbContext
             entity.HasKey(e => e.SalesOrderId).HasName("PK_SalesOrderHeader_SalesOrderID");
 
             entity.ToTable("SalesOrderHeader", "Sales", tb =>
-                {
-                    tb.HasComment("General sales order information.");
-                    tb.HasTrigger("uSalesOrderHeader");
-                });
+            {
+                tb.HasComment("General sales order information.");
+                tb.HasTrigger("uSalesOrderHeader");
+            });
 
             entity.Property(e => e.SalesOrderId).HasComment("Primary key.");
             entity.Property(e => e.AccountNumber).HasComment("Financial accounting number reference.");
@@ -1795,10 +1798,10 @@ public partial class Contexto : DbContext
             entity.HasKey(e => e.BusinessEntityId).HasName("PK_Vendor_BusinessEntityID");
 
             entity.ToTable("Vendor", "Purchasing", tb =>
-                {
-                    tb.HasComment("Companies from whom Adventure Works Cycles purchases parts or other goods.");
-                    tb.HasTrigger("dVendor");
-                });
+            {
+                tb.HasComment("Companies from whom Adventure Works Cycles purchases parts or other goods.");
+                tb.HasTrigger("dVendor");
+            });
 
             entity.Property(e => e.BusinessEntityId)
                 .ValueGeneratedNever()
@@ -1825,11 +1828,11 @@ public partial class Contexto : DbContext
             entity.HasKey(e => e.WorkOrderId).HasName("PK_WorkOrder_WorkOrderID");
 
             entity.ToTable("WorkOrder", "Production", tb =>
-                {
-                    tb.HasComment("Manufacturing work orders.");
-                    tb.HasTrigger("iWorkOrder");
-                    tb.HasTrigger("uWorkOrder");
-                });
+            {
+                tb.HasComment("Manufacturing work orders.");
+                tb.HasTrigger("iWorkOrder");
+                tb.HasTrigger("uWorkOrder");
+            });
 
             entity.Property(e => e.WorkOrderId).HasComment("Primary key for WorkOrder records.");
             entity.Property(e => e.DueDate).HasComment("Work order due date.");

@@ -1,0 +1,98 @@
+﻿@page "/VStateProvinceCountryRegion/Index"
+
+@using AdventureWorksDominicana.Data.Models
+@using AdventureWorksDominicana.Services
+@using Microsoft.AspNetCore.Components.QuickGrid
+@inject VStateProvinceCountryRegionService Service
+
+<PageTitle>VStateProvinceCountryRegion</PageTitle>
+
+<div class="container mt-4">
+    <div class="card shadow-lg">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h4 class="mb-0">VStateProvinceCountryRegion</h4>
+        </div>
+
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-4">
+                    <label class="form-label fw-bold">País</label>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label fw-bold">Provincia</label>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label fw-bold">Código</label>
+                </div>
+            </div>
+
+            <div class="row mb-3">
+                <div class="col-md-4">
+                    <InputText class="form-control" @bind-Value="filtroPais" />
+                </div>
+
+                <div class="col-md-4">
+                    <InputText class="form-control" @bind-Value="filtroProvincia" />
+                </div>
+
+                <div class="col-md-4">
+                    <InputText class="form-control" @bind-Value="filtroCodigo" />
+                </div>
+            </div>
+
+            <div class="row mb-3">
+                <div class="col-md-12 d-flex gap-2">
+                    <button class="btn btn-primary w-100" @onclick="Buscar">
+                        <i class="bi bi-search"></i> Buscar
+                    </button>
+
+                    <button class="btn btn-outline-primary w-100" @onclick="Limpiar">
+                        <i class="bi bi-arrow-clockwise"></i>
+                    </button>
+                </div>
+            </div>
+
+            <QuickGrid Items="lista.AsQueryable()" Class="table table-striped table-bordered table-hover">
+                <PropertyColumn Property="@(x => x.CountryRegionCode)" Title="Código País" />
+                <PropertyColumn Property="@(x => x.CountryRegionName)" Title="País" />
+                <PropertyColumn Property="@(x => x.StateProvinceCode)" Title="Código Estado" />
+                <PropertyColumn Property="@(x => x.StateProvinceName)" Title="Provincia" />
+            </QuickGrid>
+        </div>
+
+        <div class="card-footer text-end fw-bold">
+            @lista.Count item(s)
+        </div>
+    </div>
+</div>
+
+@code {
+    private List<VStateProvinceCountryRegion> lista = new();
+    private string filtroPais = string.Empty;
+    private string filtroProvincia = string.Empty;
+    private string filtroCodigo = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await Cargar();
+    }
+
+    private async Task Cargar()
+    {
+        lista = await Service.Listar(x =>
+            (string.IsNullOrWhiteSpace(filtroPais) || (x.CountryRegionName ?? string.Empty).Contains(filtroPais)) &&
+            (string.IsNullOrWhiteSpace(filtroProvincia) || (x.StateProvinceName ?? string.Empty).Contains(filtroProvincia)) &&
+            (string.IsNullOrWhiteSpace(filtroCodigo) || (x.StateProvinceCode ?? string.Empty).Contains(filtroCodigo))
+        );
+    }
+
+    private async Task Buscar() => await Cargar();
+
+    private async Task Limpiar()
+    {
+        filtroPais = string.Empty;
+        filtroProvincia = string.Empty;
+        filtroCodigo = string.Empty;
+        await Cargar();
+    }
+}

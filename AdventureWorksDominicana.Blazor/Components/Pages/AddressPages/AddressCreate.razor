@@ -1,0 +1,74 @@
+﻿@page "/address/create"
+
+@using AdventureWorksDominicana.Data.Models
+@using AdventureWorksDominicana.Services
+@inject AddressService Service
+@inject NavigationManager Nav
+
+<div class="container mt-4">
+    <div class="card shadow-lg">
+
+        <div class="card-header">
+            <h4>Crear Address</h4>
+        </div>
+
+        <EditForm Model="model" OnValidSubmit="Guardar">
+            <DataAnnotationsValidator />
+
+            <div class="card-body">
+
+                <div class="mb-3">
+                    <label class="fw-bold">Dirección</label>
+                    <InputText class="form-control" @bind-Value="model.AddressLine1" />
+                    <ValidationMessage For="() => model.AddressLine1" />
+                </div>
+
+                <div class="mb-3">
+                    <label class="fw-bold">Ciudad</label>
+                    <InputText class="form-control" @bind-Value="model.City" />
+                </div>
+
+                <div class="mb-3">
+                    <label class="fw-bold">Provincia</label>
+                    <InputSelect class="form-control" @bind-Value="model.StateProvinceId">
+                        @foreach (var item in provincias)
+                        {
+                            <option value="@item.StateProvinceId">@item.Name</option>
+                        }
+                    </InputSelect>
+                </div>
+
+            </div>
+
+            <div class="card-footer text-center">
+                <button class="btn btn-primary">
+                    <i class="bi bi-floppy"></i> Guardar
+                </button>
+
+                <button type="button" class="btn btn-secondary" @onclick="Volver">
+                    Volver
+                </button>
+            </div>
+
+        </EditForm>
+
+    </div>
+</div>
+
+@code {
+    private Address model = new();
+    private List<StateProvince> provincias = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        provincias = await Service.GetProvincias();
+    }
+
+    private async Task Guardar()
+    {
+        await Service.Guardar(model);
+        Nav.NavigateTo("/address");
+    }
+
+    private void Volver() => Nav.NavigateTo("/address");
+}

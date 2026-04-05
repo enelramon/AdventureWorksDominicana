@@ -1,5 +1,71 @@
 ﻿using AdventureWorksDominicana.Data.Context;
 using AdventureWorksDominicana.Data.Models;
+using Microsoft.EntityFrameworkCore;
+
+namespace AdventureWorksDominicana.Services;
+
+public class AddressService
+{
+    private readonly IDbContextFactory<Contexto> _db;
+
+    public AddressService(IDbContextFactory<Contexto> db)
+    {
+        _db = db;
+    }
+
+    public async Task<List<Address>> Listar(Func<Address, bool> filtro)
+    {
+        await using var ctx = await _db.CreateDbContextAsync();
+
+        return ctx.Addresses
+            .Include(x => x.StateProvince)
+            .AsNoTracking()
+            .Where(filtro)
+            .OrderBy(x => x.AddressId)
+            .ToList();
+    }
+
+    public async Task<Address?> Buscar(int id)
+    {
+        await using var ctx = await _db.CreateDbContextAsync();
+        return await ctx.Addresses.FindAsync(id);
+    }
+
+    public async Task<bool> Guardar(Address entity)
+    {
+        await using var ctx = await _db.CreateDbContextAsync();
+
+        entity.StateProvince = null;
+
+        if (entity.AddressId == 0)
+            ctx.Addresses.Add(entity);
+        else
+            ctx.Addresses.Update(entity);
+
+        return await ctx.SaveChangesAsync() > 0;
+    }
+
+    public async Task<bool> Eliminar(int id)
+    {
+        await using var ctx = await _db.CreateDbContextAsync();
+
+        var entity = await ctx.Addresses.FindAsync(id);
+        if (entity == null) return false;
+
+        ctx.Addresses.Remove(entity);
+        return await ctx.SaveChangesAsync() > 0;
+    }
+
+    public async Task<List<StateProvince>> GetProvincias()
+    {
+        await using var ctx = await _db.CreateDbContextAsync();
+
+        return await ctx.StateProvinces
+            .AsNoTracking()
+            .OrderBy(x => x.Name)
+            .ToListAsync();
+    }
+}
 using Aplicada1.Core;
 using Microsoft.EntityFrameworkCore;
 using System;

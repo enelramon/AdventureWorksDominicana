@@ -1,0 +1,110 @@
+﻿@page "/EmailAddress/Create"
+
+@using AdventureWorksDominicana.Data.Models
+@using AdventureWorksDominicana.Services
+@using Microsoft.AspNetCore.Components.Forms
+@inject EmailAddressService Service
+@inject NavigationManager Navigation
+
+@rendermode InteractiveServer
+
+<PageTitle>Crear EmailAddress</PageTitle>
+
+<div class="container mt-4">
+    <EditForm Model="model" OnValidSubmit="Guardar">
+        <DataAnnotationsValidator />
+
+        <div class="card shadow-lg">
+            <div class="card-header">
+                <h4 class="mb-0">Crear EmailAddress</h4>
+            </div>
+
+            <div class="card-body">
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Id Email</label>
+                    <InputNumber class="form-control" @bind-Value="model.EmailAddressId" readonly />
+                    <ValidationMessage For="() => model.EmailAddressId" />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Persona</label>
+                    <InputSelect class="form-select" @bind-Value="model.BusinessEntityId">
+                        <option value="0">Seleccione...</option>
+                        @foreach (var persona in personas)
+                        {
+                            <option value="@persona.BusinessEntityId">
+                                @persona.FirstName @persona.LastName
+                            </option>
+                        }
+                    </InputSelect>
+                    <ValidationMessage For="() => model.BusinessEntityId" />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Email</label>
+                    <InputText class="form-control" @bind-Value="model.EmailAddress1" />
+                    <ValidationMessage For="() => model.EmailAddress1" />
+                </div>
+
+                @if (!string.IsNullOrWhiteSpace(mensaje))
+                {
+                    <div class="alert alert-danger mb-0">
+                        @mensaje
+                    </div>
+                }
+            </div>
+
+            <div class="card-footer text-center">
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-floppy"></i> Guardar
+                </button>
+
+                <button type="button" class="btn btn-secondary" @onclick="Volver">
+                    <i class="bi bi-arrow-left"></i> Volver
+                </button>
+            </div>
+        </div>
+    </EditForm>
+</div>
+
+@code {
+    private EmailAddress model = new();
+    private List<Person> personas = new();
+    private string mensaje = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        personas = await Service.GetPersonas();
+        model.EmailAddressId = 0;
+    }
+
+    private async Task Guardar()
+    {
+        mensaje = string.Empty;
+
+        if (model.BusinessEntityId == 0)
+        {
+            mensaje = "Debe seleccionar una persona.";
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(model.EmailAddress1))
+        {
+            mensaje = "Debe completar el email.";
+            return;
+        }
+
+        var guardado = await Service.Guardar(model);
+
+        if (guardado)
+        {
+            Navigation.NavigateTo("/EmailAddress/Index");
+        }
+        else
+        {
+            mensaje = "No se pudo guardar el registro.";
+        }
+    }
+
+    private void Volver() => Navigation.NavigateTo("/EmailAddress/Index");
+}

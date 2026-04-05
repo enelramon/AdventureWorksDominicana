@@ -1,0 +1,108 @@
+﻿@page "/address"
+
+@using AdventureWorksDominicana.Data.Models
+@using AdventureWorksDominicana.Services
+@inject AddressService Service
+@inject NavigationManager Nav
+
+<PageTitle>Address</PageTitle>
+
+<div class="container mt-4">
+    <div class="card shadow-lg">
+
+        <div class="card-header d-flex justify-content-between">
+            <h4 class="mb-0">Address</h4>
+
+            <button class="btn btn-primary" @onclick="Nuevo">
+                <i class="bi bi-plus-square"></i> Crear
+            </button>
+        </div>
+
+        <div class="card-body">
+
+            <!-- FILTROS -->
+            <div class="row">
+                <div class="col-md-3"><label>Id</label></div>
+                <div class="col-md-5"><label>Dirección</label></div>
+                <div class="col-md-4"><label>Acciones</label></div>
+            </div>
+
+            <div class="row mb-3">
+                <div class="col-md-3">
+                    <InputNumber class="form-control" @bind-Value="filtroId" />
+                </div>
+
+                <div class="col-md-5">
+                    <InputText class="form-control" @bind-Value="filtroDireccion" />
+                </div>
+
+                <div class="col-md-4 d-flex gap-2">
+                    <button class="btn btn-primary w-100" @onclick="Buscar">
+                        <i class="bi bi-search"></i>
+                    </button>
+
+                    <button class="btn btn-outline-primary w-100" @onclick="Limpiar">
+                        <i class="bi bi-arrow-clockwise"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- TABLA -->
+            <QuickGrid Items="lista.AsQueryable()" Class="table table-striped table-bordered table-hover">
+
+                <PropertyColumn Property="@(x => x.AddressId)" Title="Id" />
+                <PropertyColumn Property="@(x => x.AddressLine1)" Title="Dirección" />
+                <PropertyColumn Property="@(x => x.City)" Title="Ciudad" />
+                <PropertyColumn Property="@(x => x.StateProvince.Name)" Title="Provincia" />
+
+                <TemplateColumn Title="Acciones">
+                    <ChildContent Context="item">
+                        <button class="btn btn-outline-primary btn-sm"
+                                @onclick="() => Editar(item.AddressId)">
+                            <i class="bi bi-pencil"></i>
+                        </button>
+                    </ChildContent>
+                </TemplateColumn>
+
+            </QuickGrid>
+
+        </div>
+
+        <div class="card-footer text-end fw-bold">
+            Cantidad: @lista.Count
+        </div>
+
+    </div>
+</div>
+
+@code {
+    private List<Address> lista = new();
+    private int? filtroId;
+    private string filtroDireccion = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        await Cargar();
+    }
+
+    private async Task Cargar()
+    {
+        lista = await Service.Listar(x =>
+            (!filtroId.HasValue || x.AddressId == filtroId) &&
+            (string.IsNullOrWhiteSpace(filtroDireccion) ||
+             (x.AddressLine1 ?? "").Contains(filtroDireccion)));
+    }
+
+    private async Task Buscar() => await Cargar();
+
+    private async Task Limpiar()
+    {
+        filtroId = null;
+        filtroDireccion = "";
+        await Cargar();
+    }
+
+    private void Nuevo() => Nav.NavigateTo("/address/create");
+
+    private void Editar(int id) => Nav.NavigateTo($"/address/edit/{id}");
+}
