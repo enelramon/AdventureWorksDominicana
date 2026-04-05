@@ -63,6 +63,8 @@ builder.Services.AddScoped<StateProvinceService>();
 builder.Services.AddScoped<CultureService>();
 builder.Services.AddScoped<LocationService>();
 
+builder.Services.AddScoped<ProductReviewService>();
+builder.Services.AddScoped<SalesPersonService>();
 builder.Services.AddBlazorBootstrap();
 var app = builder.Build();
 

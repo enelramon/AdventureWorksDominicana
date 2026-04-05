@@ -1,0 +1,180 @@
+﻿@page "/product-reviews"
+@using AdventureWorksDominicana.Data.Models
+@using AdventureWorksDominicana.Services
+@using Microsoft.AspNetCore.Components.QuickGrid
+@inject ProductReviewService ProductReviewService
+@inject NavigationManager NavigationManager
+@rendermode InteractiveServer
+
+<PageTitle>Registro de Reviews</PageTitle>
+
+<div class="container-fluid p-0">
+    
+    
+    <div class="d-flex justify-content-between align-items-center p-3 bg-light border-bottom">
+        <h4 class="mb-0 fw-normal text-dark">Registro de Reviews</h4>
+        <button class="btn btn-primary d-flex align-items-center gap-2 py-1 px-3 shadow-sm" @onclick="IrACrear">
+            <i class="bi bi-plus-square"></i> Crear
+        </button>
+    </div>
+
+    <div class="p-3 bg-white">
+        
+        <div class="row g-2 mb-0 align-items-end py-3">
+            <div class="col-md-2">
+                <label class="form-label small fw-bold mb-1">Desde</label>
+                <input type="date" class="form-control form-control-sm border-secondary-subtle" @bind="fechaDesde" />
+            </div>
+            <div class="col-md-2">
+                <label class="form-label small fw-bold mb-1">Hasta</label>
+                <input type="date" class="form-control form-control-sm border-secondary-subtle" @bind="fechaHasta" />
+            </div>
+            <div class="col-md-3">
+                <label class="form-label small fw-bold mb-1">Filtrar por</label>
+                <select class="form-select form-select-sm border-secondary-subtle" @bind="criterioFiltrado">
+                    <option value="nombre">Nombre</option>
+                    <option value="review">Review</option>
+                    <option value="calificacion">Calificación</option>
+                </select>
+            </div>
+            <div class="col-md-5">
+                <label class="form-label small fw-bold mb-1">Buscar</label>
+                <div class="input-group input-group-sm">
+                    <input type="text" class="form-control border-secondary-subtle" placeholder="Buscar..." @bind="textoBusqueda" />
+                    <button class="btn btn-outline-primary bg-white d-flex align-items-center gap-1 border-primary" type="button" @onclick="AplicarFiltro">
+                        <i class="bi bi-search"></i> Buscar
+                    </button>
+                    <button class="btn btn-outline-primary bg-white d-flex align-items-center gap-1 border-primary" type="button" @onclick="LimpiarBusqueda">
+                        <i class="bi bi-arrow-clockwise"></i> Limpiar
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        @if (reviews == null)
+        {
+            <div class="text-center py-5">
+                <div class="spinner-border text-primary" role="status"></div>
+            </div>
+        }
+        else
+        {
+            
+            <div class="table-responsive border">
+                <QuickGrid Items="@FilteredReviews" Pagination="@paginacion" Class="table table-bordered table-sm table-hover mb-0 custom-grid">
+                    <PropertyColumn Property="@(p => p.ProductReviewId)" Title="Código" Sortable="true" Class="fw-bold column-id" />
+                    <PropertyColumn Property="@(p => p.ReviewerName)" Title="Nombre" Sortable="true" />
+                    <PropertyColumn Property="@(p => p.Comments)" Title="Review" Sortable="true" />
+                    
+                    <TemplateColumn Title="Calificación" Sortable="true" Class="text-center column-rating">
+                        <span class="badge bg-primary text-white border shadow-sm px-2 py-1">
+                            <i class="bi bi-star-fill me-1" style="font-size: 0.75rem;"></i>@context.Rating
+                        </span>
+                    </TemplateColumn>
+                    
+                    <TemplateColumn Title="Opción" Class="column-options text-center">
+                        <button class="btn btn-primary btn-xs-custom d-inline-flex align-items-center gap-1" @onclick="() => IrAEditar(context.ProductReviewId)">
+                            <i class="bi bi-pencil-fill"></i> Editar
+                        </button>
+                    </TemplateColumn>
+                </QuickGrid>
+            </div>
+
+           
+            <div class="mt-2 px-1">
+                <div class="custom-paginator">
+                    <Paginator State="@paginacion" />
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+<style>
+    
+    .custom-paginator ::deep nav {
+        display: flex !important;
+        justify-content: space-between !important; 
+        align-items: center;
+        width: 100%;
+    }
+
+    .custom-paginator ::deep .pagination-text {
+        font-weight: bold;
+        color: #212529;
+        order: -1; 
+    }
+
+    
+    .custom-grid thead, .custom-grid th {
+        background-color: #ffffff !important;
+        color: #000;
+        font-weight: 700;
+        padding: 10px !important;
+        border-bottom: 1px solid #dee2e6 !important;
+    }
+    .custom-grid td { padding: 8px 10px !important; vertical-align: middle; border-color: #dee2e6 !important; }
+    .btn-xs-custom { padding: 4px 12px; font-size: 0.85rem; border-radius: 4px; background-color: #1b6ec2; border: none; }
+    .column-id { width: 90px; }
+    .column-rating { width: 100px; }
+    .column-options { width: 110px; }
+    .form-control, .form-select, .btn { border-radius: 4px !important; box-shadow: none !important; }
+</style>
+
+@code {
+    private List<ProductReview>? reviews;
+    private string textoBusqueda = "";
+    private string criterioFiltrado = "nombre";
+    private DateTime? fechaDesde;
+    private DateTime? fechaHasta;
+    private IQueryable<ProductReview>? filteredList;
+    PaginationState paginacion = new PaginationState { ItemsPerPage = 5 };
+
+    protected override async Task OnInitializedAsync()
+    {
+        reviews = await ProductReviewService.GetReviewsAsync();
+        AplicarFiltro();
+    }
+
+    private IQueryable<ProductReview> FilteredReviews => filteredList ?? Enumerable.Empty<ProductReview>().AsQueryable();
+
+    private void AplicarFiltro()
+    {
+        if (reviews == null) return;
+        var query = reviews.AsQueryable();
+
+        if (!string.IsNullOrWhiteSpace(textoBusqueda))
+        {
+            switch (criterioFiltrado)
+            {
+                case "nombre":
+                    query = query.Where(r => r.ReviewerName.Contains(textoBusqueda, StringComparison.OrdinalIgnoreCase));
+                    break;
+                case "review":
+                    query = query.Where(r => r.Comments != null && r.Comments.Contains(textoBusqueda, StringComparison.OrdinalIgnoreCase));
+                    break;
+                case "calificacion":
+                    if (int.TryParse(textoBusqueda, out int ratingBusqueda))
+                        query = query.Where(r => r.Rating == ratingBusqueda);
+                    break;
+            }
+        }
+
+        if (fechaDesde.HasValue) query = query.Where(r => r.ReviewDate >= fechaDesde.Value);
+        if (fechaHasta.HasValue) query = query.Where(r => r.ReviewDate <= fechaHasta.Value);
+
+        filteredList = query;
+    }
+
+    private void LimpiarBusqueda()
+    {
+        textoBusqueda = "";
+        fechaDesde = null;
+        fechaHasta = null;
+        criterioFiltrado = "nombre";
+        AplicarFiltro();
+    }
+
+    private void IrACrear() => NavigationManager.NavigateTo("product-reviews/create");
+    private void IrAEditar(int id) => NavigationManager.NavigateTo($"product-reviews/edit/{id}");
+}

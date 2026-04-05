@@ -1,0 +1,63 @@
+﻿@page "/sales-people/edit/{id:int}"
+@using AdventureWorksDominicana.Data.Models
+@using AdventureWorksDominicana.Services
+@inject SalesPersonService SalesPersonService
+@inject NavigationManager NavigationManager
+@rendermode InteractiveServer
+
+<div class="container mt-4">
+    <div class="card shadow-lg">
+        <div class="card-header bg-white"><h5 class="mb-0 fw-bold">Editar Registro de Vendedor</h5></div>
+        <div class="card-body p-4">
+            @if (vendedor != null)
+            {
+                <EditForm Model="@vendedor" OnSubmit="IntentarActualizar">
+                    <div class="mb-3">
+                        <label><strong>ID de Vendedor (Solo Lectura)</strong></label>
+                        <input type="number" class="form-control bg-light" value="@vendedor.BusinessEntityId" readonly />
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label><strong>ID de Territorio</strong></label>
+                            <InputNumber @bind-Value="vendedor.TerritoryId" class="form-control" />
+                            @if (errorTerritorio)
+                            {
+                                <span class="text-danger small">Dato obligatorio.</span>
+                            }
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label><strong>Ventas Actuales (YTD)</strong></label>
+                            <InputNumber @bind-Value="vendedor.SalesYtd" class="form-control" />
+                        </div>
+                    </div>
+
+                    <div class="card-footer text-center bg-white border-top pt-3">
+                        <button type="button" class="btn btn-secondary" @onclick="Volver"><i class="bi bi-arrow-left"></i> Volver</button>
+                        <button type="submit" class="btn btn-primary"><i class="bi bi-floppy"></i> Guardar</button>
+                        <button type="button" class="btn btn-danger" @onclick="Eliminar"><i class="bi bi-trash"></i> Eliminar</button>
+                    </div>
+                </EditForm>
+            }
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter] public int id { get; set; }
+    private SalesPerson? vendedor;
+    private bool errorTerritorio = false;
+
+    protected override async Task OnInitializedAsync() => vendedor = await SalesPersonService.GetSalesPersonByIdAsync(id);
+
+    private async Task IntentarActualizar()
+    {
+        errorTerritorio = (vendedor?.TerritoryId == null);
+        if (errorTerritorio) return;
+
+        if (await SalesPersonService.UpdateAsync(vendedor!)) Volver();
+    }
+
+    private async Task Eliminar() { if (await SalesPersonService.DeleteAsync(id)) Volver(); }
+    private void Volver() => NavigationManager.NavigateTo("/sales-people");
+}
