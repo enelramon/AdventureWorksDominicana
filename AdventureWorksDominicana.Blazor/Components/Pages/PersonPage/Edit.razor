@@ -1,0 +1,153 @@
+﻿@page "/Person/Edit/{IdPersona:int}"
+@using AdventureWorksDominicana.Data.Models
+@using AdventureWorksDominicana.Services
+
+@inject PersonService personService
+@inject NavigationManager navigationManager
+@inject ToastService toastService
+
+@rendermode InteractiveServer
+
+<PageTitle>Editar Persona</PageTitle>
+
+<EditForm Model="persona" OnValidSubmit="Modificar">
+    <DataAnnotationsValidator />
+
+    <div class="container">
+        <div class="card shadow-lg">
+            <div class="card-header text-center">
+                <h3>Editar persona</h3>
+            </div>
+            <div class="card-body">
+                
+                <div class="mb-3">
+                    <label class="form-label"><strong>ID de Persona</strong></label>
+                    <InputNumber class="form-control" @bind-Value="persona.BusinessEntityId" readonly />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label"><strong>Tipo de Persona</strong></label>
+                    <InputSelect class="form-select" @bind-Value="persona.PersonType">
+                        <option value="">Seleccione...</option>
+                        <option value="SC">Store Contact (SC)</option>
+                        <option value="IN">Individual (IN)</option>
+                        <option value="SP">Sales Person (SP)</option>
+                        <option value="EM">Employee (EM)</option>
+                        <option value="VC">Vendor Contact (VC)</option>
+                        <option value="GC">General Contact (GC)</option>
+                    </InputSelect>
+                    <ValidationMessage For="() => persona.PersonType" />
+                </div>
+                
+                <div class="mb-3">
+                    <label class="form-label"><strong>Promoción por Correo</strong></label>
+                    <InputSelect class="form-select" @bind-Value="persona.EmailPromotion">
+                        <option value="0">0 - No recibir promociones</option>
+                        <option value="1">1 - Promociones de AdventureWorks</option>
+                        <option value="2">2 - AdventureWorks y Partners</option>
+                    </InputSelect>
+                    <ValidationMessage For="() => persona.EmailPromotion" />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label"><strong>Título</strong></label>
+                    <InputText class="form-control" @bind-Value="persona.Title" maxlength="8" />
+                    <ValidationMessage For="() => persona.Title" />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label"><strong>Primer Nombre</strong></label>
+                    <InputText class="form-control" @bind-Value="persona.FirstName" maxlength="50" />
+                    <ValidationMessage For="() => persona.FirstName" />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label"><strong>Segundo Nombre</strong></label>
+                    <InputText class="form-control" @bind-Value="persona.MiddleName" maxlength="50" />
+                    <ValidationMessage For="() => persona.MiddleName" />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label"><strong>Apellido</strong></label>
+                    <InputText class="form-control" @bind-Value="persona.LastName" maxlength="50" />
+                    <ValidationMessage For="() => persona.LastName" />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label"><strong>Sufijo</strong></label>
+                    <InputText class="form-control" @bind-Value="persona.Suffix" maxlength="10" />
+                    <ValidationMessage For="() => persona.Suffix" />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label"><strong>Estilo Oriental</strong></label>
+                    <InputCheckbox class="form-check-input" @bind-Value="persona.NameStyle" />
+                </div>
+
+            </div>
+            <div class="card-footer text-center">
+                <a class="btn btn-secondary bi bi-arrow-left" href="/Person/Index"> Volver</a>
+                <button class="btn btn-primary bi bi-floppy" type="submit"> Guardar</button>
+                <button class="btn btn-danger bi bi-trash" type="button" @onclick="Eliminar"> Eliminar</button>
+            </div>
+        </div>
+    </div>
+</EditForm>
+
+@code {
+    [Parameter]
+    public int IdPersona { get; set; }
+    
+    public Person persona { get; set; } = new Person();
+
+    protected override async Task OnInitializedAsync()
+    {
+        var p = await personService.Buscar(IdPersona);
+        if (p != null)
+        {
+            persona = p;
+        }
+    }
+
+    public async Task Modificar()
+    {
+        if (string.IsNullOrWhiteSpace(persona.PersonType))
+        {
+            toastService.ShowError("Debe seleccionar un tipo de persona.");
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(persona.FirstName) || string.IsNullOrWhiteSpace(persona.LastName))
+        {
+            toastService.ShowError("El primer nombre y el apellido son obligatorios.");
+            return;
+        }
+
+        bool modificado = await personService.Guardar(persona);
+
+        if (modificado)
+        {
+            toastService.ShowSuccess("La persona fue modificada exitosamente.");
+            navigationManager.NavigateTo("/Person/Index");
+        }
+        else
+        {
+            toastService.ShowError("Ha ocurrido un error al modificar la persona.");
+        }
+    }
+
+    public async Task Eliminar()
+    {
+        bool eliminado = await personService.Eliminar(persona.BusinessEntityId);
+
+        if (eliminado)
+        {
+            toastService.ShowSuccess("La persona fue eliminada exitosamente.");
+            navigationManager.NavigateTo("/Person/Index");
+        }
+        else
+        {
+            toastService.ShowError("Ha ocurrido un error al eliminar la persona.");
+        }
+    }
+}

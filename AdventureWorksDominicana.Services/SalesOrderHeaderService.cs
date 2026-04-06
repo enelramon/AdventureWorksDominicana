@@ -26,13 +26,6 @@ public class SalesOrderHeaderService(IDbContextFactory<Contexto> DbFactory) : IS
     private async Task<bool> Insertar(SalesOrderHeader sale)
     {
         await using var contexto = await DbFactory.CreateDbContextAsync();
-        sale.OrderDate = DateTime.Now;
-        sale.ModifiedDate = DateTime.Now;
-        sale.Rowguid = Guid.NewGuid();
-        sale.SalesOrderNumber = $"SO{Random.Shared.Next(10000, 99999)}";
-        sale.RevisionNumber = 0;
-        sale.OnlineOrderFlag = false;
-        sale.Status = 1;
         foreach(var detalle in sale.SalesOrderDetails)
         {
             var productInventory = await contexto.ProductInventories.FirstOrDefaultAsync(i => i.ProductId == detalle.ProductId);
@@ -89,7 +82,7 @@ public class SalesOrderHeaderService(IDbContextFactory<Contexto> DbFactory) : IS
     public async Task<SalesOrderHeader?> Buscar(int id)
     {
         await using var contexto = await DbFactory.CreateDbContextAsync();
-        return await contexto.SalesOrderHeaders.Include(s => s.SalesOrderDetails).FirstOrDefaultAsync(s => s.SalesOrderId == id);
+        return await contexto.SalesOrderHeaders.Include(s => s.SalesOrderDetails).Include(d => d.SalesOrderDetails).ThenInclude(p => p.SpecialOfferProduct).ThenInclude(p => p.Product).ThenInclude(p => p.ProductSubcategory).ThenInclude(p => p.ProductCategory).FirstOrDefaultAsync(s => s.SalesOrderId == id);
     }
     public async Task<bool> Eliminar(int id)
     {
@@ -116,12 +109,6 @@ public class SalesOrderHeaderService(IDbContextFactory<Contexto> DbFactory) : IS
     public async Task<List<SalesOrderHeader>> GetList(Expression<Func<SalesOrderHeader, bool>> criterio)
     {
         await using var contexto = await DbFactory.CreateDbContextAsync();
-        return await contexto.SalesOrderHeaders.Where(criterio)
-            .Include(c => c.Customer).ThenInclude(p => p.Person)
-            .Include(c => c.Customer).ThenInclude(s => s.Store)
-            .Include(s => s.SalesPerson).ThenInclude(e => e!.BusinessEntity).ThenInclude(p => p.BusinessEntity)
-            .Include(s => s.SalesOrderDetails)
-            .Include(s => s.ShipToAddress).ThenInclude(s => s.StateProvince).ThenInclude(s => s.SalesTaxRates)
-            .AsNoTracking().ToListAsync();
+        return await contexto.SalesOrderHeaders.Where(criterio).AsNoTracking().ToListAsync();
     }
 }

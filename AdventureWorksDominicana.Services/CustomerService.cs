@@ -24,7 +24,7 @@ public class CustomerService(IDbContextFactory<Contexto> DbFactory) : IService<C
     public async Task<List<Customer>> GetList(Expression<Func<Customer, bool>> criterio)
     {
         await using var contexto = await DbFactory.CreateDbContextAsync();
-        return await contexto.Customers.Where(criterio).Include(p => p.Person).Include(s => s.Store).OrderBy(c => c.Person != null ? c.Person.FirstName : c.Store.Name).AsNoTracking().ToListAsync();
+        return await contexto.Customers.Include(p => p.Person).Where(criterio).AsNoTracking().ToListAsync();
     }
 
     public Task<bool> Guardar(Customer entidad)

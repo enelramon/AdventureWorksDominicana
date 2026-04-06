@@ -1,11 +1,12 @@
 using AdventureWorksDominicana.Blazor.Components;
+using AdventureWorksDominicana.Blazor.Components.Account;
 using AdventureWorksDominicana.Data.Context;
+using AdventureWorksDominicana.Data.Models;
 using AdventureWorksDominicana.Services;
 using Blazored.Toast;
-using Microsoft.EntityFrameworkCore;
-using AdventureWorksDominicana.Data.Models;
+using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Identity;
-using AdventureWorksDominicana.Blazor.Components.Account;
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -19,10 +20,17 @@ builder.Services.AddDbContext<SecurityContext>(options =>
 
 builder.Services.AddCascadingAuthenticationState();
 
-builder.Services.AddScoped<IdentityRevalidatingAuthenticationStateProvider>();
+
+builder.Services.AddScoped<AuthenticationStateProvider, IdentityRevalidatingAuthenticationStateProvider>();
+
+
 builder.Services.AddScoped<IdentityRedirectManager>();
 
-builder.Services.AddAuthorization();
+builder.Services.AddAuthorization(options =>
+{
+    // Esta es la ley suprema: Si no estás logueado, se te prohíbe pasar a cualquier URL.
+    options.FallbackPolicy = options.DefaultPolicy;
+});
 
 builder.Services.AddAuthentication(options =>
 {
@@ -33,7 +41,7 @@ builder.Services.AddAuthentication(options =>
 
 builder.Services.AddIdentityCore<AspNetUser>(options =>
 {
-    options.SignIn.RequireConfirmedAccount = false;
+    options.SignIn.RequireConfirmedAccount = true;
     options.Password.RequireDigit = false;
     options.Password.RequiredLength = 8;
     options.Password.RequireNonAlphanumeric = false;
@@ -44,7 +52,7 @@ builder.Services.AddIdentityCore<AspNetUser>(options =>
 .AddSignInManager()
 .AddDefaultTokenProviders();
 
-builder.Services.AddSingleton<IEmailSender<AspNetUser>, IdentityNoOpEmailSender>();
+builder.Services.AddSingleton<IEmailSender<AdventureWorksDominicana.Data.Models.AspNetUser>, SmtpEmailSender>();
 
 
 builder.Services.AddRazorComponents()
@@ -102,5 +110,7 @@ app.MapStaticAssets();
 
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
+
+app.MapAdditionalIdentityEndpoints();
 
 app.Run();

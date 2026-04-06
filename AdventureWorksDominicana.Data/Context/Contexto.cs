@@ -208,19 +208,19 @@ public partial class Contexto : DbContext
 
     public virtual DbSet<WorkOrderRouting> WorkOrderRoutings { get; set; }
 
-
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
         if (!optionsBuilder.IsConfigured)
         {
-            
+
             optionsBuilder.UseSqlServer("workstation id=AdventureWorksDb.mssql.somee.com;packet size=4096;user id=AdenawellTorres_SQLLogin_1;pwd=tc54sf6glk;data source=AdventureWorksDb.mssql.somee.com;persist security info=False;initial catalog=AdventureWorksDb;TrustServerCertificate=True");
         }
     }
-
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.UseCollation("SQL_Latin1_General_CP1_CI_AS");
+
+
 
         modelBuilder.Entity<Address>(entity =>
         {
@@ -243,6 +243,8 @@ public partial class Contexto : DbContext
 
             entity.HasOne(d => d.StateProvince).WithMany(p => p.Addresses).OnDelete(DeleteBehavior.ClientSetNull);
         });
+
+
 
         modelBuilder.Entity<AddressType>(entity =>
         {
@@ -1874,6 +1876,35 @@ public partial class Contexto : DbContext
 
             entity.HasOne(d => d.WorkOrder).WithMany(p => p.WorkOrderRoutings).OnDelete(DeleteBehavior.ClientSetNull);
         });
+
+        string adminRoleId = "a18be9c0-aa65-4af8-bd17-00bd9344e575";
+        string vendedorRoleId = "b29ce9c0-bb65-4af8-bd17-00bd9344e576";
+        string customerRoleId = "c30de9c0-cc65-4af8-bd17-00bd9344e577";
+
+
+        modelBuilder.Entity<AspNetRole>().HasData(
+            new AspNetRole
+            {
+                Id = adminRoleId,
+                Name = "Admin",
+                NormalizedName = "ADMIN",
+                ConcurrencyStamp = Guid.NewGuid().ToString()
+            },
+            new AspNetRole
+            {
+                Id = vendedorRoleId,
+                Name = "Vendor",
+                NormalizedName = "VENDOR",
+                ConcurrencyStamp = Guid.NewGuid().ToString()
+            },
+            new AspNetRole
+            {
+                Id = customerRoleId,
+                Name = "Customer",
+                NormalizedName = "CUSTOMER",
+                ConcurrencyStamp = Guid.NewGuid().ToString()
+            });
+
 
         OnModelCreatingPartial(modelBuilder);
     }
