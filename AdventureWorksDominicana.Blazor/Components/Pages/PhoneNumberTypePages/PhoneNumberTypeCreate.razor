@@ -3,6 +3,7 @@
 @inject PhoneNumberTypeService phoneNumberTypeService;
 @inject ToastService toastService;
 @inject NavigationManager navigationManager;
+@rendermode InteractiveServer
 
 
 <EditForm Model="PhoneNumberType" FormName="crearPhoneNumberType" OnValidSubmit="Guardar">
@@ -18,11 +19,6 @@
                     <label class="form-label"><strong>Nombre</strong></label>
                     <input class="form-control" type="text" @bind-value="PhoneNumberType.Name" />
                     <ValidationMessage For="(() => PhoneNumberType.Name)" />
-                </div>
-                <div class="mb-3">
-                    <label class="form-label"><strong>Fecha de modificaci&oacute;n</strong></label>
-                    <input class="form-control" type="datetime-local" @bind-value="PhoneNumberType.ModifiedDate" disabled />
-                    <ValidationMessage For="(() => PhoneNumberType.ModifiedDate)" />
                 </div>
             </div>
             <div class="card-footer text-center">

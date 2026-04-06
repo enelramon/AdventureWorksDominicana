@@ -1,0 +1,227 @@
+﻿.shopping-header {
+    background-color: rgba(40, 59, 230, 0.3);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px); 
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+}
+.shopping-container{
+    position:relative;
+}
+.shopping-header-logo {
+    display: flex;
+    justify-content: start;
+    gap: 5px;
+    align-items: center;
+}
+.shopping-header-logo img{
+    width: 200px;
+}
+
+.shopping-body{
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    margin-top:20px;
+}
+
+.cart-empty{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    width:100%;
+    height:auto;
+}
+.cart-empty img{
+    width:30%;
+}
+
+.shopping-products {
+    display: flex;
+    flex-direction: column;
+    max-height: 75vh;
+    overflow-y: auto;
+    gap: 20px;
+}
+.shopping-product-card {
+    max-width: 500px;
+    display: flex;
+    border: 1px solid #e0e0e0;
+    border-radius: 10px;
+    transition: all 0.5s cubic-bezier(0.25, 0.8, 0.25, 1);
+    transform: translateY(0px);
+    cursor:pointer;
+}
+.shopping-product-card:hover {
+    transform: translateY(-10px);
+    transition: all 0.5s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+.shopping-product-card:hover > .shopping-product-img > img{
+    transform: translateX(-20px);
+    transition: all 0.5s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+.shopping-product-img > img {
+    transform: translateX(0px);
+    transition: all 0.5s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+.shopping-product-img {
+    position: relative;
+    border-radius: 20px;
+    width: 30%;
+}
+.shopping-product-img > span{
+    position:absolute;
+    left:5px;
+    top:5px;
+    border: 1px solid orange;
+    background-color:orange;
+    border-radius: 10px;
+    padding: 2px 10px 2px 10px;
+}
+.shopping-product-img > img{
+    max-width: 100%;
+}
+.shopping-product-info{
+    padding:10px;
+    width:70%;
+}
+.shopping-product-header{
+    display: flex;
+    justify-content: space-between;
+    align-items:center;
+}
+.shopping-product-header > span {
+    background-color: rgb(255, 106, 0);
+    color: white;
+    border-radius: 10px;
+    padding: 2px 10px 2px 10px;
+}
+.quantity-product-action{
+    display:flex;
+    gap:20px;
+}
+.quantity-product-action button{
+    border:1px solid blue;
+    background-color: transparent;
+    width:27px;
+    height:27px;
+    border-radius: 100%;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+}
+
+.balance-general {
+    border: 1px solid #e0e0e0;
+    border-radius: 10px;
+    width: 50%;
+    margin: auto;
+}
+.balance-general > p{
+    text-align:center;
+    font-size: 3vw;
+    padding:0;
+    margin:0;
+}
+
+.balance-general > div{
+    display:grid;
+    grid-template-columns: auto auto;
+    padding:20px;
+    gap:20px;
+    justify-content:space-between;
+    align-items:center;
+}
+
+.balance-general > button{
+    border: 1px solid orange;
+    border-radius: 20px;
+    width: 100%;
+    padding:10px;
+}
+
+/* Darkens the background and centers the modal */
+.backdrop-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.5); /* Using standard RGBA for clarity */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000; 
+}
+
+
+.modal-content {
+    background-color: white;
+    padding: 2rem;
+    border-radius: 8px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    max-width: 500px; 
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.modal-header h1 {
+    margin: 0;
+    font-size: 1.5rem;
+    text-align: center;
+}
+
+.modal-body{
+    display:flex;
+    flex-direction:column;
+    gap: 20px;
+}
+
+select {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+
+@media (max-width: 465px) {
+    .shopping-body {
+        display: flex;
+        flex-direction: column-reverse;
+        gap: 10px;
+        margin-top: 0px;
+    }
+
+    .shopping-header {
+        display: none;
+    }
+
+    .balance-general {
+        width: 100%;
+    }
+
+        .balance-general p {
+            font-size: 5vw;
+        }
+
+    .shopping-product-header span, .shopping-product-header i {
+        font-size: 2.9vw;
+    }
+
+    .shopping-products {
+        display: flex;
+        flex-direction: column;
+        max-height: 50vh;
+        overflow-y: auto;
+        gap: 20px;
+    }
+    .cart-empty {
+        height: 90vh;
+    }
+}

@@ -23,8 +23,9 @@ public class ProductService(IDbContextFactory<Contexto> DbContextFactory) : ISer
     {
         await using var contexto = await DbContextFactory.CreateDbContextAsync();
         return await contexto.Products.AsNoTracking()
-            .Include(p => p.ProductSubcategory)
-            .Include(p => p.ProductModel)
+            .Include(p => p.ProductSubcategory).ThenInclude(p => p.ProductCategory)
+            .Include(p => p.ProductModel).ThenInclude(d => d.ProductModelProductDescriptionCultures).ThenInclude(d => d.ProductDescription)
+            .Include(p => p.ProductModel).ThenInclude(d => d.ProductModelProductDescriptionCultures).ThenInclude(c => c.Culture)
             .Include(p => p.SizeUnitMeasureCodeNavigation)
             .Include(p => p.WeightUnitMeasureCodeNavigation)
             .Where(criterio)

@@ -7,6 +7,7 @@
 @inject ToastService toastService;
 @inject NavigationManager navigationManager;
 @inject Contexto contexto
+@rendermode InteractiveServer
 
 <EditForm Model="ShoppingCartItem" FormName="crearShoppingCartItem" OnValidSubmit="Guardar">
     <DataAnnotationsValidator />

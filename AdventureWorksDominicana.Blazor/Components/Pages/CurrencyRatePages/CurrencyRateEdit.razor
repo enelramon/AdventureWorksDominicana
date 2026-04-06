@@ -1,0 +1,164 @@
+﻿@page "/CurrencyRate/Edit/{Id:int}"
+@inject CurrencyRateService currencyRateService
+@inject CurrencyService currencyService
+@inject NavigationManager navigationManager
+@inject ToastService toastService
+
+
+@rendermode InteractiveServer
+
+<PageTitle>Editar Tasa de Cambio</PageTitle>
+
+@if (tasa == null)
+{
+    <div class="container mt-4"><p>Cargando información...</p></div>
+}
+else
+{
+    <EditForm Model="tasa" OnValidSubmit="Guardar">
+        <DataAnnotationsValidator />
+
+        <div class="container mt-4">
+            <div class="card shadow-lg">
+
+                <div class="card-header bg-white">
+                    <h4 class="mb-0">Modificar Tasa de Cambio</h4>
+                </div>
+
+                <div class="card-body">
+
+                    <div class="mb-3">
+                        <strong>ID Tasa (Solo Lectura)</strong>
+                        <InputNumber class="form-control" @bind-Value="tasa.CurrencyRateId" readonly />
+                    </div>
+
+                    <div class="mb-3">
+                        <strong>Fecha de Tasa</strong>
+                        <InputDate class="form-control" @bind-Value="tasa.CurrencyRateDate" />
+                        <ValidationMessage For="() => tasa.CurrencyRateDate" />
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <strong>Moneda Origen</strong>
+                            <InputSelect class="form-select" @bind-Value="tasa.FromCurrencyCode">
+                                <option value="">Seleccione una moneda...</option>
+                                @foreach (var moneda in listaMonedas)
+                                {
+                                    <option value="@moneda.CurrencyCode">@moneda.CurrencyCode - @moneda.Name</option>
+                                }
+                            </InputSelect>
+                            <ValidationMessage For="() => tasa.FromCurrencyCode" />
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <strong>Moneda Destino</strong>
+                            <InputSelect class="form-select" @bind-Value="tasa.ToCurrencyCode">
+                                <option value="">Seleccione una moneda...</option>
+                                @foreach (var moneda in listaMonedas)
+                                {
+                                    <option value="@moneda.CurrencyCode">@moneda.CurrencyCode - @moneda.Name</option>
+                                }
+                            </InputSelect>
+                            <ValidationMessage For="() => tasa.ToCurrencyCode" />
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <strong>Tasa Promedio del Día</strong>
+                            <InputNumber class="form-control" @bind-Value="tasa.AverageRate" />
+                            <ValidationMessage For="() => tasa.AverageRate" />
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <strong>Tasa al Cierre del Día</strong>
+                            <InputNumber class="form-control" @bind-Value="tasa.EndOfDayRate" />
+                            <ValidationMessage For="() => tasa.EndOfDayRate" />
+                        </div>
+                    </div>
+
+                    @if (!string.IsNullOrWhiteSpace(mensajeError))
+                    {
+                        <div class="alert alert-danger mt-3">@mensajeError</div>
+                    }
+
+                </div>
+
+                <div class="card-footer text-center bg-white">
+                    <a href="/CurrencyRate/Index" class="btn btn-secondary bi bi-arrow-left"> Volver</a>
+                    <button type="submit" class="btn btn-primary bi bi-floppy"> Modificar</button>
+                    <button type="button" class="btn btn-danger bi bi-trash" @onclick="() => mostrarModal = true"> Eliminar</button>
+                </div>
+            </div>
+        </div>
+    </EditForm>
+
+    @if (mostrarModal)
+    {
+        <div class="container mt-3">
+            <div class="alert alert-danger shadow-sm">
+                <p class="fw-bold">¿Desea eliminar este registro?</p>
+                <button class="btn btn-secondary me-2" @onclick="() => mostrarModal = false">Cancelar</button>
+                <button class="btn btn-danger" @onclick="EliminarConfirmado">Si, eliminar definitivamente</button>
+            </div>
+        </div>
+    }
+}
+
+@code {
+    [Parameter] public int Id { get; set; }
+    private CurrencyRate? tasa;
+    private List<Currency> listaMonedas = new();
+    private string mensajeError = string.Empty;
+    private bool mostrarModal = false;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        tasa = await currencyRateService.Buscar(Id);
+        if (tasa == null)
+        {
+            mensajeError = "No se encontró la tasa de cambio.";
+        }
+        else
+        {
+            listaMonedas = await currencyService.GetList(c => true);
+        }
+    }
+
+    private async Task Guardar()
+    {
+        if (tasa == null) return;
+        tasa.ModifiedDate = DateTime.Now;
+        mensajeError = string.Empty;
+
+        try
+        {
+            if (await currencyRateService.Guardar(tasa))
+            {
+                toastService.ShowSuccess("Cambios guardados correctamente.");
+                navigationManager.NavigateTo("/CurrencyRate/Index");
+            }
+        }
+        catch (Exception ex)
+        {
+            string errorReal = ex.InnerException != null ? ex.InnerException.Message : ex.Message;
+            mensajeError = $"Error al actualizar. Detalle: {errorReal}";
+        }
+    }
+
+    private async Task EliminarConfirmado()
+    {
+        if (tasa == null) return;
+
+        if (await currencyRateService.Eliminar(tasa.CurrencyRateId))
+        {
+            navigationManager.NavigateTo("/CurrencyRate/Index");
+        }
+        else
+        {
+            mensajeError = "No se pudo eliminar el registro.";
+            mostrarModal = false;
+        }
+    }
+}
