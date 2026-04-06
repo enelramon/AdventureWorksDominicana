@@ -20,7 +20,8 @@ public class EmailAddressService(IDbContextFactory<Contexto> DbFactory) : IServi
     public async Task<EmailAddress?> BuscarPorEmail(string email)
     {
         await using var contexto = await DbFactory.CreateDbContextAsync();
-        return await contexto.EmailAddresses.Include(b => b.BusinessEntity).ThenInclude(c => c.Customers).FirstOrDefaultAsync(e => e.EmailAddress1.Trim().ToLower().Equals(email));
+        Console.WriteLine("\n" + email + "\n");
+        return await contexto.EmailAddresses.FirstOrDefaultAsync(e => e.EmailAddress1.Trim().Equals(email));
     }
 
     public Task<bool> Eliminar(int id)

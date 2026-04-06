@@ -12,6 +12,7 @@
 @inject NavigationManager navigationManager
 @inject ToastService toastService
 @inject AuthenticationStateProvider authenticationStateProvider;
+@inject EmailAddressService emailAddressService
 
 <PageTitle>ShoppingCart</PageTitle>
 
@@ -153,19 +154,39 @@
 
     protected override async Task OnInitializedAsync()
     {
-        // Busca el usuario logeado
+        // Obtener usuario logueado
         var authState = await authenticationStateProvider.GetAuthenticationStateAsync();
         User = authState.User;
-        IsAuthenticated = User.Identity?.IsAuthenticated ?? false;
-        
-        if (IsAuthenticated)
+
+        if (User.Identity?.IsAuthenticated != true) return;
+
+        UserEmail = User.FindFirst(ClaimTypes.Email)?.Value;
+        if (string.IsNullOrEmpty(UserEmail))
         {
-            UserEmail = User.FindFirst(ClaimTypes.Email)?.Value;
+            toastService.ShowError("Correo del usuario invalido");
+            Console.WriteLine("\nEmail del usuario logeado es nulo\n");
+            navigationManager.NavigateTo("/Sales/");
+            return;
+        }
+
+        // Buscar el email
+        var email = await emailAddressService.BuscarPorEmail(UserEmail);
+        if (email == null)
+        {
+            toastService.ShowError("Correo no encontrado.");
+            Console.WriteLine("\nEmail buscado es nulo\n");
+            navigationManager.NavigateTo("/Sales/");
+            return;
         }
 
         // Solo trae los items del usuario logeado
         ShoppingCartItemList = await shoppingCartItemService.GetList(s => s.ShoppingCartId.Trim().ToLower().Equals(UserEmail));
-        
+
+        // Obtener el CustomerID asociado a esa persona
+        int customerIdBuscado = await customerService.GetCustomerId(email.BusinessEntityId);
+
+        customerId = customerIdBuscado;
+
         AddressesList = await addressService.GetList(s => true);
         CustomersList = await customerService.GetList(s => true);
         SalesTerritoriesList = await salesTerritoryService.GetList(s => true);
