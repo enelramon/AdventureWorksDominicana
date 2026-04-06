@@ -106,6 +106,13 @@
         Logger.LogInformation("User created a new account with password.");
 
 
+        var roleResult = await UserManager.AddToRoleAsync(user, "Customer");
+
+        if (!roleResult.Succeeded)
+        {
+            Logger.LogWarning("El usuario se creo, pero fallo la asignacion del rol 'Customer'.");
+        }
+
         try
         {
 

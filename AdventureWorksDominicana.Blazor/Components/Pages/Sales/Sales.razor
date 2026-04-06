@@ -1,4 +1,8 @@
 ﻿@page "/Sales/"
+
+
+@using Microsoft.AspNetCore.Authorization
+@attribute [Authorize(Roles = "Customer")]
 @rendermode InteractiveServer
 @inject ProductService productService
 @inject ShoppingCartItemService shoppingCartItemService
