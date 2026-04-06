@@ -1,12 +1,15 @@
 ﻿@inherits LayoutComponentBase
 
-<Toasts class="p-3" AutoHide="true" StackLength="3" Placement="ToastsPlacement.TopRight" />
+<Toasts @rendermode="InteractiveServer" class="p-3" AutoHide="true" StackLength="3" Placement="ToastsPlacement.TopRight" />
 
 <div class="page">
-    <div class="sidebar">
-        <NavMenu />
-    </div>
-
+    <AuthorizeView>
+        <Authorized>
+            <div class="sidebar">
+                <NavMenu />
+            </div>
+        </Authorized>
+    </AuthorizeView>
     <main>
         <article class="content px-4">
             @Body

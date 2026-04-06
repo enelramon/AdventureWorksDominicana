@@ -1,7 +1,8 @@
 ﻿@page "/Account/Login"
-
+@attribute [AllowAnonymous]
 @using System.ComponentModel.DataAnnotations
 @using Microsoft.AspNetCore.Authentication
+@using Microsoft.AspNetCore.Authorization
 @using Microsoft.AspNetCore.Identity
 @using AdventureWorksDominicana.Data.Context
 
@@ -22,7 +23,6 @@
                 <DataAnnotationsValidator />
                 <h2>Use a local account to log in.</h2>
                 <hr />
-                <ValidationSummary class="text-danger" role="alert" />
                 <div class="form-floating mb-3">
                     <InputText @bind-Value="Input.Email" id="Input.Email" class="form-control" autocomplete="username webauthn" aria-required="true" placeholder="name@example.com" />
                     <label for="Input.Email" class="form-label">Email</label>

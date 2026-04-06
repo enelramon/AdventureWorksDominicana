@@ -27,8 +27,8 @@
                 <div id="collapseSales" class="accordion-collapse collapse" data-bs-parent="#accordionSales">
                     <div class="accordion-body p-0 ps-3">
                         <div class="nav-item pt-2">
-                            <NavLink class="nav-link" href="/SalesOrderHeader/Index">
-                                <span class="bi bi-receipt-nav-menu"></span> <small>Sales Orders</small>
+                            <NavLink class="nav-link" href="/Sales">
+                                <span class="bi bi-receipt-nav-menu"></span> <small>Sales</small>
                             </NavLink>
                         </div>
                         <div class="nav-item">
@@ -231,17 +231,33 @@
             </div>
         </div>
 
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="/Account/Register" Match="NavLinkMatch.All">
-                <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> <small>Register</small>
-            </NavLink>
-        </div>
+        <AuthorizeView>
+            <Authorized>
+                <div class="nav-item px-3">
+                    <form action="Account/Logout" method="post">
+                        <AntiforgeryToken />
+                        <input type="hidden" name="ReturnUrl" value="Account/Login" />
 
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="/Account/Login" Match="NavLinkMatch.All">
-                <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> <small>Login</small>
-            </NavLink>
-        </div>
+                        <button type="submit" class="nav-link btn btn-link" style="text-align: left; width: 100%;">
+                            <span class="bi bi-box-arrow-right" aria-hidden="true"></span> <small>Salir</small>
+                        </button>
+                    </form>
+                </div>
+            </Authorized>
+            <NotAuthorized>
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="/Account/Register">
+                        <span class="bi bi-person-plus" aria-hidden="true"></span> <small>Register</small>
+                    </NavLink>
+                </div>
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="/Account/Login">
+                        <span class="bi bi-box-arrow-in-right" aria-hidden="true"></span> <small>Login</small>
+                    </NavLink>
+                </div>
+            </NotAuthorized>
+        </AuthorizeView>
+
 
     </nav>
 </div>

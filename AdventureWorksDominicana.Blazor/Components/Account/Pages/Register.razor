@@ -1,8 +1,9 @@
 ﻿@page "/Account/Register"
-
+@attribute [AllowAnonymous]
 @using System.ComponentModel.DataAnnotations
 @using System.Text
 @using System.Text.Encodings.Web
+@using Microsoft.AspNetCore.Authorization
 @using Microsoft.AspNetCore.Identity
 @using Microsoft.AspNetCore.WebUtilities
 @using AdventureWorksDominicana.Data.Context
@@ -28,8 +29,6 @@
             <DataAnnotationsValidator />
             <h2>Create a new account.</h2>
             <hr />
-            <ValidationSummary class="text-danger" role="alert" />
-
             <div class="form-floating mb-3">
                 <InputText @bind-Value="Input.FirstName" class="form-control" placeholder="Nombre" />
                 <label>Nombre</label>
@@ -106,6 +105,13 @@
         Logger.LogInformation("User created a new account with password.");
 
 
+        var roleResult = await UserManager.AddToRoleAsync(user, "Customer");
+
+        if (!roleResult.Succeeded)
+        {
+            Logger.LogWarning("El usuario se creo, pero fallo la asignacion del rol 'Customer'.");
+        }
+
         try
         {
 
@@ -114,26 +120,41 @@
                 Rowguid = Guid.NewGuid(),
                 ModifiedDate = DateTime.Now
             };
-        
             DbContext.BusinessEntities.Add(nuevaEntidad);
-            await DbContext.SaveChangesAsync(); 
+            await DbContext.SaveChangesAsync();
 
             var nuevaPersona = new Person
             {
                 BusinessEntityId = nuevaEntidad.BusinessEntityId,
-                PersonType = "IN", 
-                FirstName = Input.FirstName, 
-                LastName = Input.LastName,   
+                PersonType = "IN",
+                FirstName = Input.FirstName,
+                LastName = Input.LastName,
                 NameStyle = false,
                 EmailPromotion = 0,
                 Rowguid = Guid.NewGuid(),
                 ModifiedDate = DateTime.Now
             };
-
             DbContext.People.Add(nuevaPersona);
+            
+            var nuevoEmail = new EmailAddress
+            {
+                BusinessEntityId = nuevaEntidad.BusinessEntityId,
+                EmailAddress1 = Input.Email, 
+                Rowguid = Guid.NewGuid(),
+                ModifiedDate = DateTime.Now
+            };
+            DbContext.EmailAddresses.Add(nuevoEmail);
+            var nuevoCustomer = new Customer
+            {
+                PersonId = nuevaEntidad.BusinessEntityId,
+                AccountNumber = $"AW{nuevaEntidad.BusinessEntityId:D8}", 
+                Rowguid = Guid.NewGuid(),
+                ModifiedDate = DateTime.Now
+            };
+            DbContext.Customers.Add(nuevoCustomer);
             await DbContext.SaveChangesAsync();
         
-            Logger.LogInformation("Perfil de Person creado exitosamente en AdventureWorks.");
+            Logger.LogInformation("Usuario registrado como Entity, Person, Email y Customer.");
         }
         catch (Exception ex)
         {
@@ -150,7 +171,7 @@
             NavigationManager.ToAbsoluteUri("Account/ConfirmEmail").AbsoluteUri,
             new Dictionary<string, object?> { ["userId"] = userId, ["code"] = code, ["returnUrl"] = ReturnUrl });
 
-        await EmailSender.SendConfirmationLinkAsync(user, Input.Email, HtmlEncoder.Default.Encode(callbackUrl));
+        await EmailSender.SendConfirmationLinkAsync(user, Input.Email, callbackUrl);
 
         if (UserManager.Options.SignIn.RequireConfirmedAccount)
         {

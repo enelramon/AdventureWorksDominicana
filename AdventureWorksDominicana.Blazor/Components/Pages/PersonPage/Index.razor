@@ -1,0 +1,133 @@
+﻿@page "/Person/Index"
+@using AdventureWorksDominicana.Data.Models
+@using AdventureWorksDominicana.Services
+@using Microsoft.AspNetCore.Components.QuickGrid
+
+@rendermode InteractiveServer
+@inject PersonService personService
+
+<PageTitle>Indice de Personas</PageTitle>
+
+<div class="container mt-4">
+    <div class="card shadow-lg">
+        
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h5 class="card-title mb-0">Registro de Personas</h5>
+            <a href="Person/Create" class="btn btn-primary d-flex align-items-center gap-2">
+                <i class="bi bi-plus-square"></i>
+                <span>Crear Nueva</span>
+            </a>
+        </div>
+        
+        <div class="card-body">
+            
+            <div class="row">
+                <div class="col-md-3">
+                    <label class="form-label fw-bold">Desde</label>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label fw-bold">Hasta</label>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label fw-bold">Filtro:</label>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label fw-bold">Buscar:</label>
+                </div>
+            </div>
+
+            <div class="row mb-4">
+                <div class="col-md-3">
+                    <input class="form-control" type="date" @bind="StartDate" />
+                </div>
+                <div class="col-md-3">
+                    <input class="form-control" type="date" @bind="EndDate" />
+                </div>
+                <div class="col-md-3">
+                    <select class="form-select" @bind="Filtro">
+                        <option value="">Seleccione una opcion</option>
+                        <option value="BusinessEntityId">ID de Persona</option>
+                        <option value="FirstName">Primer Nombre</option>
+                        <option value="MiddleName">Segundo Nombre</option>
+                        <option value="LastName">Apellido</option>
+                        <option value="PersonType">Tipo de Persona</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <div class="input-group">
+                        <input class="form-control" type="text" placeholder="Buscar..." @bind="ValorFiltro" />
+                        <button class="btn btn-primary" type="button" @onclick="Buscar" title="Buscar">
+                            <i class="bi bi-search"></i>
+                        </button>
+                        <button class="btn btn-outline-primary" type="button" @onclick="Restablecer" title="Limpiar Filtros">
+                            <i class="bi bi-arrow-clockwise"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="table-responsive">
+                <QuickGrid Items="PersonsList.AsQueryable()" Pagination="@pages" Class="table table-striped table-bordered table-hover">
+                    <PropertyColumn Property="@(p => p.BusinessEntityId)" Title="ID" Sortable="true" />
+                    <PropertyColumn Property="@(p => p.PersonType)" Title="Tipo" Sortable="true" />
+                    <PropertyColumn Property="@(p => p.FirstName)" Title="Primer Nombre" Sortable="true" />
+                    <PropertyColumn Property="@(p => p.MiddleName)" Title="Segundo Nombre" Sortable="true" />
+                    <PropertyColumn Property="@(p => p.LastName)" Title="Apellido" Sortable="true" />
+                    <PropertyColumn Property="@(p => p.ModifiedDate)" Title="Fecha" Format="dd/MM/yyyy" Sortable="true" />
+                    <TemplateColumn Title="Opciones" Align="Align.Center">
+                        <div class="d-flex justify-content-center gap-2">
+                            <a href="Person/Edit/@context.BusinessEntityId" class="btn btn-sm btn-outline-primary d-flex align-items-center gap-2" title="Modificar">
+                                <i class="bi bi-pencil"></i>
+                                <span>Modificar</span>
+                            </a>
+                        </div>
+                    </TemplateColumn>
+                </QuickGrid>
+                
+                <Paginator State="@pages" />
+            </div>
+        </div>
+
+    </div>
+</div>
+
+@code {
+    private List<Person> PersonsList = new List<Person>();
+    private PaginationState pages = new PaginationState { ItemsPerPage = 5 };
+    private string Filtro = string.Empty;
+    private string ValorFiltro = string.Empty;
+    private DateTime? StartDate = DateTime.Today.Date;
+    private DateTime? EndDate = DateTime.Today.Date.AddDays(1);
+
+    protected override async Task OnInitializedAsync()
+    {
+        PersonsList = await personService.GetList(p => true);
+    }
+
+    private async Task Buscar()
+    {
+        int.TryParse(ValorFiltro, out int idBuscado);
+
+        PersonsList = await personService.GetList(p =>
+            (!StartDate.HasValue || !EndDate.HasValue ||
+            (p.ModifiedDate >= StartDate.Value.Date && p.ModifiedDate <= EndDate.Value.Date.AddDays(1).AddTicks(-1)))
+            &&
+            (string.IsNullOrWhiteSpace(ValorFiltro) || string.IsNullOrWhiteSpace(Filtro) ||
+                (Filtro == "BusinessEntityId" && p.BusinessEntityId == idBuscado) ||
+                (Filtro == "FirstName" && p.FirstName.Contains(ValorFiltro)) ||
+                (Filtro == "MiddleName" && p.MiddleName != null && p.MiddleName.Contains(ValorFiltro)) ||
+                (Filtro == "LastName" && p.LastName.Contains(ValorFiltro)) ||
+                (Filtro == "PersonType" && p.PersonType.Contains(ValorFiltro))
+            )
+        );
+    }
+
+    private async Task Restablecer()
+    {
+        StartDate = DateTime.Today.Date;
+        EndDate = DateTime.Today.Date.AddDays(1);
+        Filtro = string.Empty;
+        ValorFiltro = string.Empty;
+        await Buscar();
+    }
+}
