@@ -82,6 +82,7 @@
         if (string.IsNullOrEmpty(userEmail))
         {
             toastService.ShowError("Correo del usuario invalido");
+            Console.WriteLine("\nEmail del usuario logeado es nulo\n");
             navigationManager.NavigateTo("/Sales/");
             return;
         }
@@ -91,15 +92,16 @@
         if (email == null)
         {
             toastService.ShowError("Correo no encontrado.");
+            Console.WriteLine("\nEmail buscado es nulo\n");
             navigationManager.NavigateTo("/Sales/");
             return;
         }
 
-        // 3. Obtener TODOS los CustomerID asociados a esa persona
-        var customerIds = await customerService.GetCustomerIds(email.BusinessEntityId);
+        // 3. Obtener el CustomerID asociado a esa persona
+        int customerId = await customerService.GetCustomerId(email.BusinessEntityId);
         
         // 4. Obtener órdenes de TODOS esos CustomerID
-        SalesOrderHeadersList = await salesOrderHeaderService.GetList(s => customerIds.Contains(s.CustomerId));
+        SalesOrderHeadersList = await salesOrderHeaderService.GetList(s => s.CustomerId == customerId);
     }
 
     private void GoToSale() => navigationManager.NavigateTo("/Sales");
