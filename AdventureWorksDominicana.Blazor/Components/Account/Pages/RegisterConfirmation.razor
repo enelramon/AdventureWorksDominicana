@@ -1,69 +1,122 @@
 ﻿@page "/Account/RegisterConfirmation"
+@attribute [AllowAnonymous]
 
-@using System.Text
+@using System.ComponentModel.DataAnnotations
 @using Microsoft.AspNetCore.Identity
-@using Microsoft.AspNetCore.WebUtilities
-@using AdventureWorksDominicana.Data.Context
+@using AdventureWorksDominicana.Data.Models
 
 @inject UserManager<AspNetUser> UserManager
-@inject IEmailSender<AspNetUser> EmailSender
 @inject NavigationManager NavigationManager
-@inject IdentityRedirectManager RedirectManager
+@inject IEmailSender<AspNetUser> EmailSender
 
-<PageTitle>Register confirmation</PageTitle>
+<PageTitle>Confirmar Registro</PageTitle>
 
-<h1>Register confirmation</h1>
+<h1>Confirmar tu correo</h1>
 
-<StatusMessage Message="@statusMessage" />
+<div class="row">
+    <div class="col-md-6">
+        @if (Email is null)
+        {
+            <p>Error: No se proporcionó un correo electrónico válido para confirmar.</p>
+        }
+        else
+        {
+            <p>Hemos enviado un código de 6 dígitos a <strong>@Email</strong>. Por favor, ingrésalo a continuación para activar tu cuenta:</p>
 
-@if (emailConfirmationLink is not null)
-{
-    <p>
-        This app does not currently have a real email sender registered, see <a href="https://aka.ms/aspaccountconf">these docs</a> for how to configure a real email sender.
-        Normally this would be emailed: <a href="@emailConfirmationLink">Click here to confirm your account</a>
-    </p>
-}
-else
-{
-    <p role="alert">Please check your email to confirm your account.</p>
-}
+
+            @if (EmailSender.GetType().Name == "IdentityNoOpEmailSender" && !string.IsNullOrEmpty(DevCode))
+            {
+                <div class="alert alert-warning">
+                    <strong>Aviso de Desarrollo:</strong> No hay un servidor de correos configurado. Tu código de prueba es: <code style="font-size: 1.2rem; font-weight: bold;">@DevCode</code>
+                </div>
+            }
+
+            @if (!string.IsNullOrEmpty(ErrorMessage))
+            {
+                <div class="alert alert-danger" role="alert">
+                    @ErrorMessage
+                </div>
+            }
+
+
+            <EditForm Model="Input" method="post" OnValidSubmit="VerifyCode" FormName="verifyCode">
+                <DataAnnotationsValidator />
+                
+                <div class="form-floating mb-3">
+                    <InputText @bind-Value="Input.Code" class="form-control" placeholder="123456" />
+                    <label>Código de Verificación</label>
+                    <ValidationMessage For="() => Input.Code" class="text-danger" />
+                </div>
+
+                <button type="submit" class="w-100 btn btn-lg btn-primary">Verificar y Confirmar</button>
+            </EditForm>
+        }
+    </div>
+</div>
 
 @code {
-    private string? emailConfirmationLink;
-    private string? statusMessage;
-
-    [CascadingParameter]
-    private HttpContext HttpContext { get; set; } = default!;
+    [SupplyParameterFromQuery]
+    public string? Email { get; set; }
 
     [SupplyParameterFromQuery]
-    private string? Email { get; set; }
+    public string? ReturnUrl { get; set; }
 
-    [SupplyParameterFromQuery]
-    private string? ReturnUrl { get; set; }
+    [SupplyParameterFromForm]
+    private InputModel Input { get; set; } = new();
+
+    private string? ErrorMessage;
+    private string? DevCode;
 
     protected override async Task OnInitializedAsync()
     {
-        if (Email is null)
+        // Generar codigo
+        if (Email is not null && EmailSender.GetType().Name == "IdentityNoOpEmailSender")
         {
-            RedirectManager.RedirectTo("");
+            var user = await UserManager.FindByEmailAsync(Email);
+            if (user is not null)
+            {
+                DevCode = await UserManager.GenerateTwoFactorTokenAsync(user, "Email");
+            }
+        }
+    }
+
+    public async Task VerifyCode()
+    {
+        if (string.IsNullOrEmpty(Email))
+        {
+            ErrorMessage = "Falta el correo electrónico.";
             return;
         }
 
         var user = await UserManager.FindByEmailAsync(Email);
-        if (user is null)
+        if (user == null)
         {
-            HttpContext.Response.StatusCode = StatusCodes.Status404NotFound;
-            statusMessage = "Error finding user for unspecified email";
+            ErrorMessage = "Usuario no encontrado en la base de datos.";
+            return;
         }
-        else if (EmailSender is IdentityNoOpEmailSender)
+        
+        // Verificar codigo que ingresa usuario
+        var isTokenValid = await UserManager.VerifyTwoFactorTokenAsync(user, "Email", Input.Code);
+
+        if (isTokenValid)
         {
-            // Once you add a real email sender, you should remove this code that lets you confirm the account
-            var userId = await UserManager.GetUserIdAsync(user);
-            var code = await UserManager.GenerateEmailConfirmationTokenAsync(user);
-            code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
-            emailConfirmationLink = NavigationManager.GetUriWithQueryParameters(
-                NavigationManager.ToAbsoluteUri("Account/ConfirmEmail").AbsoluteUri,
-                new Dictionary<string, object?> { ["userId"] = userId, ["code"] = code, ["returnUrl"] = ReturnUrl });
+            // Codigo Correcto
+            user.EmailConfirmed = true;
+            await UserManager.UpdateAsync(user);
+            
+            // Redirigir a login cuando se confirme el codigo
+            NavigationManager.NavigateTo("/Account/Login");
         }
+        else
+        {
+            ErrorMessage = "El código ingresado es incorrecto o ha expirado. Por favor, verifica e intenta de nuevo.";
+        }
+    }
+
+    private sealed class InputModel
+    {
+        [Required(ErrorMessage = "Debes ingresar el código de verificación.")]
+        [StringLength(6, MinimumLength = 6, ErrorMessage = "El código debe tener exactamente 6 dígitos.")]
+        public string Code { get; set; } = "";
     }
 }

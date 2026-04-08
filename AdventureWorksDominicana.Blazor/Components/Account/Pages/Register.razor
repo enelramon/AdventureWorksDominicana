@@ -7,7 +7,7 @@
 @using Microsoft.AspNetCore.Identity
 @using Microsoft.AspNetCore.WebUtilities
 @using AdventureWorksDominicana.Data.Context
-@using AdventureWorksDominicana.Data.Models 
+@using AdventureWorksDominicana.Data.Models
 @inject AdventureWorksDominicana.Data.Context.Contexto DbContext
 
 @inject UserManager<AspNetUser> UserManager
@@ -86,6 +86,27 @@
 
     public async Task RegisterUser(EditContext editContext)
     {
+        // Verificar que el usuario existe y no este confirmado
+        var existingUser = await UserManager.FindByEmailAsync(Input.Email);
+        if (existingUser != null)
+        {
+            var isConfirmed = await UserManager.IsEmailConfirmedAsync(existingUser);
+            if (!isConfirmed)
+            {
+
+                Logger.LogInformation("Usuario existente no confirmado. Reenviando código.");
+                var resentCode = await UserManager.GenerateTwoFactorTokenAsync(existingUser, "Email");
+                await EmailSender.SendConfirmationLinkAsync(existingUser, Input.Email, $"Tu código de verificación es: {resentCode}");
+                
+                RedirectManager.RedirectTo(
+                    "Account/RegisterConfirmation",
+                    new() { ["email"] = Input.Email, ["returnUrl"] = ReturnUrl });
+                return; 
+            }
+
+        }
+
+
         var user = CreateUser();
         user.Id = Guid.NewGuid().ToString();
 
@@ -93,7 +114,6 @@
         var emailStore = GetEmailStore();
         await emailStore.SetEmailAsync(user, Input.Email, CancellationToken.None);
     
-        
         var result = await UserManager.CreateAsync(user, Input.Password);
 
         if (!result.Succeeded)
@@ -104,7 +124,6 @@
 
         Logger.LogInformation("User created a new account with password.");
 
-
         var roleResult = await UserManager.AddToRoleAsync(user, "Customer");
 
         if (!roleResult.Succeeded)
@@ -114,7 +133,6 @@
 
         try
         {
-
             var nuevaEntidad = new BusinessEntity
             {
                 Rowguid = Guid.NewGuid(),
@@ -139,7 +157,7 @@
             var nuevoEmail = new EmailAddress
             {
                 BusinessEntityId = nuevaEntidad.BusinessEntityId,
-                EmailAddress1 = Input.Email, 
+                EmailAddress1 = Input.Email,
                 Rowguid = Guid.NewGuid(),
                 ModifiedDate = DateTime.Now
             };
@@ -147,7 +165,7 @@
             var nuevoCustomer = new Customer
             {
                 PersonId = nuevaEntidad.BusinessEntityId,
-                AccountNumber = $"AW{nuevaEntidad.BusinessEntityId:D8}", 
+                AccountNumber = $"AW{nuevaEntidad.BusinessEntityId:D8}",
                 Rowguid = Guid.NewGuid(),
                 ModifiedDate = DateTime.Now
             };
@@ -158,32 +176,19 @@
         }
         catch (Exception ex)
         {
-
             Logger.LogError($"Error al crear el perfil de negocio: {ex.Message}");
         }
 
-
-        var userId = await UserManager.GetUserIdAsync(user);
-        var code = await UserManager.GenerateEmailConfirmationTokenAsync(user);
-        code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
+        // 1. Generamos el código corto de 6 dígitos
+        var code = await UserManager.GenerateTwoFactorTokenAsync(user, "Email");
     
-        var callbackUrl = NavigationManager.GetUriWithQueryParameters(
-            NavigationManager.ToAbsoluteUri("Account/ConfirmEmail").AbsoluteUri,
-            new Dictionary<string, object?> { ["userId"] = userId, ["code"] = code, ["returnUrl"] = ReturnUrl });
 
-        await EmailSender.SendConfirmationLinkAsync(user, Input.Email, callbackUrl);
+        await EmailSender.SendConfirmationLinkAsync(user, Input.Email, $"Tu código de verificación es: {code}");
 
-        if (UserManager.Options.SignIn.RequireConfirmedAccount)
-        {
-            RedirectManager.RedirectTo(
-                "Account/RegisterConfirmation",
-                new() { ["email"] = Input.Email, ["returnUrl"] = ReturnUrl });
-        }
-        else
-        {
-            await SignInManager.SignInAsync(user, isPersistent: false);
-            RedirectManager.RedirectTo(ReturnUrl);
-        }
+
+        RedirectManager.RedirectTo(
+            "Account/RegisterConfirmation",
+            new() { ["email"] = Input.Email, ["returnUrl"] = ReturnUrl });
     }
 
     private AspNetUser CreateUser()
