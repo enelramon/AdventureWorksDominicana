@@ -1,17 +1,56 @@
 ﻿@page "/Account/ConfirmEmail"
-
+@attribute [AllowAnonymous]
 @using System.Text
+@using Microsoft.AspNetCore.Authorization
 @using Microsoft.AspNetCore.Identity
 @using Microsoft.AspNetCore.WebUtilities
-@using AdventureWorksIdentity.Data
+@using AdventureWorksDominicana.Data.Context
 
-@inject UserManager<ApplicationUser> UserManager
+@inject UserManager<AspNetUser> UserManager
 @inject IdentityRedirectManager RedirectManager
 
-<PageTitle>Confirm email</PageTitle>
+<PageTitle>Confirmar Correo | AdventureWorks</PageTitle>
 
-<h1>Confirm email</h1>
-<StatusMessage Message="@statusMessage" />
+<div class="aw-auth-wrapper">
+    <div class="aw-circle-deco deco-1"></div>
+    <div class="aw-circle-deco deco-2"></div>
+
+    <div class="aw-auth-card aw-centered-card text-center">
+        <div class="aw-auth-login-col">
+            
+            <div class="aw-success-icon-container">
+                @if (statusMessage?.Contains("Gracias") ?? false)
+                {
+                    <i class="bi bi-envelope-check-fill aw-success-icon"></i>
+                }
+                else
+                {
+                    <i class="bi bi-exclamation-octagon-fill aw-error-icon"></i>
+                }
+            </div>
+            
+            <h2 class="aw-auth-title">Confirmación de <span>Cuenta</span></h2>
+            
+            <p class="aw-auth-subtitle" style="margin-bottom: 35px;">
+                @statusMessage
+            </p>
+
+            @if (statusMessage?.Contains("Gracias") ?? false)
+            {
+                <a href="Account/Login" class="aw-btn-login text-decoration-none">
+                    Iniciar Sesión Ahora <i class="bi bi-box-arrow-in-right"></i>
+                </a>
+            }
+            else
+            {
+                <a href="Account/ResendEmailConfirmation" class="aw-btn-login text-decoration-none">
+                    Reenviar Enlace <i class="bi bi-arrow-repeat"></i>
+                </a>
+            }
+
+        </div>
+    </div>
+</div>
 
 @code {
     private string? statusMessage;
@@ -37,13 +76,22 @@
         if (user is null)
         {
             HttpContext.Response.StatusCode = StatusCodes.Status404NotFound;
-            statusMessage = $"Error loading user with ID {UserId}";
+            statusMessage = $"Error: No se pudo cargar el usuario con ID {UserId}";
         }
         else
         {
-            var code = Encoding.UTF8.GetString(WebEncoders.Base64UrlDecode(Code));
-            var result = await UserManager.ConfirmEmailAsync(user, code);
-            statusMessage = result.Succeeded ? "Thank you for confirming your email." : "Error confirming your email.";
+            try
+            {
+                var code = Encoding.UTF8.GetString(WebEncoders.Base64UrlDecode(Code));
+                var result = await UserManager.ConfirmEmailAsync(user, code);
+                statusMessage = result.Succeeded
+                    ? "Gracias por confirmar tu correo electrónico. Tu cuenta ya está activa."
+                    : "Error al confirmar tu correo electrónico.";
+            }
+            catch
+            {
+                statusMessage = "Error: El código de confirmación no es válido o ha expirado.";
+            }
         }
     }
 }

@@ -28,20 +28,6 @@ public class ShoppingCartItemService(IDbContextFactory<Contexto> DbFactory) : IS
     public async Task<bool> Insertar(ShoppingCartItem cartItem)
     {
         await using var contexto = await DbFactory.CreateDbContextAsync();
-        if (string.IsNullOrWhiteSpace(cartItem.ShoppingCartId))
-        {
-            string id;
-            do
-            {
-                id = $"SC-{RandomNumberGenerator.GetInt32(0, 1_000_000):D6}";
-            } while (await contexto.ShoppingCartItems.AnyAsync(s => s.ShoppingCartId == id));
-            cartItem.ShoppingCartId = id;
-        }
-        if (cartItem.Product != null)
-        {
-            contexto.Attach(cartItem.Product);
-            contexto.Entry(cartItem.Product).State = EntityState.Unchanged;
-        }
         contexto.ShoppingCartItems.Add(cartItem);
         return await contexto.SaveChangesAsync() > 0;
     }
@@ -68,17 +54,15 @@ public class ShoppingCartItemService(IDbContextFactory<Contexto> DbFactory) : IS
     public async Task<bool> Eliminar(int idCartitem)
     {
         await using var contexto = await DbFactory.CreateDbContextAsync();
-
-        var cartItem = await Buscar(idCartitem);
-        if (cartItem == null) return false;
-
-        contexto.ShoppingCartItems.Remove(cartItem);
-        return await contexto.SaveChangesAsync() > 0;
+        return await contexto.ShoppingCartItems.Where(s => s.ShoppingCartItemId == idCartitem).ExecuteDeleteAsync() > 0;
     }
 
     public async Task<List<ShoppingCartItem>> GetList(Expression<Func<ShoppingCartItem, bool>> criterio)
     {
         await using var contexto = await DbFactory.CreateDbContextAsync();
-        return await contexto.ShoppingCartItems.Where(criterio).ToListAsync();
+        return await contexto.ShoppingCartItems.Include(p => p.Product).ThenInclude(p => p.ProductSubcategory).ThenInclude(p => p.ProductCategory)
+         .Include(p => p.Product).ThenInclude(s => s.SpecialOfferProducts).ThenInclude(s => s.SpecialOffer)
+         .Include(p => p.Product).ThenInclude(p => p.ProductModel).ThenInclude(d => d.ProductModelProductDescriptionCultures).ThenInclude(d => d.ProductDescription)
+         .Where(criterio).ToListAsync();
     }
 }

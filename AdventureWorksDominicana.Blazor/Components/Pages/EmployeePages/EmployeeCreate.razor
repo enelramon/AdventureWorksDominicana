@@ -3,6 +3,7 @@
 @inject EmployeeService employeeService;
 @inject ToastService toastService;
 @inject NavigationManager navigationManager;
+@rendermode InteractiveServer
 
 <EditForm Model="Employee" FormName="crearEmployee" OnValidSubmit="Guardar">
     <DataAnnotationsValidator />

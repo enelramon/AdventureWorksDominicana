@@ -5,10 +5,10 @@
 @using System.Text.Encodings.Web
 @using Microsoft.AspNetCore.Identity
 @using Microsoft.AspNetCore.WebUtilities
-@using AdventureWorksIdentity.Data
+@using AdventureWorksDominicana.Data.Context
 
-@inject UserManager<ApplicationUser> UserManager
-@inject IEmailSender<ApplicationUser> EmailSender
+@inject UserManager<AspNetUser> UserManager
+@inject IEmailSender<AspNetUser> EmailSender
 @inject NavigationManager NavigationManager
 @inject IdentityRedirectManager RedirectManager
 
@@ -55,7 +55,7 @@
 
 @code {
     private string? message;
-    private ApplicationUser? user;
+    private AspNetUser? user;
     private string? email;
     private bool isEmailConfirmed;
 

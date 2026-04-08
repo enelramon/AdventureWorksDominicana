@@ -1,35 +1,57 @@
 ﻿@page "/Account/ResendEmailConfirmation"
-
+@attribute [AllowAnonymous]
 @using System.ComponentModel.DataAnnotations
 @using System.Text
 @using System.Text.Encodings.Web
+@using Microsoft.AspNetCore.Authorization
 @using Microsoft.AspNetCore.Identity
 @using Microsoft.AspNetCore.WebUtilities
-@using AdventureWorksIdentity.Data
+@using AdventureWorksDominicana.Data.Context
 
-@inject UserManager<ApplicationUser> UserManager
-@inject IEmailSender<ApplicationUser> EmailSender
+@inject UserManager<AspNetUser> UserManager
+@inject IEmailSender<AspNetUser> EmailSender
 @inject NavigationManager NavigationManager
 @inject IdentityRedirectManager RedirectManager
 
-<PageTitle>Resend email confirmation</PageTitle>
+<PageTitle>Reenviar Confirmación | AdventureWorks</PageTitle>
 
-<h1>Resend email confirmation</h1>
-<h2>Enter your email.</h2>
-<hr />
-<StatusMessage Message="@message" />
-<div class="row">
-    <div class="col-md-4">
-        <EditForm Model="Input" FormName="resend-email-confirmation" OnValidSubmit="OnValidSubmitAsync" method="post">
-            <DataAnnotationsValidator />
-            <ValidationSummary class="text-danger" role="alert" />
-            <div class="form-floating mb-3">
-                <InputText @bind-Value="Input.Email" id="Input.Email" class="form-control" aria-required="true" placeholder="name@example.com" />
-                <label for="Input.Email" class="form-label">Email</label>
-                <ValidationMessage For="() => Input.Email" class="text-danger" />
-            </div>
-            <button type="submit" class="w-100 btn btn-lg btn-primary">Resend</button>
-        </EditForm>
+<div class="aw-auth-wrapper">
+    <div class="aw-circle-deco deco-1"></div>
+    <div class="aw-circle-deco deco-2"></div>
+
+    <div class="aw-auth-card aw-centered-card">
+        <div class="aw-auth-login-col">
+            <StatusMessage Message="@message" />
+
+            <EditForm Model="Input" FormName="resend-email-confirmation" OnValidSubmit="OnValidSubmitAsync" method="post">
+                <DataAnnotationsValidator />
+                
+                <div class="aw-brand-header text-center">
+                    <div class="aw-icon-header">
+                        <i class="bi bi-envelope-paper"></i>
+                    </div>
+                    <h2 class="aw-auth-title">Reenviar <span>Confirmación</span></h2>
+                    <p class="aw-auth-subtitle">Ingresa tu correo para enviarte un nuevo enlace de activación.</p>
+                </div>
+
+                <div class="aw-input-group">
+                    <label for="Input.Email">Correo Electrónico</label>
+                    <div class="aw-input-wrapper with-icon">
+                        <i class="bi bi-envelope aw-input-icon"></i>
+                        <InputText @bind-Value="Input.Email" id="Input.Email" class="aw-input-control" aria-required="true" placeholder="nombre@ejemplo.com" />
+                    </div>
+                    <ValidationMessage For="() => Input.Email" class="aw-text-danger" />
+                </div>
+
+                <button type="submit" class="aw-btn-login">
+                    Enviar Enlace <i class="bi bi-send"></i>
+                </button>
+
+                <div class="aw-back-link">
+                    <a href="Account/Login" class="aw-forgot-link"><i class="bi bi-arrow-left-short"></i> Volver al inicio de sesión</a>
+                </div>
+            </EditForm>
+        </div>
     </div>
 </div>
 
@@ -49,25 +71,28 @@
         var user = await UserManager.FindByEmailAsync(Input.Email!);
         if (user is null)
         {
-            message = "Verification email sent. Please check your email.";
+
+            message = "Correo de verificación enviado. Por favor, revisa tu bandeja de entrada.";
             return;
         }
 
         var userId = await UserManager.GetUserIdAsync(user);
         var code = await UserManager.GenerateEmailConfirmationTokenAsync(user);
         code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
+        
         var callbackUrl = NavigationManager.GetUriWithQueryParameters(
             NavigationManager.ToAbsoluteUri("Account/ConfirmEmail").AbsoluteUri,
             new Dictionary<string, object?> { ["userId"] = userId, ["code"] = code });
+            
         await EmailSender.SendConfirmationLinkAsync(user, Input.Email, HtmlEncoder.Default.Encode(callbackUrl));
 
-        message = "Verification email sent. Please check your email.";
+        message = "Correo de verificación enviado. Por favor, revisa tu bandeja de entrada.";
     }
 
     private sealed class InputModel
     {
-        [Required]
-        [EmailAddress]
+        [Required(ErrorMessage = "El correo es obligatorio.")]
+        [EmailAddress(ErrorMessage = "Formato de correo inválido.")]
         public string Email { get; set; } = "";
     }
 }
