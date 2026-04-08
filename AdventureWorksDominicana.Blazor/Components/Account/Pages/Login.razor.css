@@ -1,0 +1,412 @@
+/* Contenedor Principal */
+.aw-auth-wrapper {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: #050810;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-family: 'Inter', system-ui, sans-serif;
+    z-index: 9999;
+    overflow-y: auto;
+    padding: 20px 0;
+    background-image: radial-gradient(circle at top right, rgba(37, 99, 235, 0.05), transparent 40%);
+}
+
+.aw-auth-card {
+    display: flex;
+    width: 1000px;
+    min-height: 600px;
+    height: auto;
+    background-color: #0F172A;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 16px;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    overflow: hidden;
+    margin: auto;
+}
+
+/* Columna Izquierda (Login) */
+.aw-auth-login-col {
+    flex: 1.2;
+    background-color: #0F172A;
+    padding: 50px 60px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    position: relative;
+}
+
+.aw-brand-header {
+    margin-bottom: 35px;
+}
+
+.aw-auth-title {
+    font-size: 2.2rem;
+    color: #FFFFFF;
+    font-weight: 700;
+    margin-bottom: 8px;
+    letter-spacing: -0.5px;
+}
+
+    .aw-auth-title span {
+        color: #3B82F6;
+    }
+
+.aw-auth-subtitle {
+    color: #94A3B8;
+    font-weight: 400;
+    font-size: 0.95rem;
+}
+
+/* Inputs y Formularios */
+.aw-input-group {
+    margin-bottom: 22px;
+}
+
+    .aw-input-group label {
+        display: block;
+        color: #CBD5E1;
+        font-size: 0.85rem;
+        font-weight: 500;
+        margin-bottom: 8px;
+    }
+
+.aw-input-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.aw-input-icon {
+    position: absolute;
+    left: 16px;
+    color: #64748B;
+    font-size: 1.1rem;
+    transition: color 0.3s;
+}
+
+.aw-auth-wrapper ::deep .aw-input-control {
+    width: 100%;
+    height: 50px;
+    background-color: #1E293B;
+    border: 1px solid #334155;
+    border-radius: 8px;
+    color: white;
+    padding: 0 15px;
+    box-sizing: border-box;
+    transition: all 0.3s ease;
+    font-size: 0.95rem;
+}
+
+.with-icon ::deep .aw-input-control {
+    padding-left: 45px;
+}
+    /* Deja espacio para el icono */
+    .with-icon ::deep .aw-input-control:focus {
+        border-color: #3B82F6;
+        box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.15);
+        outline: none;
+        background-color: #0F172A;
+    }
+
+.with-icon:focus-within .aw-input-icon {
+    color: #3B82F6;
+}
+
+/* Botón de ver contraseña (Ojito) */
+.aw-btn-eye {
+    position: absolute;
+    right: 10px;
+    background: none;
+    border: none;
+    color: #64748B;
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 50%;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+    .aw-btn-eye:hover {
+        color: #E2E8F0;
+        background-color: rgba(255,255,255,0.05);
+    }
+
+.aw-auth-wrapper ::deep .aw-text-danger {
+    color: #F87171;
+    font-size: 0.8rem;
+    margin-top: 6px;
+    display: block;
+    font-weight: 500;
+}
+
+/* Opciones extras (Checkbox y Olvidó clave) */
+.aw-auth-options {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+    font-size: 0.9rem;
+}
+
+.aw-checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #94A3B8;
+    cursor: pointer;
+    user-select: none;
+}
+
+.aw-auth-wrapper ::deep .aw-custom-checkbox {
+    width: 16px;
+    height: 16px;
+    accent-color: #3B82F6;
+    cursor: pointer;
+}
+
+.aw-forgot-link {
+    color: #3B82F6;
+    text-decoration: none;
+    font-weight: 500;
+    transition: all 0.2s;
+}
+
+    .aw-forgot-link:hover {
+        color: #60A5FA;
+        text-decoration: underline;
+    }
+
+/* Botones Principales */
+.aw-btn-login {
+    width: 100%;
+    height: 50px;
+    background: linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    box-shadow: 0 4px 14px rgba(37, 99, 235, 0.3);
+}
+
+    .aw-btn-login:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(37, 99, 235, 0.4);
+        background: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%);
+    }
+
+    .aw-btn-login i {
+        font-size: 1.2rem;
+    }
+
+.aw-auth-wrapper ::deep .aw-btn-outline {
+    width: 100%;
+    height: 50px;
+    background-color: rgba(255,255,255,0.03);
+    color: #E2E8F0;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    font-weight: 500;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    text-decoration: none;
+}
+
+    .aw-auth-wrapper ::deep .aw-btn-outline:hover {
+        background-color: rgba(255, 255, 255, 0.08);
+        border-color: rgba(255, 255, 255, 0.2);
+        transform: translateY(-1px);
+    }
+
+/* Divisores */
+.aw-divider {
+    margin: 25px 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+}
+
+    .aw-divider::before, .aw-divider::after {
+        content: "";
+        flex: 1;
+        height: 1px;
+        background: rgba(255, 255, 255, 0.08);
+    }
+
+    .aw-divider span {
+        color: #64748B;
+        padding: 0 15px;
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+.aw-resend-email {
+    text-align: center;
+    margin-top: 20px;
+    font-size: 0.85rem;
+}
+
+/* Columna Derecha (Registro) */
+.aw-auth-register-col {
+    flex: 1;
+    background: linear-gradient(135deg, #1E3A8A 0%, #0F172A 100%);
+    padding: 50px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+}
+
+.aw-glow-icon {
+    font-size: 3.5rem;
+    color: #60A5FA;
+    margin-bottom: 15px;
+    filter: drop-shadow(0 0 15px rgba(96, 165, 250, 0.4));
+    animation: float 3s ease-in-out infinite;
+}
+
+@keyframes float {
+    0% {
+        transform: translateY(0px);
+    }
+
+    50% {
+        transform: translateY(-10px);
+    }
+
+    100% {
+        transform: translateY(0px);
+    }
+}
+
+.aw-title-white {
+    color: #FFFFFF;
+    font-size: 2rem;
+    font-weight: 700;
+    margin-bottom: 15px;
+    z-index: 2;
+}
+
+.aw-auth-text {
+    color: #CBD5E1;
+    font-size: 1rem;
+    font-weight: 400;
+    margin-bottom: 35px;
+    line-height: 1.6;
+    z-index: 2;
+}
+
+.aw-btn-register {
+    padding: 14px 40px;
+    background: rgba(255,255,255,0.1);
+    backdrop-filter: blur(5px);
+    border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 50px;
+    color: white;
+    text-decoration: none;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    display: inline-block;
+    z-index: 2;
+}
+
+    .aw-btn-register:hover {
+        background-color: white;
+        color: #1E3A8A;
+        transform: scale(1.05);
+        box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+    }
+
+.aw-divider-white {
+    margin: 40px 0 20px 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    z-index: 2;
+}
+
+    .aw-divider-white::before, .aw-divider-white::after {
+        content: "";
+        flex: 1;
+        height: 1px;
+        background: rgba(255, 255, 255, 0.2);
+    }
+
+    .aw-divider-white span {
+        color: rgba(255, 255, 255, 0.7);
+        padding: 0 15px;
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+/* External Logins */
+.aw-auth-wrapper ::deep .aw-external-logins {
+    width: 100%;
+    z-index: 2;
+}
+
+    .aw-auth-wrapper ::deep .aw-external-logins form button {
+        background-color: rgba(255, 255, 255, 0.05);
+        color: white;
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        padding: 12px 20px;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        width: 100%;
+        font-weight: 500;
+    }
+
+        .aw-auth-wrapper ::deep .aw-external-logins form button:hover {
+            background-color: rgba(255, 255, 255, 0.15);
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+
+/* Círculos Decorativos (Estilo moderno) */
+.aw-circle-deco {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(40px);
+    z-index: 1;
+}
+
+.deco-1 {
+    width: 300px;
+    height: 300px;
+    background: rgba(37, 99, 235, 0.15);
+    top: -100px;
+    right: -100px;
+}
+
+.deco-2 {
+    width: 250px;
+    height: 250px;
+    background: rgba(139, 92, 246, 0.1);
+    bottom: -50px;
+    left: -100px;
+}

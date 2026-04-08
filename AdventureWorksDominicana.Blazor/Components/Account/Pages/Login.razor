@@ -1,4 +1,5 @@
-﻿@page "/Account/Login"
+﻿@page "/"
+@page "/Account/Login"
 @attribute [AllowAnonymous]
 @using System.ComponentModel.DataAnnotations
 @using Microsoft.AspNetCore.Authentication
@@ -12,62 +13,72 @@
 @inject NavigationManager NavigationManager
 @inject IdentityRedirectManager RedirectManager
 
-<PageTitle>Log in</PageTitle>
+<PageTitle>Inicia Sesión | AdventureWorks</PageTitle>
 
-<h1>Log in</h1>
-<div class="row">
-    <div class="col-lg-6">
-        <section>
+<div class="aw-auth-wrapper">
+    <div class="aw-auth-card">
+        
+        <div class="aw-auth-login-col">
             <StatusMessage Message="@errorMessage" />
+            
             <EditForm EditContext="editContext" method="post" OnSubmit="LoginUser" FormName="login">
                 <DataAnnotationsValidator />
-                <h2>Use a local account to log in.</h2>
-                <hr />
-                <div class="form-floating mb-3">
-                    <InputText @bind-Value="Input.Email" id="Input.Email" class="form-control" autocomplete="username webauthn" aria-required="true" placeholder="name@example.com" />
-                    <label for="Input.Email" class="form-label">Email</label>
-                    <ValidationMessage For="() => Input.Email" class="text-danger" />
+                
+                <div class="aw-brand-header">
+                    <h2 class="aw-auth-title">Adventure<span>Works</span></h2>
+                    <p class="aw-auth-subtitle">Bienvenido de vuelta. Inicia sesión para continuar.</p>
                 </div>
-                <div class="form-floating mb-3">
-                    <InputText type="password" @bind-Value="Input.Password" id="Input.Password" class="form-control" autocomplete="current-password" aria-required="true" placeholder="password" />
-                    <label for="Input.Password" class="form-label">Password</label>
-                    <ValidationMessage For="() => Input.Password" class="text-danger" />
+
+                <div class="aw-input-group">
+                    <label for="Input.Email">Correo Electrónico</label>
+                    <div class="aw-input-wrapper with-icon">
+                        <i class="bi bi-envelope aw-input-icon"></i>
+                        <InputText @bind-Value="Input.Email" id="Input.Email" class="aw-input-control" autocomplete="username" aria-required="true" placeholder="nombre@ejemplo.com" />
+                    </div>
+                    <ValidationMessage For="() => Input.Email" class="aw-text-danger" />
                 </div>
-                <div class="checkbox mb-3">
-                    <label class="form-label">
-                        <InputCheckbox @bind-Value="Input.RememberMe" class="darker-border-checkbox form-check-input" />
-                        Remember me
+
+                <div class="aw-input-group aw-password-field">
+                    <label for="Input.Password">Contraseña</label>
+                    <div class="aw-input-wrapper with-icon">
+                        <i class="bi bi-lock aw-input-icon"></i>
+                        <InputText type="password" @bind-Value="Input.Password" id="Input.Password" class="aw-input-control" autocomplete="current-password" aria-required="true" placeholder="••••••••" />
+                    </div>
+                    <ValidationMessage For="() => Input.Password" class="aw-text-danger" />
+                </div>
+
+                <div class="aw-auth-options">
+                    <label class="aw-checkbox-label">
+                        <InputCheckbox @bind-Value="Input.RememberMe" class="aw-custom-checkbox" />
+                        <span>Recordarme</span>
                     </label>
+                    <a href="Account/ForgotPassword" class="aw-forgot-link">¿Olvidaste tu contraseña?</a>
                 </div>
-                <div>
-                    <button type="submit" class="w-100 btn btn-lg btn-primary">Log in</button>
-                </div>
-                <hr />
-                <div class="d-flex flex-column">
-                    <span class="text-secondary mx-auto mt-2">OR</span>
-                    <PasskeySubmit Operation="PasskeyOperation.Request" Name="Input.Passkey" EmailName="Input.Email" class="btn btn-link mx-auto">Log in with a passkey</PasskeySubmit>
-                </div>
-                <hr />
-                <div>
-                    <p>
-                        <a href="Account/ForgotPassword">Forgot your password?</a>
-                    </p>
-                    <p>
-                        <a href="@(NavigationManager.GetUriWithQueryParameters("Account/Register", new Dictionary<string, object?> { ["ReturnUrl"] = ReturnUrl }))">Register as a new user</a>
-                    </p>
-                    <p>
-                        <a href="Account/ResendEmailConfirmation">Resend email confirmation</a>
-                    </p>
+
+                <button type="submit" class="aw-btn-login">
+                    Iniciar Sesión <i class="bi bi-arrow-right-short"></i>
+                </button>
+
+                <div class="aw-resend-email" style="margin-top: 30px;">
+                    <a href="Account/ResendEmailConfirmation" class="aw-forgot-link"><i class="bi bi-envelope-check"></i> Reenviar confirmación de email</a>
                 </div>
             </EditForm>
-        </section>
-    </div>
-    <div class="col-lg-4 col-lg-offset-2">
-        <section>
-            <h3>Use another service to log in.</h3>
-            <hr />
-            <ExternalLoginPicker />
-        </section>
+        </div>
+
+        <div class="aw-auth-register-col">
+            <div class="aw-register-content">
+                <div class="aw-glow-icon">
+                    <i class="bi bi-rocket-takeoff"></i>
+                </div>
+                <h2 class="aw-auth-title aw-title-white">¿Eres Nuevo Aquí?</h2>
+                <p class="aw-auth-text">Únete a nuestra comunidad hoy mismo y descubre las mejores herramientas para tu negocio.</p>
+                <a href="@(NavigationManager.GetUriWithQueryParameters("Account/Register", new Dictionary<string, object?> { ["ReturnUrl"] = ReturnUrl }))" class="aw-btn-register">Crear una Cuenta</a>
+            </div>
+            
+            <div class="aw-circle-deco deco-1"></div>
+            <div class="aw-circle-deco deco-2"></div>
+        </div>
+        
     </div>
 </div>
 
@@ -87,47 +98,27 @@
     protected override async Task OnInitializedAsync()
     {
         Input ??= new();
-
         editContext = new EditContext(Input);
 
         if (HttpMethods.IsGet(HttpContext.Request.Method))
         {
-            // Clear the existing external cookie to ensure a clean login process
             await HttpContext.SignOutAsync(IdentityConstants.ExternalScheme);
         }
     }
 
     public async Task LoginUser()
     {
-        if (!string.IsNullOrEmpty(Input.Passkey?.Error))
+        if (!editContext.Validate())
         {
-            errorMessage = $"Error: {Input.Passkey.Error}";
             return;
         }
 
-        SignInResult result;
-        if (!string.IsNullOrEmpty(Input.Passkey?.CredentialJson))
-        {
-            // When performing passkey sign-in, don't perform form validation.
-            result = await SignInManager.PasskeySignInAsync(Input.Passkey.CredentialJson);
-        }
-        else
-        {
-            // If doing a password sign-in, validate the form.
-            if (!editContext.Validate())
-            {
-                return;
-            }
-
-            // This doesn't count login failures towards account lockout
-            // To enable password failures to trigger account lockout, set lockoutOnFailure: true
-            result = await SignInManager.PasswordSignInAsync(Input.Email, Input.Password, Input.RememberMe, lockoutOnFailure: false);
-        }
+        var result = await SignInManager.PasswordSignInAsync(Input.Email, Input.Password, Input.RememberMe, lockoutOnFailure: false);
 
         if (result.Succeeded)
         {
-            Logger.LogInformation("User logged in.");
-            RedirectManager.RedirectTo(ReturnUrl);
+            Logger.LogInformation("El usuario ha iniciado sesión exitosamente.");
+            NavigationManager.NavigateTo("Home/Page");
         }
         else if (result.RequiresTwoFactor)
         {
@@ -137,28 +128,26 @@
         }
         else if (result.IsLockedOut)
         {
-            Logger.LogWarning("User account locked out.");
+            Logger.LogWarning("La cuenta del usuario ha sido bloqueada.");
             RedirectManager.RedirectTo("Account/Lockout");
         }
         else
         {
-            errorMessage = "Error: Invalid login attempt.";
+            errorMessage = "Credenciales incorrectas. Inténtalo de nuevo.";
         }
     }
 
     private sealed class InputModel
     {
-        [Required]
-        [EmailAddress]
+        [Required(ErrorMessage = "El correo es obligatorio.")]
+        [EmailAddress(ErrorMessage = "Formato de correo inválido.")]
         public string Email { get; set; } = "";
 
-        [Required]
+        [Required(ErrorMessage = "La contraseña es obligatoria.")]
         [DataType(DataType.Password)]
         public string Password { get; set; } = "";
 
-        [Display(Name = "Remember me?")]
+        [Display(Name = "¿Recordarme?")]
         public bool RememberMe { get; set; }
-
-        public PasskeyInputModel? Passkey { get; set; }
     }
 }
