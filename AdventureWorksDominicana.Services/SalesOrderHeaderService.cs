@@ -109,6 +109,6 @@ public class SalesOrderHeaderService(IDbContextFactory<Contexto> DbFactory) : IS
     public async Task<List<SalesOrderHeader>> GetList(Expression<Func<SalesOrderHeader, bool>> criterio)
     {
         await using var contexto = await DbFactory.CreateDbContextAsync();
-        return await contexto.SalesOrderHeaders.Where(criterio).AsNoTracking().ToListAsync();
+        return await contexto.SalesOrderHeaders.Include(c => c.Customer).ThenInclude(p => p.Person).ThenInclude(e => e.EmailAddresses).Where(criterio).AsNoTracking().ToListAsync();
     }
 }

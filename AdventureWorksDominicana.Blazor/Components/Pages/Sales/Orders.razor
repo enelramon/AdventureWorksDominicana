@@ -2,6 +2,7 @@
 @rendermode InteractiveServer
 @inject SalesOrderHeaderService salesOrderHeaderService
 @inject NavigationManager navigationManager
+@inject AuthenticationStateProvider authenticationStateProvider;
 <PageTitle>Orders</PageTitle>
 <div class="container">
     @* Boton de volver *@
@@ -57,10 +58,19 @@
 </div>
 @code {
     private List<SalesOrderHeader> SalesOrderHeadersList = new List<SalesOrderHeader>();
-
+    private ClaimsPrincipal? User { get; set; }
+    private bool IsAuthenticated { get; set; }
+    private string? UserEmail { get; set; }
     protected override async Task OnInitializedAsync()
     {
-        SalesOrderHeadersList = await salesOrderHeaderService.GetList(s => true);
+        var authState = await authenticationStateProvider.GetAuthenticationStateAsync();
+        User = authState.User;
+        IsAuthenticated = User.Identity?.IsAuthenticated ?? false;
+        if (IsAuthenticated)
+        {
+            UserEmail = User.FindFirst(ClaimTypes.Email)?.Value;
+        }
+        SalesOrderHeadersList = await salesOrderHeaderService.GetList(s => s.Customer.Person.EmailAddresses.Any(e => e.EmailAddress1.Trim().ToLower().Equals(UserEmail)));
     }
 
     private void GoToSale() => navigationManager.NavigateTo("/Sales");

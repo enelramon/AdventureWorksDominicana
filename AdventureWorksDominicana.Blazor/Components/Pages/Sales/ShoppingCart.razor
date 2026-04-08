@@ -144,12 +144,14 @@
     private List<ShipMethod> ShipMethodsList = new List<ShipMethod>();
 
     private decimal taxes = 0.0m, freight = 0.0m, discountPct = 0.0m, subtotal = 0.0m, total = 0.0m;
+    private const decimal GrToLb = 453.59237m, KgToLb = 2.20462262m;
     private int territoryId, addressId, customerId, creditCardId, shipMethodId;
     private bool showModal = false;
 
     private ClaimsPrincipal? User { get; set; }
     private bool IsAuthenticated { get; set; }
     private string? UserEmail { get; set; }
+    private List<Customer> userCurrent = new List<Customer>();
 
     protected override async Task OnInitializedAsync()
     {
@@ -157,7 +159,7 @@
         var authState = await authenticationStateProvider.GetAuthenticationStateAsync();
         User = authState.User;
         IsAuthenticated = User.Identity?.IsAuthenticated ?? false;
-        
+
         if (IsAuthenticated)
         {
             UserEmail = User.FindFirst(ClaimTypes.Email)?.Value;
@@ -165,7 +167,7 @@
 
         // Solo trae los items del usuario logeado
         ShoppingCartItemList = await shoppingCartItemService.GetList(s => s.ShoppingCartId.Trim().ToLower().Equals(UserEmail));
-        
+        userCurrent = await customerService.GetList(u => u.Person.EmailAddresses.Any(p => p.EmailAddress1.Trim().ToLower().Equals(UserEmail)));
         AddressesList = await addressService.GetList(s => true);
         CustomersList = await customerService.GetList(s => true);
         SalesTerritoriesList = await salesTerritoryService.GetList(s => true);
@@ -198,7 +200,7 @@
             if (m?.Product?.WeightUnitMeasureCode?.Trim() == "G")
                 weight += ((m?.Product?.Weight ?? 0) * (m?.Quantity ?? 0)) / 453.59237m;
             else if (m?.Product?.WeightUnitMeasureCode?.Trim() == "KG")
-                weight += ((m?.Product?.Weight ?? 0) * (m?.Quantity ?? 0)) * 2.20462262m;
+                weight += ((m?.Product?.Weight ?? 0) * (m?.Quantity ?? 0)) * KgToLb;
             else
                 weight += (m?.Product?.Weight ?? 0) * (m?.Quantity ?? 0);
         }
@@ -266,11 +268,15 @@
 
     private async Task DeleteItemCart(int itemId)
     {
-        var eliminated = await shoppingCartItemService.Eliminar(itemId);
-        if (eliminated)
+        try
         {
+            var eliminated = await shoppingCartItemService.Eliminar(itemId);
             toastService.ShowSuccess("Producto eliminado correctamente");
             await RefreshShoppingCart();
+        }catch(Exception ex)
+        {
+            toastService.ShowSuccess("Producto no pudo ser eliminado correctamente");
+            Console.Write(ex.Message);
         }
     }
 
@@ -287,7 +293,7 @@
             SalesOrderNumber = $"SO{DateTime.Now:yyyyMMddHHmmss}{Random.Shared.Next(1000, 9999)}",
             PurchaseOrderNumber = $"PO{DateTime.Now:yyyyMMddHHmmss}{Random.Shared.Next(1000, 9999)}",
             AccountNumber = null,
-            CustomerId = customerId,
+            CustomerId = userCurrent[0].CustomerId,
             SalesPersonId = null,
             TerritoryId = territoryId,
             BillToAddressId = addressId,
