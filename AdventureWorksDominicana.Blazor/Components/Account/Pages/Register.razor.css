@@ -1,0 +1,255 @@
+﻿.aw-auth-wrapper {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: #0B0F19;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-family: 'Inter', sans-serif;
+    z-index: 9999;
+}
+
+.aw-auth-card {
+    display: flex;
+    width: 950px;
+    height: 650px;
+    background-color: #0F172A;
+    border: 1px solid #1E293B;
+    border-radius: 12px;
+    box-shadow: 0px 10px 15px -3px rgba(0, 0, 0, 0.5);
+    overflow: hidden;
+}
+
+.aw-auth-login-col {
+    flex: 1.3;
+    background-color: #111827;
+    padding: 50px 60px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.aw-auth-title {
+    font-size: 2rem;
+    color: #FFFFFF;
+    font-weight: 600;
+    margin-bottom: 8px;
+}
+
+    .aw-auth-title span {
+        color: #2563EB;
+    }
+
+.aw-auth-subtitle {
+    color: #94A3B8;
+    margin-bottom: 25px;
+    font-weight: 400;
+}
+
+.aw-input-row {
+    display: flex;
+    gap: 15px;
+}
+
+    .aw-input-row .aw-input-group {
+        flex: 1;
+    }
+
+.aw-input-group {
+    margin-bottom: 15px;
+}
+
+    .aw-input-group label {
+        display: block;
+        color: #94A3B8;
+        font-size: 0.85rem;
+        margin-bottom: 8px;
+    }
+
+.aw-auth-wrapper ::deep .aw-text-danger {
+    color: #EF4444;
+    font-size: 0.75rem;
+    margin-top: 5px;
+    display: block;
+}
+
+.aw-auth-wrapper ::deep .aw-input-control {
+    width: 100%;
+    height: 48px;
+    background-color: #0F172A;
+    border: 1px solid #1E293B;
+    border-radius: 6px;
+    color: white;
+    padding: 0 15px;
+    box-sizing: border-box;
+    transition: all 0.2s ease-in-out;
+}
+
+    .aw-auth-wrapper ::deep .aw-input-control:focus {
+        border-color: #2563EB;
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.25);
+        outline: none;
+    }
+
+.aw-btn-login {
+    width: 100%;
+    height: 50px;
+    background-color: #2563EB;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-weight: 500;
+    font-size: 1rem;
+    cursor: pointer;
+    margin-top: 15px;
+    transition: all 0.2s ease-in-out;
+}
+
+    .aw-btn-login:hover {
+        background-color: #3B82F6;
+        box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+    }
+
+.aw-auth-register-col {
+    flex: 1;
+    background: linear-gradient(135deg, #2563EB 0%, #0F172A 100%);
+    padding: 50px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    position: relative;
+}
+
+.aw-title-white {
+    color: #FFFFFF;
+    font-size: 1.8rem;
+    font-weight: 600;
+    margin-bottom: 15px;
+}
+
+.aw-auth-text {
+    color: rgba(255, 255, 255, 0.85);
+    font-size: 0.95rem;
+    font-weight: 400;
+    margin-bottom: 35px;
+    line-height: 1.6;
+}
+
+.aw-btn-register {
+    padding: 12px 35px;
+    background: transparent;
+    border: 2px solid white;
+    border-radius: 50px;
+    color: white;
+    text-decoration: none;
+    font-weight: 600;
+    transition: all 0.3s ease-in-out;
+    display: inline-block;
+}
+
+    .aw-btn-register:hover {
+        background-color: white;
+        color: #2563EB;
+    }
+
+.aw-divider-white {
+    margin: 30px 0 20px 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+}
+
+    .aw-divider-white::before, .aw-divider-white::after {
+        content: "";
+        flex: 1;
+        height: 1px;
+        background: rgba(255, 255, 255, 0.3);
+    }
+
+    .aw-divider-white span {
+        color: rgba(255, 255, 255, 0.8);
+        padding: 0 15px;
+        font-size: 0.85rem;
+    }
+
+.aw-auth-wrapper ::deep .aw-external-logins form button {
+    background-color: rgba(255, 255, 255, 0.1);
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    padding: 10px 20px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    width: 100%;
+}
+
+    .aw-auth-wrapper ::deep .aw-external-logins form button:hover {
+        background-color: rgba(255, 255, 255, 0.25);
+    }
+
+.aw-toast-notification {
+    position: fixed;
+    top: 30px;
+    right: 30px;
+    background-color: #1E293B;
+    border-left: 4px solid #10B981;
+    border-radius: 6px;
+    padding: 16px 24px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+    z-index: 10001;
+    animation: awSlideIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+.aw-toast-icon {
+    width: 28px;
+    height: 28px;
+    color: #10B981;
+}
+
+.aw-toast-content {
+    display: flex;
+    flex-direction: column;
+}
+
+.aw-toast-title {
+    color: #FFFFFF;
+    font-weight: 600;
+    font-size: 0.95rem;
+}
+
+.aw-toast-message {
+    color: #94A3B8;
+    font-size: 0.85rem;
+}
+
+.aw-circle-deco {
+    position: absolute;
+    width: 150px;
+    height: 150px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 50%;
+    bottom: -50px;
+    right: -50px;
+    pointer-events: none;
+}
+
+@keyframes awSlideIn {
+    0% {
+        transform: translateX(120%);
+        opacity: 0;
+    }
+
+    100% {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}

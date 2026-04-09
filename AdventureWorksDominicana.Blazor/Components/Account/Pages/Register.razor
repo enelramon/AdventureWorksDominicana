@@ -1,82 +1,147 @@
 ﻿@page "/Account/Register"
-
+@attribute [AllowAnonymous]
 @using System.ComponentModel.DataAnnotations
 @using System.Text
 @using System.Text.Encodings.Web
+@using Microsoft.AspNetCore.Authorization
 @using Microsoft.AspNetCore.Identity
 @using Microsoft.AspNetCore.WebUtilities
-@using AdventureWorksIdentity.Data
+@using AdventureWorksDominicana.Data.Context
+@using AdventureWorksDominicana.Data.Models
 
-@inject UserManager<ApplicationUser> UserManager
-@inject IUserStore<ApplicationUser> UserStore
-@inject SignInManager<ApplicationUser> SignInManager
-@inject IEmailSender<ApplicationUser> EmailSender
+@inject AdventureWorksDominicana.Data.Context.Contexto DbContext
+@inject UserManager<AspNetUser> UserManager
+@inject IUserStore<AspNetUser> UserStore
+@inject SignInManager<AspNetUser> SignInManager
+@inject IEmailSender<AspNetUser> EmailSender
 @inject ILogger<Register> Logger
 @inject NavigationManager NavigationManager
 @inject IdentityRedirectManager RedirectManager
 
-<PageTitle>Register</PageTitle>
+<PageTitle>Crear Cuenta | AdventureWorks</PageTitle>
 
-<h1>Register</h1>
-
-<div class="row">
-    <div class="col-lg-6">
-        <StatusMessage Message="@Message" />
-        <EditForm Model="Input" method="post" OnValidSubmit="RegisterUser" FormName="register">
-            <DataAnnotationsValidator />
-            <h2>Create a new account.</h2>
-            <hr />
-            <ValidationSummary class="text-danger" role="alert" />
-            <div class="form-floating mb-3">
-                <InputText @bind-Value="Input.Email" id="Input.Email" class="form-control" autocomplete="username" aria-required="true" placeholder="name@example.com" />
-                <label for="Input.Email">Email</label>
-                <ValidationMessage For="() => Input.Email" class="text-danger" />
-            </div>
-            <div class="form-floating mb-3">
-                <InputText type="password" @bind-Value="Input.Password" id="Input.Password" class="form-control" autocomplete="new-password" aria-required="true" placeholder="password" />
-                <label for="Input.Password">Password</label>
-                <ValidationMessage For="() => Input.Password" class="text-danger" />
-            </div>
-            <div class="form-floating mb-3">
-                <InputText type="password" @bind-Value="Input.ConfirmPassword" id="Input.ConfirmPassword" class="form-control" autocomplete="new-password" aria-required="true" placeholder="password" />
-                <label for="Input.ConfirmPassword">Confirm Password</label>
-                <ValidationMessage For="() => Input.ConfirmPassword" class="text-danger" />
-            </div>
-            <button type="submit" class="w-100 btn btn-lg btn-primary">Register</button>
-        </EditForm>
+@if (mostrarExito)
+{
+    <div class="aw-toast-notification">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="aw-toast-icon">
+            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+            <polyline points="22 4 12 14.01 9 11.01"></polyline>
+        </svg>
+        <div class="aw-toast-content">
+            <span class="aw-toast-title">¡Registro Completado!</span>
+            <span class="aw-toast-message">Redirigiendo...</span>
+        </div>
     </div>
-    <div class="col-lg-4 col-lg-offset-2">
-        <section>
-            <h3>Use another service to register.</h3>
-            <hr />
-            <ExternalLoginPicker />
-        </section>
+
+    <script>
+        setTimeout(function() {
+            window.location.href = '@RedirectUrl';
+        }, 2000);
+    </script>
+}
+
+<div class="aw-auth-wrapper">
+    <div class="aw-auth-card">
+        
+        <div class="aw-auth-login-col">
+            <EditForm Model="Input" method="post" OnValidSubmit="RegisterUser" FormName="register">
+                <DataAnnotationsValidator />
+
+                <h2 class="aw-auth-title">Crear <span>Cuenta</span></h2>
+                <p class="aw-auth-subtitle">Ingresa tus datos para unirte a AdventureWorks.</p>
+                
+                @if (identityErrors?.Any() == true)
+                {
+                    <div style="background-color: rgba(239, 68, 68, 0.1); border: 1px solid #EF4444; color: #EF4444; padding: 12px; border-radius: 6px; margin-bottom: 20px; font-size: 0.85rem;">
+                        <ul style="margin: 0; padding-left: 20px;">
+                            @foreach (var error in identityErrors)
+                            {
+                                <li>@error.Description</li>
+                            }
+                        </ul>
+                    </div>
+                }
+
+                <div class="aw-input-row">
+                    <div class="aw-input-group">
+                        <label>Nombre</label>
+                        <div class="aw-input-wrapper">
+                            <InputText @bind-Value="Input.FirstName" class="aw-input-control" placeholder="Ej. Juan" />
+                        </div>
+                        <ValidationMessage For="() => Input.FirstName" class="aw-text-danger" />
+                    </div>
+
+                    <div class="aw-input-group">
+                        <label>Apellido</label>
+                        <div class="aw-input-wrapper">
+                            <InputText @bind-Value="Input.LastName" class="aw-input-control" placeholder="Ej. Pérez" />
+                        </div>
+                        <ValidationMessage For="() => Input.LastName" class="aw-text-danger" />
+                    </div>
+                </div>
+
+                <div class="aw-input-group">
+                    <label>Email</label>
+                    <div class="aw-input-wrapper">
+                        <InputText @bind-Value="Input.Email" class="aw-input-control" placeholder="nombre@ejemplo.com" autocomplete="username" />
+                    </div>
+                    <ValidationMessage For="() => Input.Email" class="aw-text-danger" />
+                </div>
+
+                <div class="aw-input-group aw-password-field">
+                    <label>Contraseña</label>
+                    <div class="aw-input-wrapper">
+                        <InputText type="password" @bind-Value="Input.Password" class="aw-input-control" placeholder="••••••••" autocomplete="new-password" />
+                    </div>
+                    <ValidationMessage For="() => Input.Password" class="aw-text-danger" />
+                </div>
+
+                <div class="aw-input-group aw-password-field">
+                    <label>Confirmar Contraseña</label>
+                    <div class="aw-input-wrapper">
+                        <InputText type="password" @bind-Value="Input.ConfirmPassword" class="aw-input-control" placeholder="••••••••" autocomplete="new-password" />
+                    </div>
+                    <ValidationMessage For="() => Input.ConfirmPassword" class="aw-text-danger" />
+                </div>
+
+                <button type="submit" class="aw-btn-login">Registrarse</button>
+            </EditForm>
+        </div>
+
+        <div class="aw-auth-register-col">
+            <div class="aw-register-content">
+                <h2 class="aw-auth-title aw-title-white">¿Ya tienes cuenta?</h2>
+                <p class="aw-auth-text">Inicia sesión para continuar con tus compras y gestionar tu perfil.</p>
+                <a href="Account/Login" class="aw-btn-register">Iniciar Sesión</a>
+            </div>
+            <div class="aw-circle-deco"></div>
+        </div>
+        
     </div>
 </div>
 
 @code {
     private IEnumerable<IdentityError>? identityErrors;
+    private bool mostrarExito = false;
+    private string RedirectUrl = "/";
 
     [SupplyParameterFromForm]
-    private InputModel Input { get; set; } = default!;
+    private InputModel Input { get; set; } = new();
 
     [SupplyParameterFromQuery]
     private string? ReturnUrl { get; set; }
 
-    private string? Message => identityErrors is null ? null : $"Error: {string.Join(", ", identityErrors.Select(error => error.Description))}";
-
-    protected override void OnInitialized()
+    public async Task RegisterUser()
     {
-        Input ??= new();
-    }
+        identityErrors = null;
+        mostrarExito = false;
 
-    public async Task RegisterUser(EditContext editContext)
-    {
         var user = CreateUser();
 
         await UserStore.SetUserNameAsync(user, Input.Email, CancellationToken.None);
         var emailStore = GetEmailStore();
         await emailStore.SetEmailAsync(user, Input.Email, CancellationToken.None);
+        
         var result = await UserManager.CreateAsync(user, Input.Password);
 
         if (!result.Succeeded)
@@ -85,68 +150,112 @@
             return;
         }
 
-        Logger.LogInformation("User created a new account with password.");
+        Logger.LogInformation("Usuario creado exitosamente.");
+
+        // 1. Asignar Rol Customer
+        await UserManager.AddToRoleAsync(user, "Customer");
+
+        // 2. Crear perfiles en tablas de AdventureWorks (BusinessEntity, Person, etc.)
+        try
+        {
+            var nuevaEntidad = new BusinessEntity { Rowguid = Guid.NewGuid(), ModifiedDate = DateTime.Now };
+            DbContext.BusinessEntities.Add(nuevaEntidad);
+            await DbContext.SaveChangesAsync();
+
+            var nuevaPersona = new Person
+            {
+                BusinessEntityId = nuevaEntidad.BusinessEntityId,
+                PersonType = "IN",
+                FirstName = Input.FirstName,
+                LastName = Input.LastName,
+                ModifiedDate = DateTime.Now,
+                Rowguid = Guid.NewGuid()
+            };
+            DbContext.People.Add(nuevaPersona);
+            
+            var nuevoEmail = new EmailAddress
+            {
+                BusinessEntityId = nuevaEntidad.BusinessEntityId,
+                EmailAddress1 = Input.Email,
+                Rowguid = Guid.NewGuid(),
+                ModifiedDate = DateTime.Now
+            };
+            DbContext.EmailAddresses.Add(nuevoEmail);
+
+            var nuevoCustomer = new Customer
+            {
+                PersonId = nuevaEntidad.BusinessEntityId,
+                AccountNumber = $"AW{nuevaEntidad.BusinessEntityId:D8}",
+                Rowguid = Guid.NewGuid(),
+                ModifiedDate = DateTime.Now
+            };
+            DbContext.Customers.Add(nuevoCustomer);
+            
+            await DbContext.SaveChangesAsync();
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError($"Error al crear el perfil de negocio: {ex.Message}");
+        }
+
 
         var userId = await UserManager.GetUserIdAsync(user);
         var code = await UserManager.GenerateEmailConfirmationTokenAsync(user);
         code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
+        
         var callbackUrl = NavigationManager.GetUriWithQueryParameters(
             NavigationManager.ToAbsoluteUri("Account/ConfirmEmail").AbsoluteUri,
             new Dictionary<string, object?> { ["userId"] = userId, ["code"] = code, ["returnUrl"] = ReturnUrl });
 
+   
         await EmailSender.SendConfirmationLinkAsync(user, Input.Email, HtmlEncoder.Default.Encode(callbackUrl));
 
         if (UserManager.Options.SignIn.RequireConfirmedAccount)
         {
-            RedirectManager.RedirectTo(
+            RedirectUrl = NavigationManager.GetUriWithQueryParameters(
                 "Account/RegisterConfirmation",
-                new() { ["email"] = Input.Email, ["returnUrl"] = ReturnUrl });
+                new Dictionary<string, object?> { ["email"] = Input.Email, ["returnUrl"] = ReturnUrl });
         }
         else
         {
             await SignInManager.SignInAsync(user, isPersistent: false);
-            RedirectManager.RedirectTo(ReturnUrl);
+            RedirectUrl = ReturnUrl ?? "/";
         }
+        
+        mostrarExito = true;
     }
 
-    private ApplicationUser CreateUser()
+    private AspNetUser CreateUser()
     {
-        try
-        {
-            return Activator.CreateInstance<ApplicationUser>();
-        }
-        catch
-        {
-            throw new InvalidOperationException($"Can't create an instance of '{nameof(ApplicationUser)}'. " +
-                $"Ensure that '{nameof(ApplicationUser)}' is not an abstract class and has a parameterless constructor.");
-        }
+        try { return Activator.CreateInstance<AspNetUser>(); }
+        catch { throw new InvalidOperationException($"No se pudo crear una instancia de '{nameof(AspNetUser)}'."); }
     }
 
-    private IUserEmailStore<ApplicationUser> GetEmailStore()
+    private IUserEmailStore<AspNetUser> GetEmailStore()
     {
-        if (!UserManager.SupportsUserEmail)
-        {
-            throw new NotSupportedException("The default UI requires a user store with email support.");
-        }
-        return (IUserEmailStore<ApplicationUser>)UserStore;
+        if (!UserManager.SupportsUserEmail) { throw new NotSupportedException("El UI requiere un store con soporte de email."); }
+        return (IUserEmailStore<AspNetUser>)UserStore;
     }
 
     private sealed class InputModel
     {
-        [Required]
-        [EmailAddress]
-        [Display(Name = "Email")]
+        [Required(ErrorMessage = "El nombre es obligatorio")]
+        public string FirstName { get; set; } = "";
+        
+        [Required(ErrorMessage = "El apellido es obligatorio")]
+        public string LastName { get; set; } = "";
+        
+        [Required(ErrorMessage = "El email es obligatorio")]
+        [EmailAddress(ErrorMessage = "Formato de correo inválido")]
         public string Email { get; set; } = "";
-
-        [Required]
-        [StringLength(100, ErrorMessage = "The {0} must be at least {2} and at max {1} characters long.", MinimumLength = 6)]
+        
+        [Required(ErrorMessage = "La contraseña es obligatoria")]
+        [StringLength(100, ErrorMessage = "Mínimo 6 caracteres.", MinimumLength = 6)]
         [DataType(DataType.Password)]
-        [Display(Name = "Password")]
         public string Password { get; set; } = "";
-
+        
         [DataType(DataType.Password)]
-        [Display(Name = "Confirm password")]
-        [Compare("Password", ErrorMessage = "The password and confirmation password do not match.")]
+        [Compare("Password", ErrorMessage = "Las contraseñas no coinciden.")]
         public string ConfirmPassword { get; set; } = "";
     }
 }

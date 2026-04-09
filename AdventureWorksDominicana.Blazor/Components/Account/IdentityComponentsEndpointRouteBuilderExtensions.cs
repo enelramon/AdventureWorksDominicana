@@ -1,6 +1,6 @@
-using AdventureWorksIdentity.Components.Account.Pages;
-using AdventureWorksIdentity.Components.Account.Pages.Manage;
-using AdventureWorksIdentity.Data;
+using AdventureWorksDominicana.Blazor.Components.Account.Pages;
+using AdventureWorksDominicana.Blazor.Components.Account.Pages.Manage;
+using AdventureWorksDominicana.Data.Models;
 using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Components.Authorization;
@@ -24,7 +24,7 @@ namespace Microsoft.AspNetCore.Routing
 
             accountGroup.MapPost("/PerformExternalLogin", (
                 HttpContext context,
-                [FromServices] SignInManager<ApplicationUser> signInManager,
+                [FromServices] SignInManager<AspNetUser> signInManager,
                 [FromForm] string provider,
                 [FromForm] string returnUrl) =>
             {
@@ -43,7 +43,7 @@ namespace Microsoft.AspNetCore.Routing
 
             accountGroup.MapPost("/Logout", async (
                 ClaimsPrincipal user,
-                [FromServices] SignInManager<ApplicationUser> signInManager,
+                [FromServices] SignInManager<AspNetUser> signInManager,
                 [FromForm] string returnUrl) =>
             {
                 await signInManager.SignOutAsync();
@@ -52,8 +52,8 @@ namespace Microsoft.AspNetCore.Routing
 
             accountGroup.MapPost("/PasskeyCreationOptions", async (
                 HttpContext context,
-                [FromServices] UserManager<ApplicationUser> userManager,
-                [FromServices] SignInManager<ApplicationUser> signInManager,
+                [FromServices] UserManager<AspNetUser> userManager,
+                [FromServices] SignInManager<AspNetUser> signInManager,
                 [FromServices] IAntiforgery antiforgery) =>
             {
                 await antiforgery.ValidateRequestAsync(context);
@@ -77,8 +77,8 @@ namespace Microsoft.AspNetCore.Routing
 
             accountGroup.MapPost("/PasskeyRequestOptions", async (
                 HttpContext context,
-                [FromServices] UserManager<ApplicationUser> userManager,
-                [FromServices] SignInManager<ApplicationUser> signInManager,
+                [FromServices] UserManager<AspNetUser> userManager,
+                [FromServices] SignInManager<AspNetUser> signInManager,
                 [FromServices] IAntiforgery antiforgery,
                 [FromQuery] string? username) =>
             {
@@ -93,7 +93,7 @@ namespace Microsoft.AspNetCore.Routing
 
             manageGroup.MapPost("/LinkExternalLogin", async (
                 HttpContext context,
-                [FromServices] SignInManager<ApplicationUser> signInManager,
+                [FromServices] SignInManager<AspNetUser> signInManager,
                 [FromForm] string provider) =>
             {
                 // Clear the existing external cookie to ensure a clean login process
@@ -113,7 +113,7 @@ namespace Microsoft.AspNetCore.Routing
 
             manageGroup.MapPost("/DownloadPersonalData", async (
                 HttpContext context,
-                [FromServices] UserManager<ApplicationUser> userManager,
+                [FromServices] UserManager<AspNetUser> userManager,
                 [FromServices] AuthenticationStateProvider authenticationStateProvider) =>
             {
                 var user = await userManager.GetUserAsync(context.User);
@@ -127,7 +127,7 @@ namespace Microsoft.AspNetCore.Routing
 
                 // Only include personal data for download
                 var personalData = new Dictionary<string, string>();
-                var personalDataProps = typeof(ApplicationUser).GetProperties().Where(
+                var personalDataProps = typeof(AspNetUser).GetProperties().Where(
                     prop => Attribute.IsDefined(prop, typeof(PersonalDataAttribute)));
                 foreach (var p in personalDataProps)
                 {

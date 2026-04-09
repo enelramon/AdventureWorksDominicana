@@ -3,6 +3,7 @@
 @inject ContactTypeService contactTypeService;
 @inject ToastService toastService;
 @inject NavigationManager navigationManager;
+@rendermode InteractiveServer
 
 <EditForm Model="ContactType" FormName="crearContactType" OnValidSubmit="Guardar">
     <DataAnnotationsValidator />

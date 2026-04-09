@@ -1,32 +1,67 @@
 ﻿@page "/Account/RegisterConfirmation"
-
 @using System.Text
 @using Microsoft.AspNetCore.Identity
 @using Microsoft.AspNetCore.WebUtilities
-@using AdventureWorksIdentity.Data
+@using AdventureWorksDominicana.Data.Context
 
-@inject UserManager<ApplicationUser> UserManager
-@inject IEmailSender<ApplicationUser> EmailSender
+@inject UserManager<AspNetUser> UserManager
 @inject NavigationManager NavigationManager
 @inject IdentityRedirectManager RedirectManager
+@inject IEmailSender<AspNetUser> EmailSender
 
-<PageTitle>Register confirmation</PageTitle>
+<PageTitle>Confirmar Registro | AdventureWorks</PageTitle>
 
-<h1>Register confirmation</h1>
+<div class="aw-auth-wrapper">
+    <div class="aw-circle-deco deco-1"></div>
+    <div class="aw-circle-deco deco-2"></div>
 
-<StatusMessage Message="@statusMessage" />
+    <div class="aw-auth-card aw-centered-card text-center">
+        <div class="aw-auth-login-col">
+            
+            <div class="aw-success-icon-container">
+                <i class="bi bi-rocket-takeoff aw-success-icon"></i>
+            </div>
+            
+            <h2 class="aw-auth-title">¡Casi <span>Listo</span>!</h2>
+            
+            <StatusMessage Message="@statusMessage" />
 
-@if (emailConfirmationLink is not null)
-{
-    <p>
-        This app does not currently have a real email sender registered, see <a href="https://aka.ms/aspaccountconf">these docs</a> for how to configure a real email sender.
-        Normally this would be emailed: <a href="@emailConfirmationLink">Click here to confirm your account</a>
-    </p>
-}
-else
-{
-    <p role="alert">Please check your email to confirm your account.</p>
-}
+            @if (emailConfirmationLink is not null)
+            {
+                <div class="aw-alert-dev">
+                    <p class="aw-auth-subtitle">
+                        <i class="bi bi-exclamation-triangle"></i> <strong>Modo Desarrollo:</strong> Tu aplicación no tiene un servidor de correos configurado.
+                    </p>
+                    <p class="aw-auth-subtitle" style="font-size: 0.85rem; margin-bottom: 20px;">
+                        Normalmente esto se enviaría por email, pero puedes confirmar la cuenta haciendo clic abajo:
+                    </p>
+                    <a href="@emailConfirmationLink" class="aw-btn-login text-decoration-none">
+                        Confirmar Cuenta Aquí <i class="bi bi-shield-check"></i>
+                    </a>
+                </div>
+            }
+            else
+            {
+                <p class="aw-auth-subtitle" style="margin-bottom: 35px;">
+                    Te hemos enviado un enlace de confirmación a tu correo electrónico. Por favor, revisa tu bandeja de entrada para activar tu cuenta.
+                </p>
+                
+                <div class="aw-action-group" style="width: 100%;">
+                    <a href="https://mail.google.com/" target="_blank" class="aw-btn-login text-decoration-none">
+                        Ir a mi Correo <i class="bi bi-google"></i>
+                    </a>
+                </div>
+            }
+
+            <div class="aw-back-link">
+                <a href="Account/Login" class="aw-forgot-link">
+                    <i class="bi bi-arrow-left-short"></i> Volver al inicio de sesión
+                </a>
+            </div>
+
+        </div>
+    </div>
+</div>
 
 @code {
     private string? emailConfirmationLink;
@@ -53,14 +88,15 @@ else
         if (user is null)
         {
             HttpContext.Response.StatusCode = StatusCodes.Status404NotFound;
-            statusMessage = "Error finding user for unspecified email";
+            statusMessage = "Error: No se encontró el usuario para el correo especificado.";
         }
         else if (EmailSender is IdentityNoOpEmailSender)
         {
-            // Once you add a real email sender, you should remove this code that lets you confirm the account
+
             var userId = await UserManager.GetUserIdAsync(user);
             var code = await UserManager.GenerateEmailConfirmationTokenAsync(user);
             code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
+            
             emailConfirmationLink = NavigationManager.GetUriWithQueryParameters(
                 NavigationManager.ToAbsoluteUri("Account/ConfirmEmail").AbsoluteUri,
                 new Dictionary<string, object?> { ["userId"] = userId, ["code"] = code, ["returnUrl"] = ReturnUrl });

@@ -1,4 +1,4 @@
-namespace AdventureWorksIdentity.Components.Account
+namespace AdventureWorksDominicana.Blazor.Components.Account
 {
     public class PasskeyInputModel
     {

@@ -24,7 +24,7 @@ public class AddressService(IDbContextFactory<Contexto> DbFactory) : IService<Ad
     public async Task<List<Address>> GetList(Expression<Func<Address, bool>> criterio)
     {
         await using var contexto = await DbFactory.CreateDbContextAsync();
-        return await contexto.Addresses.Where(criterio).Include(s => s.StateProvince).ThenInclude(s => s.SalesTaxRates).OrderBy(a => a.City).AsNoTracking().ToListAsync();
+        return await contexto.Addresses.Include(s => s.StateProvince).ThenInclude(t => t.SalesTaxRates).Where(criterio).AsNoTracking().ToListAsync();
     }
 
     public Task<bool> Guardar(Address entidad)

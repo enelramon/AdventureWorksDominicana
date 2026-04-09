@@ -1,8 +1,8 @@
 ﻿@using Microsoft.AspNetCore.Authentication
 @using Microsoft.AspNetCore.Identity
-@using AdventureWorksIdentity.Data
+@using AdventureWorksDominicana.Data.Context
 
-@inject SignInManager<ApplicationUser> SignInManager
+@inject SignInManager<AspNetUser> SignInManager
 @inject IdentityRedirectManager RedirectManager
 
 @if (externalLogins.Length == 0)

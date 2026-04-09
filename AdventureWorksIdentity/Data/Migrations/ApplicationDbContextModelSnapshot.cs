@@ -22,7 +22,7 @@ namespace AdventureWorksIdentity.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
-            modelBuilder.Entity("AdventureWorksIdentity.Data.ApplicationUser", b =>
+            modelBuilder.Entity("AdventureWorksIdentity.Data.AspNetUser", b =>
                 {
                     b.Property<string>("Id")
                         .HasColumnType("nvarchar(450)");
@@ -140,7 +140,7 @@ namespace AdventureWorksIdentity.Migrations
                     b.ToTable("AspNetRoleClaims", (string)null);
                 });
 
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<string>", b =>
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.AspNetUserClaim<string>", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -165,7 +165,7 @@ namespace AdventureWorksIdentity.Migrations
                     b.ToTable("AspNetUserClaims", (string)null);
                 });
 
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<string>", b =>
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.AspNetUserLogin<string>", b =>
                 {
                     b.Property<string>("LoginProvider")
                         .HasMaxLength(128)
@@ -189,7 +189,7 @@ namespace AdventureWorksIdentity.Migrations
                     b.ToTable("AspNetUserLogins", (string)null);
                 });
 
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserPasskey<string>", b =>
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.AspNetUserPasskey<string>", b =>
                 {
                     b.Property<byte[]>("CredentialId")
                         .HasMaxLength(1024)
@@ -206,7 +206,7 @@ namespace AdventureWorksIdentity.Migrations
                     b.ToTable("AspNetUserPasskeys", (string)null);
                 });
 
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserRole<string>", b =>
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.AspNetUserRole<string>", b =>
                 {
                     b.Property<string>("UserId")
                         .HasColumnType("nvarchar(450)");
@@ -221,7 +221,7 @@ namespace AdventureWorksIdentity.Migrations
                     b.ToTable("AspNetUserRoles", (string)null);
                 });
 
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<string>", b =>
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.AspNetUserToken<string>", b =>
                 {
                     b.Property<string>("UserId")
                         .HasColumnType("nvarchar(450)");
@@ -251,27 +251,27 @@ namespace AdventureWorksIdentity.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<string>", b =>
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.AspNetUserClaim<string>", b =>
                 {
-                    b.HasOne("AdventureWorksIdentity.Data.ApplicationUser", null)
+                    b.HasOne("AdventureWorksIdentity.Data.AspNetUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<string>", b =>
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.AspNetUserLogin<string>", b =>
                 {
-                    b.HasOne("AdventureWorksIdentity.Data.ApplicationUser", null)
+                    b.HasOne("AdventureWorksIdentity.Data.AspNetUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserPasskey<string>", b =>
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.AspNetUserPasskey<string>", b =>
                 {
-                    b.HasOne("AdventureWorksIdentity.Data.ApplicationUser", null)
+                    b.HasOne("AdventureWorksIdentity.Data.AspNetUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -279,7 +279,7 @@ namespace AdventureWorksIdentity.Migrations
 
                     b.OwnsOne("Microsoft.AspNetCore.Identity.IdentityPasskeyData", "Data", b1 =>
                         {
-                            b1.Property<byte[]>("IdentityUserPasskeyCredentialId")
+                            b1.Property<byte[]>("AspNetUserPasskeyCredentialId")
                                 .HasColumnType("varbinary(1024)");
 
                             b1.Property<byte[]>("AttestationObject")
@@ -315,21 +315,21 @@ namespace AdventureWorksIdentity.Migrations
                             b1.PrimitiveCollection<string>("Transports")
                                 .HasColumnType("nvarchar(max)");
 
-                            b1.HasKey("IdentityUserPasskeyCredentialId");
+                            b1.HasKey("AspNetUserPasskeyCredentialId");
 
                             b1.ToTable("AspNetUserPasskeys");
 
                             b1.ToJson("Data");
 
                             b1.WithOwner()
-                                .HasForeignKey("IdentityUserPasskeyCredentialId");
+                                .HasForeignKey("AspNetUserPasskeyCredentialId");
                         });
 
                     b.Navigation("Data")
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserRole<string>", b =>
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.AspNetUserRole<string>", b =>
                 {
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole", null)
                         .WithMany()
@@ -337,16 +337,16 @@ namespace AdventureWorksIdentity.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("AdventureWorksIdentity.Data.ApplicationUser", null)
+                    b.HasOne("AdventureWorksIdentity.Data.AspNetUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<string>", b =>
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.AspNetUserToken<string>", b =>
                 {
-                    b.HasOne("AdventureWorksIdentity.Data.ApplicationUser", null)
+                    b.HasOne("AdventureWorksIdentity.Data.AspNetUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
