@@ -55,6 +55,7 @@ builder.Services.AddIdentityCore<AspNetUser>(options =>
 builder.Services.AddSingleton<IEmailSender<AdventureWorksDominicana.Data.Models.AspNetUser>, SmtpEmailSender>();
 
 
+// Add services to the container
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
