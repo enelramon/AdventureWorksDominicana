@@ -6,6 +6,7 @@
 @inject SalesOrderHeaderService salesOrderHeaderService
 @inject AddressService addressService
 @inject SalesTerritoryService salesTerritoryService
+@inject CurrencyService currencyService
 @inject CustomerService customerService
 @inject CreditCardService creditCardService
 @inject ShipMethodService shipMethodService
@@ -34,23 +35,26 @@
                         <div class="shopping-product-card">
                             <div class="shopping-product-img">
                                 <img src="https://www.svgrepo.com/show/486796/product-management.svg" alt="Product Image" />
-                                <span>@s.Product.Color</span>
+                                <span>@(s.Product?.Color ?? "N/A")</span>
                             </div>
                             <div class="shopping-product-info">
                                 <div class="shopping-product-header">
-                                    <span>@(s.Product.ProductSubcategory?.ProductCategory?.Name ?? "N/A")</span>
+                                    <span>@(s.Product?.ProductSubcategory?.ProductCategory?.Name ?? "N/A")</span>
                                     <i class="btn btn-danger bi bi-trash" @onclick="() => DeleteItemCart(s.ShoppingCartItemId)"></i>
                                 </div>
                                 <div>
-                                    <p>@s.Product.Name</p>
-                                </div>
-                                <div class="quantity-product-action">
-                                    <button class="bi bi-dash" @onclick="() => MinusQuentity(s.ShoppingCartItemId)"></button>
-                                    <span>@s.Quantity</span>
-                                    <button class="bi bi-plus" @onclick="() => SumQuentity(s.ShoppingCartItemId)"></button>
+                                    <p>@(s.Product?.Name ?? "N/A")</p>
                                 </div>
                                 <div>
-                                    <span>RD$ @s.Product.ListPrice.ToString("N2")</span>
+                                    <p>Disponibilidad: @(s.Product?.ProductInventories?.FirstOrDefault()?.Quantity ?? 0)</p>
+                                </div>
+                                <div class="quantity-product-action">
+                                    <button class="bi bi-dash" @onclick="() => MinusQuantity(s.ShoppingCartItemId)"></button>
+                                    <span>@s.Quantity</span>
+                                    <button class="bi bi-plus" @onclick="() => SumQuantity(s.ShoppingCartItemId)"></button>
+                                </div>
+                                <div>
+                                    <span>RD$ @(s.Product?.ListPrice.ToString("N2") ?? "N/A")</span>
                                 </div>
                             </div>
                         </div>
@@ -115,11 +119,11 @@
                                 <option value="@s.ShipMethodId">@s.Name</option>
                             }
                         </select>
-                        <select @bind="customerId">
-                            <option value=0>Seleccione el cliente</option>
-                            @foreach (var c in CustomersList)
+                        <select @bind="currencyRateId">
+                            <option value="">Seleccione una moneda de cambio</option>
+                            @foreach (var c in CurrenciesList)
                             {
-                                <option value="@c.CustomerId">@c.Person?.FirstName</option>
+                                <option value="@c.CurrencyCode">@c.Name</option>
                             }
                         </select>
                         <input type="text" placeholder="Tarjeta Credito" />
@@ -138,20 +142,25 @@
 @code {
     private List<ShoppingCartItem> ShoppingCartItemList = new List<ShoppingCartItem>();
     private List<Address> AddressesList = new List<Address>();
-    private List<Customer> CustomersList = new List<Customer>();
     private List<SalesTerritory> SalesTerritoriesList = new List<SalesTerritory>();
     private List<CreditCard> CreditCardsList = new List<CreditCard>();
     private List<ShipMethod> ShipMethodsList = new List<ShipMethod>();
+    private List<Currency> CurrenciesList = new List<Currency>();
+    private List<Customer> userCurrent = new List<Customer>();
 
-    private decimal taxes = 0.0m, freight = 0.0m, discountPct = 0.0m, subtotal = 0.0m, total = 0.0m;
-    private const decimal GrToLb = 453.59237m, KgToLb = 2.20462262m;
+    private decimal taxes = 0.0m, freight = 0.0m, discountPct = 0.0m, 
+                    subtotal = 0.0m, total = 0.0m, GrToLb = 453.59237m, KgToLb = 2.20462262m;
+
     private int territoryId, addressId, customerId, creditCardId, shipMethodId;
+
     private bool showModal = false;
+    private bool IsAuthenticated { get; set; }
 
     private ClaimsPrincipal? User { get; set; }
-    private bool IsAuthenticated { get; set; }
+
     private string? UserEmail { get; set; }
-    private List<Customer> userCurrent = new List<Customer>();
+    private string currencyRateId;
+
 
     protected override async Task OnInitializedAsync()
     {
@@ -159,17 +168,13 @@
         var authState = await authenticationStateProvider.GetAuthenticationStateAsync();
         User = authState.User;
         IsAuthenticated = User.Identity?.IsAuthenticated ?? false;
-
         if (IsAuthenticated)
-        {
             UserEmail = User.FindFirst(ClaimTypes.Email)?.Value;
-        }
 
-        // Solo trae los items del usuario logeado
-        ShoppingCartItemList = await shoppingCartItemService.GetList(s => s.ShoppingCartId.Trim().ToLower().Equals(UserEmail));
-        userCurrent = await customerService.GetList(u => u.Person.EmailAddresses.Any(p => p.EmailAddress1.Trim().ToLower().Equals(UserEmail)));
+        ShoppingCartItemList = await shoppingCartItemService.GetList(s => s.ShoppingCartId == UserEmail);
+        userCurrent = await customerService.GetList(u => u.Person.EmailAddresses.Any(p => p.EmailAddress1 == UserEmail));
         AddressesList = await addressService.GetList(s => true);
-        CustomersList = await customerService.GetList(s => true);
+        CurrenciesList = await currencyService.GetList(s => true);
         SalesTerritoriesList = await salesTerritoryService.GetList(s => true);
         CreditCardsList = await creditCardService.GetList(s => true);
         ShipMethodsList = await shipMethodService.GetList(s => true);
@@ -185,6 +190,29 @@
         GetTaxes();
         GetFreight();
         GetTotal();
+    }
+
+    private void GetDiscountPct()
+    {
+        discountPct = 0;
+        foreach (var p in ShoppingCartItemList)
+        {
+            var offer = p.Product?.SpecialOfferProducts?
+                .Select(x => x.SpecialOffer)
+                .Where(o => o.StartDate <= DateTime.Now && o.EndDate >= DateTime.Now)
+                .OrderByDescending(o => o.DiscountPct)
+                .FirstOrDefault();
+            var discount = offer?.DiscountPct ?? 0;
+            var totalProduct = (p?.Product?.ListPrice ?? 0) * (p?.Quantity ?? 0);
+            discountPct += discount * totalProduct;
+        }
+    }
+
+    private void GetSubtotal()
+    {
+        subtotal = 0;
+        foreach (var p in ShoppingCartItemList)
+            subtotal += (p?.Product?.ListPrice ?? 0) * (p?.Quantity ?? 0);
     }
 
     private void GetTaxes() => taxes = AddressesList.FirstOrDefault(t => t.AddressId == addressId)?.StateProvince?.SalesTaxRates?.FirstOrDefault()?.TaxRate ?? 0;
@@ -209,41 +237,23 @@
 
     private void GetTotal() => total = (freight + subtotal + (subtotal * taxes)) - discountPct;
 
-    private void GetSubtotal()
-    {
-        subtotal = 0;
-        foreach (var p in ShoppingCartItemList)
-            subtotal += (p?.Product?.ListPrice ?? 0) * (p?.Quantity ?? 0);
-    }
-
-    private void GetDiscountPct()
-    {
-        discountPct = 0;
-        foreach (var p in ShoppingCartItemList)
-        {
-            var offer = p.Product?.SpecialOfferProducts?
-                .Select(x => x.SpecialOffer)
-                .Where(o => o.StartDate <= DateTime.Now && o.EndDate >= DateTime.Now)
-                .OrderByDescending(o => o.DiscountPct)
-                .FirstOrDefault();
-            var discount = offer?.DiscountPct ?? 0;
-            var totalProduct = (p?.Product?.ListPrice ?? 0) * (p?.Quantity ?? 0);
-            discountPct += discount * totalProduct;
-        }
-    }
-
-    private async Task SumQuentity(int itemId)
+    private async Task SumQuantity(int itemId)
     {
         var item = ShoppingCartItemList.FirstOrDefault(x => x.ShoppingCartItemId == itemId);
         if (item != null)
         {
-            item.Quantity += 1;
-            await shoppingCartItemService.Guardar(item);
-            GetBalance();
+            if (item.Product.ProductInventories.FirstOrDefault().Quantity >= item.Quantity + 1)
+            {
+                item.Quantity += 1;
+                await shoppingCartItemService.Guardar(item);
+                GetBalance();
+            }
+            else
+                toastService.ShowWarning("Sin existencia disponible");
         }
     }
 
-    private async Task MinusQuentity(int itemId)
+    private async Task MinusQuantity(int itemId)
     {
         var item = ShoppingCartItemList.FirstOrDefault(x => x.ShoppingCartItemId == itemId);
         if (item != null)
@@ -258,6 +268,7 @@
     private void setCompletedCheckout()
     {
         GetBalance();
+        var currencyRate = CurrenciesList.FirstOrDefault(c => c.CurrencyCode == currencyRateId);
         showModal = false;
     }
 
@@ -275,7 +286,7 @@
             await RefreshShoppingCart();
         }catch(Exception ex)
         {
-            toastService.ShowSuccess("Producto no pudo ser eliminado correctamente");
+            toastService.ShowError("Producto no pudo ser eliminado correctamente");
             Console.Write(ex.Message);
         }
     }
@@ -287,7 +298,7 @@
             RevisionNumber = 0,
             OrderDate = DateTime.Now,
             DueDate = DateTime.Now.AddDays(10),
-            ShipDate = null,
+            ShipDate = DateTime.Now.AddDays(2),
             Status = 1,
             OnlineOrderFlag = true,
             SalesOrderNumber = $"SO{DateTime.Now:yyyyMMddHHmmss}{Random.Shared.Next(1000, 9999)}",
@@ -310,9 +321,9 @@
             Rowguid = Guid.NewGuid(),
             ModifiedDate = DateTime.Now
         };
+
         // Obtener el SpecialOffer "No Discount" (generalmente ID = 1)
         const int noDiscountSpecialOfferId = 1;
-
         foreach (var s in ShoppingCartItemList)
         {
             var offer = s.Product?.SpecialOfferProducts?
@@ -348,14 +359,12 @@
             toastService.ShowSuccess("Se creo la orden correctamente");
             navigationManager.NavigateTo("Orders");
             foreach (var s in ShoppingCartItemList)
-            {
-                await shoppingCartItemService.Eliminar(s.ShoppingCartItemId);
-            }
+                await shoppingCartItemService.Eliminar(s.ShoppingCartItemId);  
         }
         catch (Exception ex)
         {
-            toastService.ShowSuccess("No se creo la orden correctamente");
-            //Console.WriteLine(ex.Message);
+            toastService.ShowError("No se creo la orden correctamente");
+            Console.WriteLine(ex.Message);
         }
     }
 }
