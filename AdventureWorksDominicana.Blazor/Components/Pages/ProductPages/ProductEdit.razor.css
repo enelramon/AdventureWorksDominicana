@@ -1,1 +1,251 @@
-﻿
+﻿/* CONTENEDOR PRINCIPAL */
+.product-container {
+    max-width: 1200px;
+    margin: auto;
+    padding: 20px;
+}
+
+/* HEADER */
+.product-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+    .product-header h3 {
+        margin: 0;
+        color: #01398C;
+    }
+
+    .product-header span {
+        font-size: 0.85rem;
+        color: #6b7280;
+    }
+
+/* FORMULARIO */
+.product-form {
+    margin-top: 20px;
+}
+
+    /* CARD */
+    .product-form .card {
+        background-color: #F5F5F5;
+        border: 2px solid #E6E6E6;
+        border-radius: 20px;
+        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 20px -6px rgba(0, 0, 0, 0.02);
+    }
+
+    .product-form .card-body {
+        padding: 24px;
+    }
+
+    .product-form .card-footer {
+        background: white;
+        border-top: 1px solid #e5e7eb;
+        border-radius: 0 0 20px 20px;
+        padding: 16px;
+    }
+
+/* SECCIONES DEL FORMULARIO */
+.section-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #01398C;
+    margin-bottom: 16px;
+    padding-bottom: 8px;
+    border-bottom: 2px solid #e5e7eb;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+    .section-title.mt-4 {
+        margin-top: 24px;
+    }
+
+    .section-title i {
+        font-size: 1.1rem;
+    }
+
+/* LABELS */
+.product-form .form-label {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #374151;
+    margin-bottom: 4px;
+}
+
+    .product-form .form-label strong {
+        font-weight: 600;
+    }
+
+/* INPUTS */
+.product-form .form-control,
+.product-form .form-select {
+    border-radius: 10px;
+    border: 1px solid #dbeafe;
+    padding: 8px 12px;
+    font-size: 0.9rem;
+    background-color: white;
+}
+
+    .product-form .form-control:focus,
+    .product-form .form-select:focus {
+        border-color: #466EDB;
+        box-shadow: 0 0 0 2px rgba(70, 110, 219, 0.15);
+        outline: none;
+    }
+
+    .product-form .form-control:disabled {
+        background-color: #e9ecef;
+        cursor: not-allowed;
+    }
+
+/* CHECKBOX */
+.product-form .form-check-input {
+    width: 1.1rem;
+    height: 1.1rem;
+    margin-top: 0.2rem;
+}
+
+    .product-form .form-check-input:checked {
+        background-color: #466EDB;
+        border-color: #466EDB;
+    }
+
+.product-form .form-check-label {
+    margin-left: 8px;
+    font-weight: 500;
+}
+
+/* INPUT GROUP */
+.product-form .input-group-text {
+    background: #f3f4f6;
+    border: 1px solid #dbeafe;
+    border-radius: 10px 0 0 10px;
+    font-weight: 500;
+    color: #4b5563;
+}
+
+.product-form .input-group .form-control {
+    border-radius: 0 10px 10px 0;
+}
+
+/* VALIDATION MESSAGES */
+.product-form .validation-message {
+    font-size: 0.7rem;
+    color: #dc2626;
+    margin-top: 4px;
+    display: block;
+}
+
+/* PREVISUALIZACIÓN DE IMAGEN */
+.product-preview-img {
+    max-height: 150px;
+    max-width: 100%;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.product-preview-placeholder {
+    background: #f9fafb;
+    border: 2px dashed #d1d5db;
+    border-radius: 12px;
+    padding: 20px;
+    text-align: center;
+}
+
+/* BOTONES */
+.product-form .btn-primary {
+    background: #466EDB;
+    border: none;
+    padding: 8px 20px;
+    border-radius: 10px;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+    .product-form .btn-primary:hover {
+        background: #01398C;
+        transform: translateY(-1px);
+    }
+
+.product-form .btn-secondary {
+    background: #6b7280;
+    border: none;
+    color: white;
+    padding: 8px 20px;
+    border-radius: 10px;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+    .product-form .btn-secondary:hover {
+        background: #595C66;
+        transform: translateY(-1px);
+    }
+
+.product-form .btn-danger {
+    background: #dc2626;
+    border: none;
+    padding: 8px 20px;
+    border-radius: 10px;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+    .product-form .btn-danger:hover {
+        background: #b91c1c;
+        transform: translateY(-1px);
+    }
+
+/* FILE INPUT */
+.product-form input[type="file"] {
+    padding: 8px;
+    border-radius: 10px;
+    border: 1px solid #dbeafe;
+    background-color: white;
+}
+
+    .product-form input[type="file"]::file-selector-button {
+        background: #466EDB;
+        color: white;
+        border: none;
+        border-radius: 6px;
+        padding: 6px 12px;
+        margin-right: 12px;
+        cursor: pointer;
+    }
+
+        .product-form input[type="file"]::file-selector-button:hover {
+            background: #01398C;
+        }
+
+/* RESPONSIVE */
+@media (max-width: 768px) {
+    .product-container {
+        padding: 12px;
+    }
+
+    .product-form .card-body {
+        padding: 16px;
+    }
+
+    .product-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+
+    .section-title {
+        font-size: 0.9rem;
+    }
+
+    .product-form .btn-primary,
+    .product-form .btn-secondary,
+    .product-form .btn-danger {
+        padding: 6px 14px;
+        font-size: 0.85rem;
+    }
+}

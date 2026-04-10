@@ -57,21 +57,21 @@
         }
 
     /* BOTONES */
-    .product-filters .btn-primary {
+    .btn-primary {
         background: #466EDB;
         border: none;
     }
 
-        .product-filters .btn-primary:hover {
+        .btn-primary:hover {
             background: #01398C;
         }
 
-    .product-filters .btn-outline-primary {
+    .btn-outline-primary {
         border-color: #466EDB;
         color: #466EDB;
     }
 
-        .product-filters .btn-outline-primary:hover {
+        .btn-outline-primary:hover {
             background: #466EDB;
             color: white;
         }

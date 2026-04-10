@@ -37,7 +37,7 @@
 
                     <!-- SECCIÓN: INFORMACIÓN BÁSICA -->
                     <h5 class="section-title">
-                        <i class="bi bi-info-circle"></i> Información Básica
+                        <i class="bi bi-info-circle"></i> Información General
                     </h5>
                     
                     <div class="mb-3">
@@ -83,7 +83,7 @@
                             <input class="form-control" type="number" step="0.01" @bind="Product.Weight" placeholder="0.00" />
                             <select class="form-select" style="max-width: 100px;" @bind="Product.WeightUnitMeasureCode">
                                 <option value="">Unidad</option>
-                                @foreach (var u in ListaUnitMeasures)
+                                @foreach (var u in ListaUnidades)
                                 {
                                     <option value="@u.UnitMeasureCode">@u.UnitMeasureCode</option>
                                 }
@@ -236,7 +236,7 @@
     public Product Product { get; set; } = new();
     public List<ProductSubcategory> ListaSubcategorias { get; set; } = new();
     public List<ProductModel> ListaModelos { get; set; } = new();
-    public List<UnitMeasure> ListaUnitMeasures { get; set; } = new();
+    public List<UnitMeasure> ListaUnidades { get; set; } = new();
 
     protected override async Task OnInitializedAsync()
     {

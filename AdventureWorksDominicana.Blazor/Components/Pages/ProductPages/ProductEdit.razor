@@ -1,188 +1,268 @@
 ﻿@page "/Product/Edit/{ProductId:int}"
-
-@inject ProductService productService;
-@inject ProductSubcategoryService subcategoryService;
-@inject ProductModelService modelService;
-@inject UnitMeasureService unitMeasureService;
-@inject ProductPhotoService photoService;
-@inject ToastService toastService;
-@inject NavigationManager navigationManager;
 @rendermode InteractiveServer
 
-<EditForm Model="Product" FormName="editarProduct" OnValidSubmit="Guardar">
-    <DataAnnotationsValidator />
+@inject ProductService productService
+@inject ProductSubcategoryService subcategoryService
+@inject ProductModelService modelService
+@inject UnitMeasureService unitMeasureService
+@inject ProductPhotoService photoService
+@inject ToastService toastService
+@inject NavigationManager navigationManager
 
-    <div class="container pb-5">
-        <div class="card shadow-lg">
-            <div class="card-header text-center">
-                <h4>Modificar Producto</h4>
-            </div>
-            <div class="card-body">
-                
-                <h5 class="pb-3">Informaci&oacute;n General</h5>
-                <div class="row">
-                    <div class="col-md-6 mb-3">
-                        <label><strong>Nombre del Producto</strong></label>
-                        <input class="form-control" type="text" maxlength="50" @bind="Product.Name" />
+<PageTitle>Editar Producto</PageTitle>
+
+<div class="product-container">
+    
+    <!-- HEADER -->
+    <div class="product-header">
+        <div>
+            <h3>Editar Producto</h3>
+            <span>Modificación de productos en el catálogo</span>
+        </div>
+    </div>
+
+    <!-- FORMULARIO -->
+    <div class="product-form">
+        <EditForm Model="Product" OnValidSubmit="Guardar">
+            <DataAnnotationsValidator />
+
+            <div class="card shadow-lg">
+                <div class="card-body">
+
+                    <!-- SECCIÓN: INFORMACIÓN BÁSICA -->
+                    <h5 class="section-title">
+                        <i class="bi bi-info-circle"></i> Información General
+                    </h5>
+                    
+                    <div class="mb-3">
+                        <label class="form-label"><strong>Nombre</strong></label>
+                        <input class="form-control" type="text" @bind="Product.Name" placeholder="Ej: Mountain Bike 1000" />
                         <ValidationMessage For="(() => Product.Name)" />
                     </div>
-                    <div class="col-md-4 mb-3">
-                        <label><strong>SKU (N&uacute;mero)</strong></label>
-                        <input class="form-control" type="text" maxlength="25" @bind="Product.ProductNumber" />
+
+                    <div class="mb-3">
+                        <label class="form-label"><strong>Número de producto</strong></label>
+                        <input class="form-control" type="text" @bind="Product.ProductNumber" placeholder="Ej: MT-1000" />
                         <ValidationMessage For="(() => Product.ProductNumber)" />
                     </div>
-                    <div class="col-md-2 mb-3">
-                        <label><strong>Color</strong></label>
-                        <input class="form-control" type="text" maxlength="15" @bind="Product.Color" />
-                        <ValidationMessage For="(() => Product.Color)" />
-                    </div>
-                </div>
 
-                <h5 class="pb-3">Inventario y Manufactura</h5>
-                <div class="row">
-                    <div class="col-md-3 mb-3 form-check ms-3 mt-4">
-                        <input class="form-check-input" type="checkbox" @bind="Product.MakeFlag" />
-                        <label><strong>¿Fabricaci&oacute;n propia?</strong></label>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3 form-check">
+                                <input class="form-check-input" type="checkbox" @bind="Product.MakeFlag" id="MakeFlag" />
+                                <label class="form-check-label" for="MakeFlag">Fabricación propia</label>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3 form-check">
+                                <input class="form-check-input" type="checkbox" @bind="Product.FinishedGoodsFlag" id="FinishedGoodsFlag" />
+                                <label class="form-check-label" for="FinishedGoodsFlag">Producto terminado</label>
+                            </div>
+                        </div>
                     </div>
-                    <div class="col-md-3 mb-3 form-check mt-4">
-                        <input class="form-check-input" type="checkbox" @bind="Product.FinishedGoodsFlag" />
-                        <label><strong>¿Listo para venderse?</strong></label>
-                    </div>
-                    <div class="col-md-2 mb-3">
-                        <label><strong>D&iacute;as manu.</strong></label>
-                        <input class="form-control" type="number" @bind="Product.DaysToManufacture" />
-                        <ValidationMessage For="(() => Product.DaysToManufacture)" />
-                    </div>
-                    <div class="col-md-2 mb-3">
-                        <label><strong>Pto. Reorden</strong></label>
-                        <input class="form-control" type="number" @bind="Product.ReorderPoint" />
-                        <ValidationMessage For="(() => Product.ReorderPoint)" />
-                    </div>
-                    <div class="col-md-2 mb-3">
-                        <label><strong>Stock Seg. *</strong></label>
-                        <input class="form-control" type="number" @bind="Product.SafetyStockLevel" />
-                        <ValidationMessage For="(() => Product.SafetyStockLevel)" />
-                    </div>
-                </div>
 
-                <h5 class="pb-3">Clasificaci&oacute;n</h5>
-                <div class="row">
-                    <div class="col-md-6 mb-3">
-                        <label><strong>Subcategor&iacute;a</strong></label>
-                        <select class="form-select" @bind="Product.ProductSubcategoryId">
-                            <option value="" selected>Sin Subcategor&iacute;a...</option>
-                            @foreach (var sub in ListaSubcategorias)
-                            {
-                                <option value="@sub.ProductSubcategoryId">@sub.Name</option>
-                            }
-                        </select>
+                    <div class="mb-3">
+                        <label class="form-label"><strong>Color</strong></label>
+                        <input class="form-control" type="text" @bind="Product.Color" placeholder="Ej: Rojo, Negro" />
                     </div>
-                    <div class="col-md-6 mb-3">
-                        <label><strong>Modelo T&eacute;cnico</strong></label>
-                        <select class="form-select" @bind="Product.ProductModelId">
-                            <option value="" selected>Sin Modelo...</option>
-                            @foreach (var mod in ListaModelos)
-                            {
-                                <option value="@mod.ProductModelId">@mod.Name</option>
-                            }
-                        </select>
-                    </div>
-                </div>
 
-                <h5 class="pb-3">Finanzas y Comercializaci&oacute;n</h5>
-                <div class="row">
-                    <div class="col-md-3 mb-3">
-                        <label><strong>Costo Est&aacute;ndar</strong></label>
-                        <input class="form-control" type="number" step="0.01" @bind="Product.StandardCost" />
+                    <div class="mb-3">
+                        <label class="form-label"><strong>Tamaño</strong></label>
+                        <input class="form-control" type="text" @bind="Product.Size" placeholder="Ej: M, L, XL" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label"><strong>Peso</strong></label>
+                        <div class="input-group">
+                            <input class="form-control" type="number" step="0.01" @bind="Product.Weight" placeholder="0.00" />
+                            <select class="form-select" style="max-width: 100px;" @bind="Product.WeightUnitMeasureCode">
+                                <option value="">Unidad</option>
+                                @foreach (var u in ListaUnidades)
+                                {
+                                    <option value="@u.UnitMeasureCode">@u.UnitMeasureCode</option>
+                                }
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- SECCIÓN: COSTOS Y PRECIOS -->
+                    <h5 class="section-title mt-4">
+                        <i class="bi bi-currency-dollar"></i> Costos y Precios
+                    </h5>
+
+                    <div class="mb-3">
+                        <label class="form-label"><strong>Costo estándar</strong></label>
+                        <div class="input-group">
+                            <span class="input-group-text">RD$</span>
+                            <input class="form-control" type="number" step="0.01" min="0" @bind="Product.StandardCost" />
+                        </div>
                         <ValidationMessage For="(() => Product.StandardCost)" />
                     </div>
-                    <div class="col-md-3 mb-3">
-                        <label><strong>Precio de Lista</strong></label>
-                        <input class="form-control" type="number" step="0.01" @bind="Product.ListPrice" />
+
+                    <div class="mb-3">
+                        <label class="form-label"><strong>Precio de lista</strong></label>
+                        <div class="input-group">
+                            <span class="input-group-text">RD$</span>
+                            <input class="form-control" type="number" step="0.01" min="0" @bind="Product.ListPrice" />
+                        </div>
                         <ValidationMessage For="(() => Product.ListPrice)" />
                     </div>
-                    <div class="col-md-3 mb-3">
-                        <label><strong>Inicio de Ventas</strong></label>
+
+                    <div class="mb-3">
+                        <label class="form-label"><strong>Días de fabricación</strong></label>
+                        <input class="form-control" type="number" min="0" @bind="Product.DaysToManufacture" />
+                        <ValidationMessage For="(() => Product.DaysToManufacture)" />
+                    </div>
+
+                    <!-- SECCIÓN: INVENTARIO -->
+                    <h5 class="section-title mt-4">
+                        <i class="bi bi-box-seam"></i> Inventario
+                    </h5>
+
+                    <div class="mb-3">
+                        <label class="form-label"><strong>Stock de seguridad</strong></label>
+                        <input class="form-control" type="number" min="0" @bind="Product.SafetyStockLevel" />
+                        <ValidationMessage For="(() => Product.SafetyStockLevel)" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label"><strong>Punto de reorden</strong></label>
+                        <input class="form-control" type="number" min="0" @bind="Product.ReorderPoint" />
+                        <ValidationMessage For="(() => Product.ReorderPoint)" />
+                    </div>
+
+                    <!-- SECCIÓN: CLASIFICACIÓN -->
+                    <h5 class="section-title mt-4">
+                        <i class="bi bi-tags"></i> Clasificación
+                    </h5>
+
+                    <div class="mb-3">
+                        <label class="form-label"><strong>Línea de producto</strong></label>
+                        <select class="form-select" @bind="Product.ProductLine">
+                            <option value="">— Seleccione —</option>
+                            <option value="R">Road (R)</option>
+                            <option value="M">Mountain (M)</option>
+                            <option value="T">Touring (T)</option>
+                            <option value="S">Standard (S)</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label"><strong>Clase</strong></label>
+                        <select class="form-select" @bind="Product.Class">
+                            <option value="">— Seleccione —</option>
+                            <option value="H">High (H)</option>
+                            <option value="M">Medium (M)</option>
+                            <option value="L">Low (L)</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label"><strong>Estilo</strong></label>
+                        <select class="form-select" @bind="Product.Style">
+                            <option value="">— Seleccione —</option>
+                            <option value="W">Women's (W)</option>
+                            <option value="M">Men's (M)</option>
+                            <option value="U">Universal (U)</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label"><strong>Subcategoría</strong></label>
+                        <select class="form-select" @bind="Product.ProductSubcategoryId">
+                            <option value="">— Ninguna —</option>
+                            @foreach (var s in ListaSubcategorias)
+                            {
+                                <option value="@s.ProductSubcategoryId">@s.Name</option>
+                            }
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label"><strong>Modelo de producto</strong></label>
+                        <select class="form-select" @bind="Product.ProductModelId">
+                            <option value="">— Ninguno —</option>
+                            @foreach (var m in ListaModelos)
+                            {
+                                <option value="@m.ProductModelId">@m.Name</option>
+                            }
+                        </select>
+                    </div>
+
+                    <!-- SECCIÓN: FECHAS -->
+                    <h5 class="section-title mt-4">
+                        <i class="bi bi-calendar3"></i> Fechas
+                    </h5>
+
+                    <div class="mb-3">
+                        <label class="form-label"><strong>Inicio de ventas</strong></label>
                         <input class="form-control" type="datetime-local" @bind="Product.SellStartDate" />
                         <ValidationMessage For="(() => Product.SellStartDate)" />
                     </div>
-                    <div class="col-md-3 mb-3">
-                        <label><strong>Fin de Ventas (Inactivar)</strong></label>
+
+                    <div class="mb-3">
+                        <label class="form-label"><strong>Fin de ventas</strong></label>
                         <input class="form-control" type="datetime-local" @bind="Product.SellEndDate" />
                     </div>
-                </div>
 
-                @* ================= BLOQUE MULTIMEDIA NUEVO ================= *@
-                <h5 class="pb-3">Fotograf&iacute;a Principal</h5>
-                <div class="row align-items-center mb-3">
-                    <div class="col-md-4 text-center">
-                        @if (UrlImagenPreview != null)
-                        {
-                            <img src="@UrlImagenPreview" class="img-thumbnail rounded shadow-sm" style="max-height: 180px; width: auto;" />
-                        }
-                        else
-                        {
-                            <div class="alert alert-secondary mb-0"><i class="bi bi-image text-muted fs-3"></i><br />Sin imagen primaria</div>
-                        }
+                    <div class="mb-3">
+                        <label class="form-label"><strong>Fecha discontinuación</strong></label>
+                        <input class="form-control" type="datetime-local" @bind="Product.DiscontinuedDate" />
                     </div>
-                    <div class="col-md-8">
-                        <label><strong>Actualizar Imagen (.jpg, .png)</strong></label>
-                        <InputFile class="form-control form-control-lg" OnChange="CargarFotoTemporal" accept="image/png, image/jpeg" />
-                        <small class="text-muted mt-2 d-block">Selecciona una imagen para el producto comercial. Límite: 5MB.</small>
-                    </div>
-                </div>
 
-                <h5 class="pb-3">Dimensiones (Opcional)</h5>
-                <div class="row">
-                    <div class="col-md-3 mb-3">
-                        <label><strong>Tama&ntilde;o</strong></label>
-                        <input class="form-control" type="text" maxlength="5" @bind="Product.Size" />
-                    </div>
-                    <div class="col-md-3 mb-3">
-                        <label><strong>U. Medida Tama&ntilde;o</strong></label>
-                        <select class="form-select" @bind="Product.SizeUnitMeasureCode">
-                            <option value="" selected></option>
-                            @foreach (var unit in ListaUnidades)
+                    <!-- SECCIÓN: FOTOGRAFÍA PRINCIPAL -->
+                    <h5 class="section-title mt-4">
+                        <i class="bi bi-camera"></i> Fotografía Principal
+                    </h5>
+
+                    <div class="row align-items-center">
+                        <div class="col-md-4 text-center mb-3 mb-md-0">
+                            @if (UrlImagenPreview != null)
                             {
-                                <option value="@unit.UnitMeasureCode">@unit.Name</option>
+                                <img src="@UrlImagenPreview" class="product-preview-img" />
                             }
-                        </select>
-                    </div>
-                    <div class="col-md-3 mb-3">
-                        <label><strong>Peso</strong></label>
-                        <input class="form-control" type="number" step="0.01" @bind="Product.Weight" />
-                    </div>
-                    <div class="col-md-3 mb-3">
-                        <label><strong>U. Medida Peso</strong></label>
-                        <select class="form-select" @bind="Product.WeightUnitMeasureCode">
-                            <option value="" selected></option>
-                            @foreach (var unit in ListaUnidades)
+                            else
                             {
-                                <option value="@unit.UnitMeasureCode">@unit.Name</option>
+                                <div class="product-preview-placeholder">
+                                    <i class="bi bi-image fs-1 text-muted"></i>
+                                    <p class="mb-0 text-muted small">Sin imagen principal</p>
+                                </div>
                             }
-                        </select>
+                        </div>
+                        <div class="col-md-8">
+                            <label class="form-label"><strong>Actualizar imagen</strong></label>
+                            <InputFile class="form-control" OnChange="CargarFotoTemporal" accept="image/png, image/jpeg" />
+                            <small class="text-muted mt-2 d-block">Formatos: .jpg, .png. Tamaño máximo: 5MB</small>
+                        </div>
                     </div>
+
+                    <!-- FECHA MODIFICACIÓN -->
+                    <div class="mb-3">
+                        <label class="form-label"><strong>Fecha de modificación</strong></label>
+                        <input class="form-control" type="datetime-local" @bind="Product.ModifiedDate" disabled />
+                    </div>
+
                 </div>
 
+                <div class="card-footer text-center">
+                    <a class="btn btn-secondary bi bi-arrow-left" href="/Product/Index"> Volver</a>
+                    <button class="btn btn-primary bi bi-floppy" type="submit"> Guardar</button>
+                    <button class="btn btn-danger bi bi-trash" type="button" @onclick="Eliminar"> Eliminar</button>
+                </div>
             </div>
-            <div class="card-footer text-center">
-                <a class="btn btn-secondary bi bi-arrow-left" href="/Product/Index"> Volver</a>
-                <button class="btn btn-primary bi bi-floppy" type="submit"> Modificar</button>
-                <button class="btn btn-danger bi bi-trash" type="button" @onclick="Eliminar"> Eliminar</button>
-            </div>
-        </div>
+        </EditForm>
     </div>
-</EditForm>
+</div>
 
 @code {
     [Parameter]
     public int ProductId { get; set; }
 
-    public Product Product { get; set; } = new Product();
+    public Product Product { get; set; } = new();
     
-    public List<ProductSubcategory> ListaSubcategorias { get; set; } = new List<ProductSubcategory>();
-    public List<ProductModel> ListaModelos { get; set; } = new List<ProductModel>();
-    public List<UnitMeasure> ListaUnidades { get; set; } = new List<UnitMeasure>();
+    public List<ProductSubcategory> ListaSubcategorias { get; set; } = new();
+    public List<ProductModel> ListaModelos { get; set; } = new();
+    public List<UnitMeasure> ListaUnidades { get; set; } = new();
 
     private IBrowserFile? ArchivoSeleccionado;
     private string? UrlImagenPreview;
@@ -219,15 +299,21 @@
         
         var buffer = ms.ToArray();
         var base64 = Convert.ToBase64String(buffer);
-        UrlImagenPreview = $"data:image/jpeg;base64,{base64}"; 
+        UrlImagenPreview = $"data:image/jpeg;base64,{base64}";
     }
 
     public async Task Guardar()
     {
         if (string.IsNullOrWhiteSpace(Product.SizeUnitMeasureCode)) Product.SizeUnitMeasureCode = null;
         if (string.IsNullOrWhiteSpace(Product.WeightUnitMeasureCode)) Product.WeightUnitMeasureCode = null;
+        if (string.IsNullOrWhiteSpace(Product.ProductLine)) Product.ProductLine = null;
+        if (string.IsNullOrWhiteSpace(Product.Class)) Product.Class = null;
+        if (string.IsNullOrWhiteSpace(Product.Style)) Product.Style = null;
+
+        Product.ModifiedDate = DateTime.Now;
 
         bool guardado = await productService.Guardar(Product);
+        
         if (guardado)
         {
             if (ArchivoSeleccionado != null)
@@ -237,12 +323,12 @@
                 await photoService.AsignarFotoPrincipal(Product.ProductId, ms.ToArray(), ArchivoSeleccionado.Name);
             }
 
-            toastService.ShowSuccess("El producto se ha modificado y consolidado.");
+            toastService.ShowSuccess("Producto modificado exitosamente.");
             navigationManager.NavigateTo("/Product/Index");
         }
         else
         {
-            toastService.ShowError("Ha ocurrido un error inesperado al guardar el producto.");
+            toastService.ShowError("Ha ocurrido un error al guardar el producto.");
         }
     }
 
@@ -253,7 +339,7 @@
             bool eliminado = await productService.Eliminar(Product.ProductId);
             if (eliminado)
             {
-                toastService.ShowSuccess("El producto se ha eliminado de la base de datos.");
+                toastService.ShowSuccess("Producto eliminado exitosamente.");
                 navigationManager.NavigateTo("/Product/Index");
             }
         }

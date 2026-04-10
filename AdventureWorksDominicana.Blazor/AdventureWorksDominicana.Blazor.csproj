@@ -8,10 +8,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="Components\Pages\ProductPages\ProductEdit.razor.css" />
-  </ItemGroup>
-
-  <ItemGroup>
     <None Include="Components\Pages\Sales\ShoppingCart.razor" />
   </ItemGroup>
 

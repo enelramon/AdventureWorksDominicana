@@ -1,4 +1,11 @@
-﻿/* FORMULARIO */
+﻿/* CONTENEDOR PRINCIPAL */
+.product-container {
+    max-width: 1200px;
+    margin: auto;
+    padding: 20px;
+}
+
+/* FORMULARIO */
 .product-form {
     margin-top: 20px;
 }
@@ -69,7 +76,6 @@
 /* LABELS */
 .product-form .form-label {
     font-size: 0.85rem;
-    font-weight: 600;
     color: #374151;
     margin-bottom: 4px;
 }
