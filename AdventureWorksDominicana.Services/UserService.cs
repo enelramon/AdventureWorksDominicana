@@ -40,4 +40,9 @@ public class UserService(IDbContextFactory<Contexto> DbFactory) : IService<AspNe
         contexto.AspNetUsers.Update(entidad);
         return await contexto.SaveChangesAsync() > 0;
     }
+    public async Task<List<AspNetRole>> GetListRoles(Expression<Func<AspNetRole, bool>> criterio)
+    {
+        await using var contexto = await DbFactory.CreateDbContextAsync();
+        return await contexto.AspNetRoles.Where(criterio).OrderBy(t => t.Id).ToListAsync();
+    }
 }
