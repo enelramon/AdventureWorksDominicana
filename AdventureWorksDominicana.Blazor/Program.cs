@@ -55,6 +55,7 @@ builder.Services.AddIdentityCore<AspNetUser>(options =>
 builder.Services.AddSingleton<IEmailSender<AdventureWorksDominicana.Data.Models.AspNetUser>, SmtpEmailSender>();
 
 
+// Add services to the container
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
@@ -73,20 +74,10 @@ builder.Services.AddScoped<EmployeeService>();
 builder.Services.AddScoped<ContactTypeService>();
 builder.Services.AddScoped<ProductCategoryService>();
 builder.Services.AddScoped<PhoneNumberTypeService>();
-builder.Services.AddScoped<EmployeeService>();
-builder.Services.AddScoped<ProductCategoryService>();
 builder.Services.AddScoped<SalesTerritoryService>();
 builder.Services.AddScoped<VendorService>();
-builder.Services.AddScoped<SalesOrderHeaderService>();
-builder.Services.AddScoped<CustomerService>();
-builder.Services.AddScoped<SalesPersonService>();
-builder.Services.AddScoped<AddressService>();
-builder.Services.AddScoped<ShipMethodService>();
-builder.Services.AddScoped<CurrencyRateService>();
-builder.Services.AddScoped<SpecialOfferProductService>();
 builder.Services.AddScoped<ProductDescriptionService>();
-builder.Services.AddScoped<ShoppingCartItemService>();
-builder.Services.AddScoped<ProductService>();
+builder.Services.AddScoped<AddressTypeService>();
 builder.Services.AddScoped<ProductModelService>();
 builder.Services.AddScoped<UnitMeasureService>();
 builder.Services.AddScoped<ProductSubcategoryService>();
