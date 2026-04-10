@@ -1905,6 +1905,21 @@ public partial class Contexto : DbContext
                 ConcurrencyStamp = Guid.NewGuid().ToString()
             });
 
+        modelBuilder.Entity<UnitMeasure>().HasData(
+            new UnitMeasure { UnitMeasureCode = "CM", Name = "Centimeter", ModifiedDate = DateTime.Now },
+            new UnitMeasure { UnitMeasureCode = "M", Name = "Meter", ModifiedDate = DateTime.Now },
+            new UnitMeasure { UnitMeasureCode = "KG", Name = "Kilogram", ModifiedDate = DateTime.Now },
+            new UnitMeasure { UnitMeasureCode = "L", Name = "Liter", ModifiedDate = DateTime.Now },
+            new UnitMeasure { UnitMeasureCode = "IN", Name = "Inch", ModifiedDate = DateTime.Now },
+            new UnitMeasure { UnitMeasureCode = "FT", Name = "Foot", ModifiedDate = DateTime.Now },
+            new UnitMeasure { UnitMeasureCode = "YD", Name = "Yard", ModifiedDate = DateTime.Now },
+            new UnitMeasure { UnitMeasureCode = "G", Name = "Gram", ModifiedDate = DateTime.Now },
+            new UnitMeasure { UnitMeasureCode = "MG", Name = "Milligram", ModifiedDate = DateTime.Now },
+            new UnitMeasure { UnitMeasureCode = "BOX", Name = "Box", ModifiedDate = DateTime.Now },
+            new UnitMeasure { UnitMeasureCode = "PK", Name = "Pack", ModifiedDate = DateTime.Now },
+            new UnitMeasure { UnitMeasureCode = "DZ", Name = "Dozen", ModifiedDate = DateTime.Now }
+        );
+
 
         OnModelCreatingPartial(modelBuilder);
     }

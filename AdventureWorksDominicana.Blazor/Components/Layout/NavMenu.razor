@@ -33,6 +33,11 @@
                                 <span class="bi bi-receipt-nav-menu"></span> <small>Sales</small>
                             </NavLink>
                         </div>
+                        <div class="nav-item pt-2">
+                            <NavLink class="nav-link" href="/TransactionHistory/Index">
+                                <span class="bi bi-clock-history-nav-menu"></span> <small>Transactions Histories</small>
+                            </NavLink>
+                        </div>
                         <div class="nav-item">
                             <NavLink class="nav-link" href="/SalesTerritory/Index">
                                 <span class="bi bi-map-fill-nav-menu"></span> <small>Sales Territories</small>
@@ -43,11 +48,11 @@
                                 <span class="bi bi-currency-dollar-nav-menu"></span> <small>Currencies</small>
                             </NavLink>
                         </div>
-                        @* <div class="nav-item">
-                            <NavLink class="nav-link" href="/ShoppingCartItem/Index">
-                                <span class="bi bi-cart-plus-nav-menu"></span> <small>Shopping Cart</small>
+                        <div class="nav-item">
+                            <NavLink class="nav-link" href="/CurrencyRate/Index">
+                                <span class="bi bi-currency-exchange-nav-menu"></span> <small>Currencies Rates</small>
                             </NavLink>
-                        </div> *@
+                        </div>
                     </div>
                 </div>
             </div>
@@ -91,6 +96,11 @@
                         <div class="nav-item">
                             <NavLink class="nav-link" href="/Location/Index">
                                 <span class="bi bi-pin-map-nav-menu"></span> <small>Locations</small>
+                            </NavLink>
+                        </div>
+                        <div class="nav-item">
+                            <NavLink class="nav-link" href="/Product/Inventory">
+                                <span class="bi bi-pin-map-nav-menu"></span> <small>Inventario</small>
                             </NavLink>
                         </div>
                     </div>
@@ -203,13 +213,19 @@
             </div>
         </div>
 
+
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="/Store/Index">
+                <span class="bi bi-shop-fill-nav-menu" aria-hidden="true"></span> Store
+            </NavLink>
+        </div>
+
+
         <div class="nav-item px-3">
             <NavLink class="nav-link" href="/Customer/Index">
                 <span class="bi bi-people-nav-menu" aria-hidden="true"></span> Customers
             </NavLink>
         </div>
-    </nav>
-</div>
 
         <AuthorizeView>
             <Authorized>
@@ -218,8 +234,8 @@
                         <AntiforgeryToken />
                         <input type="hidden" name="ReturnUrl" value="Account/Login" />
 
-                        <button type="submit" class="nav-link btn btn-link" style="text-align: left; width: 100%;">
-                            <span class="bi bi-box-arrow-right" aria-hidden="true"></span> <small>Salir</small>
+                        <button type="submit" class="nav-link ">
+                            <div><span class="bi bi-box-arrow-right" aria-hidden="true"></span></div> <small>Salir</small>
                         </button>
                     </form>
                 </div>
@@ -238,6 +254,12 @@
             </NotAuthorized>
         </AuthorizeView>
 
-
     </nav>
+
+        
 </div>
+
+       
+
+
+        

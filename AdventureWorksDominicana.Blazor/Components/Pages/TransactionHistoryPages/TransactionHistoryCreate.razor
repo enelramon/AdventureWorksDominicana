@@ -1,0 +1,130 @@
+﻿@page "/TransactionHistory/Create"
+@inject TransactionHistoryService transactionHistoryService
+@inject ProductService productService 
+@inject NavigationManager navigationManager
+@inject ToastService toastService
+
+@rendermode InteractiveServer
+
+<PageTitle>Crear Historial de Transacci&oacute;n</PageTitle>
+
+<EditForm Model="transaccion" OnValidSubmit="Guardar">
+    <DataAnnotationsValidator />
+
+    <div class="container mt-4">
+        <div class="card shadow-lg">
+
+            <div class="card-header bg-white">
+                <h4 class="mb-0">Crear Historial de Transacci&oacute;n</h4>
+            </div>
+
+            <div class="card-body">
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <strong>Producto</strong>
+                        <InputSelect class="form-select" @bind-Value="transaccion.ProductId">
+                            <option value="0" disabled selected>Seleccione un producto...</option>
+                            @foreach (var producto in listaProductos)
+                            {
+                                <option value="@producto.ProductId">@producto.Name</option>
+                            }
+                        </InputSelect>
+                        <ValidationMessage For="() => transaccion.ProductId" />
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <strong>Fecha de Transacci&oacute;n</strong>
+                        <InputDate class="form-control" @bind-Value="transaccion.TransactionDate" />
+                        <ValidationMessage For="() => transaccion.TransactionDate" />
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <strong>Tipo de Transacci&oacute;n</strong>
+                        <InputSelect class="form-select" @bind-Value="transaccion.TransactionType">
+                            <option value="" disabled selected>Seleccione un tipo...</option>
+                            <option value="W">Work Order (W)</option>
+                            <option value="S">Sales Order (S)</option>
+                            <option value="P">Purchase Order (P)</option>
+                        </InputSelect>
+                        <ValidationMessage For="() => transaccion.TransactionType" />
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <strong>Cantidad</strong>
+                        <InputNumber class="form-control" @bind-Value="transaccion.Quantity" />
+                        <ValidationMessage For="() => transaccion.Quantity" />
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <strong>ID Orden de Referencia</strong>
+                        <InputNumber class="form-control" @bind-Value="transaccion.ReferenceOrderId" />
+                        <ValidationMessage For="() => transaccion.ReferenceOrderId" />
+                    </div>
+
+                    <div class="col-md-4 mb-3">
+                        <strong>Línea de Orden</strong>
+                        <InputNumber class="form-control" @bind-Value="transaccion.ReferenceOrderLineId" />
+                        <ValidationMessage For="() => transaccion.ReferenceOrderLineId" />
+                    </div>
+
+                    <div class="col-md-4 mb-3">
+                        <strong>Costo Real</strong>
+                        <InputNumber class="form-control" @bind-Value="transaccion.ActualCost" />
+                        <ValidationMessage For="() => transaccion.ActualCost" />
+                    </div>
+                </div>
+
+                @if (!string.IsNullOrWhiteSpace(mensajeError))
+                {
+                    <div class="alert alert-danger mt-3">@mensajeError</div>
+                }
+
+            </div>
+
+            <div class="card-footer text-center bg-white">
+                <a href="/TransactionHistory/Index" class="btn btn-secondary bi bi-arrow-left"> Volver</a>
+                <button type="submit" class="btn btn-primary bi bi-floppy"> Guardar</button>
+            </div>
+        </div>
+    </div>
+</EditForm>
+
+@code {
+    private TransactionHistory transaccion = new() { TransactionDate = DateTime.Now };
+    private List<Product> listaProductos = new();
+    private string mensajeError = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        listaProductos = await productService.GetList(p => true);
+    }
+
+    private async Task Guardar()
+    {
+        transaccion.ModifiedDate = DateTime.Now;
+        mensajeError = string.Empty;
+
+        try
+        {
+            if (await transactionHistoryService.Guardar(transaccion))
+            {
+                toastService.ShowSuccess("Registro guardado correctamente.");
+                navigationManager.NavigateTo("/TransactionHistory/Index");
+            }
+            else
+            {
+                mensajeError = "No se pudo guardar el registro.";
+            }
+        }
+        catch (Exception ex)
+        {
+            string errorReal = ex.InnerException != null ? ex.InnerException.Message : ex.Message;
+            mensajeError = $"La base de datos rechazó el registro. Detalle: {errorReal}";
+        }
+    }
+}

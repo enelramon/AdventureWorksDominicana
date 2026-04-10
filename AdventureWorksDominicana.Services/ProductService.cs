@@ -49,7 +49,6 @@ public class ProductService(IDbContextFactory<Contexto> DbContextFactory) : ISer
     public async Task<bool> Insertar(Product product)
     {
         await using var contexto = await DbContextFactory.CreateDbContextAsync();
-
         product.Rowguid = Guid.NewGuid();
         product.ModifiedDate = DateTime.Now;
 
@@ -60,7 +59,6 @@ public class ProductService(IDbContextFactory<Contexto> DbContextFactory) : ISer
     public async Task<bool> Modificar(Product product)
     {
         await using var contexto = await DbContextFactory.CreateDbContextAsync();
-
         product.ModifiedDate = DateTime.Now;
         product.ProductSubcategory = null;
         product.ProductModel = null;
@@ -76,16 +74,8 @@ public class ProductService(IDbContextFactory<Contexto> DbContextFactory) : ISer
         await using var contexto = await DbContextFactory.CreateDbContextAsync();
         try
         {
-            var filas = await contexto.Products.Where(p => p.ProductId == id).ExecuteDeleteAsync();
-            return filas > 0;
+            return await contexto.Products.Where(p => p.ProductId == id).ExecuteDeleteAsync() > 0;
         }
-        catch (DbUpdateException)
-        {
-            return false;
-        }
-        catch
-        {
-            return false;
-        }
+        catch { return false; }
     }
 }

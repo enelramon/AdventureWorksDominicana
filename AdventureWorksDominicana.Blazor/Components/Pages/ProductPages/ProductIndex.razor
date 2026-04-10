@@ -1,8 +1,7 @@
 ﻿@page "/Product/Index"
-
+@rendermode InteractiveServer
 @inject NavigationManager navigationManager
 @inject ProductService productService
-@rendermode InteractiveServer
 
 <PageTitle>Product</PageTitle>
 
@@ -32,7 +31,6 @@
                 </div>
 
                 <div class="row">
-
                     <div class="col-3">
                         <InputSelect class="form-select" @bind-Value="Filtros">
                             <option disabled value="">Filtrar...</option>
@@ -78,7 +76,7 @@
                     <PropertyColumn Property="@(e => e.ModifiedDate)" Format="dd/MM/yyyy" Title="Fecha de modificación" Sortable="true" />
 
                     <TemplateColumn Class="text-center align-middle" Title="Acción">
-                        <a class="btn btn-outline-primary btn-" href="/Product/Edit/@context.ProductId">
+                        <a class="btn btn-outline-primary btn-sm" href="/Product/Edit/@context.ProductId">
                             <i class="bi bi-pencil-square"></i> Modificar
                         </a>
                     </TemplateColumn>

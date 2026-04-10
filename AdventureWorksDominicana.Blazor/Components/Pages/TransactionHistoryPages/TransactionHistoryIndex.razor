@@ -1,0 +1,114 @@
+﻿@page "/TransactionHistory/Index"
+@inject TransactionHistoryService transactionHistoryService
+@inject ToastService toastService
+@rendermode InteractiveServer
+
+<PageTitle>Historial de Transacci&oacute;n</PageTitle>
+
+<div class="container-fluid mt-4">
+    <div class="card shadow-lg">
+
+        <div class="card-header bg-white d-flex justify-content-between align-items-center">
+            <h4 class="mb-0"> Registro Historial de Transacci&oacute;n</h4>
+            <a class="btn btn-primary" href="/TransactionHistory/Create">
+                <i class="bi bi-plus-square"></i> Crear
+            </a>
+        </div>
+
+        <div class="card-body">
+
+            <div class="row mb-4 align-items-end">
+                <div class="col-md-3">
+                    <label class="form-label">Desde</label>
+                    <input class="form-control" type="date" @bind="Desde" />
+                </div>
+
+                <div class="col-md-3">
+                    <label class="form-label ">Hasta</label>
+                    <input class="form-control" type="date" @bind="Hasta" />
+                </div>
+
+                <div class="col-md-3">
+                    <label class="form-label ">Filtrar por</label>
+                    <select class="form-select" @bind="Filtros">
+                        <option value="">Seleccione una opci&oacute;n</option>
+                        <option value="Id">Id</option>
+                        <option value="NombreProducto">Producto</option>
+                    </select>
+                </div>
+
+                <div class="col-md-3">
+                    <label class="form-label ">Buscar</label>
+                    <div class="input-group">
+                        <input class="form-control" type="text" placeholder="Buscar..." @bind="ValorFiltro" />
+                        <button class="btn btn-outline-primary" type="button" @onclick="Buscar">
+                            <i class="bi bi-search"></i>
+                        </button>
+                        <button class="btn btn-outline-secondary" type="button" title="Limpiar Filtros" @onclick="Restablecer">
+                            <i class="bi bi-arrow-counterclockwise"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div class="table-responsive">
+                <QuickGrid Items="listaTransacciones.AsQueryable()" Class="table table-striped table-bordered table-hover">
+                    <PropertyColumn Property="@(c => c.TransactionId)" Title="ID" />
+                    <PropertyColumn Property="@(c => c.TransactionDate.ToString("dd/MM/yyyy"))" Title="Fecha" />
+                    <PropertyColumn Property="@(c => c.ModifiedDate.ToString("dd/MM/yyyy"))" Title="Fecha Modificación" />
+
+                    <PropertyColumn Property="@(c => c.Product.Name)" Title="Producto" />
+                    <PropertyColumn Property="@(c => c.ActualCost)" Title="Costo Actual" />
+                    <TemplateColumn Title="Acciones">
+                        <a class="btn btn-outline-primary btn-sm" href="/TransactionHistory/Edit/@context.TransactionId">
+                            <i class="bi bi-pencil-square"></i> Modificar
+                        </a>
+                    </TemplateColumn>
+                </QuickGrid>
+            </div>
+
+
+        </div>
+
+        <div class="card-footer text-end fw-bold bg-white">
+            Total de Registros: @listaTransacciones.Count
+        </div>
+    </div>
+</div>
+
+@code {
+    private List<TransactionHistory> listaTransacciones = new();
+    private DateTime? Desde;
+    private DateTime? Hasta;
+    private string Filtros = "";
+    private string ValorFiltro = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CargarDatos();
+    }
+
+    private async Task CargarDatos()
+    {
+        listaTransacciones = await transactionHistoryService.GetList(c => true);
+    }
+
+    private async Task Buscar()
+    {
+        listaTransacciones = await transactionHistoryService.GetList(c =>
+            (!Desde.HasValue || c.TransactionDate >= Desde.Value) &&
+            (!Hasta.HasValue || c.TransactionDate <= Hasta.Value) &&
+            (string.IsNullOrEmpty(ValorFiltro) ||
+                (Filtros == "Id" && c.TransactionId.ToString() == ValorFiltro) ||
+                (Filtros == "NombreProducto" && c.Product.Name.Contains(ValorFiltro))
+            ));
+    }
+
+    private async Task Restablecer()
+    {
+        Desde = null;
+        Hasta = null;
+        Filtros = "";
+        ValorFiltro = "";
+        await CargarDatos();
+    }
+}
