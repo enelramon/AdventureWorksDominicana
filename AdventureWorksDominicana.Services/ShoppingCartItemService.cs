@@ -24,8 +24,13 @@ public class ShoppingCartItemService(IDbContextFactory<Contexto> DbFactory) : IS
     public async Task<bool> Insertar(ShoppingCartItem cartItem)
     {
         await using var contexto = await DbFactory.CreateDbContextAsync();
-        if (await contexto.ShoppingCartItems.AnyAsync(p => p.ProductId == cartItem.ProductId))
-            throw new InvalidOperationException("Ya el producto está en el carrito de compras");
+        bool existeParaEsteUsuario = await contexto.ShoppingCartItems
+        .AnyAsync(p => p.ProductId == cartItem.ProductId
+                    && p.ShoppingCartId == cartItem.ShoppingCartId);
+        if (existeParaEsteUsuario)
+        {
+            throw new InvalidOperationException("Ya tienes este producto en tu carrito.");
+        }
         contexto.ShoppingCartItems.Add(cartItem);
         return await contexto.SaveChangesAsync() > 0;
     }
