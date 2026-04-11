@@ -1,10 +1,12 @@
 ﻿@page "/MyAccount"
 @using System.Security.Claims
 @using System.ComponentModel.DataAnnotations
+@using AdventureWorksDominicana.Data.Models
 @inject AuthenticationStateProvider authenticationStateProvider
 @inject ToastService toastService
 @inject PhoneNumberTypeService phoneNumberTypeService
 @inject PersonService personService
+@inject NavigationManager navigationManager
 @rendermode InteractiveServer
 
 <EditForm Model="Modelo" OnValidSubmit="GuardarCambios">
@@ -19,11 +21,16 @@
                 {
                     <p class="text-danger">Hay cambios importantes sin guardar.</p>
                 }
-                
             </div>
+  
             <div class="col-auto d-flex align-items-center">
-                <button type="submit" class="btn btn-primary px-4 shadow-sm bi bi-floppy"> Guardar Cambios</button>
+                <button type="submit" class="btn btn-primary px-4 shadow-sm bi bi-floppy me-2"> Guardar Cambios</button>
+                @if (datosSinGuardar)
+                {
+                    <button type="button" class="btn btn-danger px-4 shadow-sm bi bi-arrow-clockwise" @onclick="@(() => navigationManager.NavigateTo("/MyAccount", true))"> Cancelar Cambios</button>
+                }
             </div>
+         
         </div>
 
         <div class="row">
@@ -40,6 +47,8 @@
                         <div class="mb-3">
                             <label class="form-label fw-medium">Segundo Nombre</label>
                             <input type="text" class="form-control" @bind="Modelo.MiddleName" placeholder="Opcional" />
+                            <ValidationMessage For="@(() => Modelo.MiddleName)" class="text-danger small" />
+
                         </div>
                         
                         <div class="mb-3">
@@ -63,7 +72,7 @@
                 
                 <div class="card shadow-sm border-0 mb-4">
                     <div class="card-body p-4">
-                        <h5 class="card-title fw-semibold mb-3">Correos Electrónicos</h5>
+                        <h5 class="card-title fw-semibold mb-3">Correos Electr&oacute;nicos</h5>
             
                         <div class="mb-4">
                             <label class="form-label text-muted small mb-1">Correo de Acceso (Principal)</label>
@@ -73,28 +82,45 @@
                         <hr class="my-3" />
 
                         <div class="d-flex justify-content-between align-items-center mb-3">
-                            <h6 class="fw-medium mb-0">Correos Alternativos</h6>
-                            <button type="button" class="btn btn-sm btn-outline-primary" @onclick="AgregarCorreo">
-                                + Agregar Correo
-                            </button>
+                            <h6 class="fw-medium mb-0">Correos Alternativos Registrados</h6>
+                            @if (Modelo.NuevoCorreo == null)
+                            {
+                                <button type="button" class="btn btn-sm btn-outline-primary" @onclick="AgregarCorreo">
+                                    + Agregar Correo
+                                </button>
+                            }
                         </div>
 
-                        @foreach (var email in Modelo.Emails)
+                        @if (Modelo.Emails.Any())
                         {
-                            <div class="row g-2 mb-2 align-items-center">
-                                <div class="col">
-                                    <input type="email" class="form-control" @bind="email.EmailAddress1" placeholder="ejemplo@correo.com" />
-                                    <ValidationMessage For="@(() => email.EmailAddress1)" class="text-danger small" />
-                                </div>
-                                <div class="col-auto">
-                                    <button type="button" class="btn btn-outline-danger" @onclick="() => EliminarCorreo(email)">Eliminar</button>
-                                </div>
+                            <div class="list-group mb-3">
+                                @foreach (var email in Modelo.Emails)
+                                {
+                                    <div class="list-group-item d-flex justify-content-between align-items-center p-3">
+                                        <span class="fw-medium">@email.EmailAddress1</span>
+                                        <button type="button" class="btn btn-outline-danger btn-sm" @onclick="() => EliminarCorreo(email)">Eliminar</button>
+                                    </div>
+                                }
                             </div>
                         }
-                        @if (!Modelo.Emails.Any())
+                        else
                         {
-                            <div class="alert alert-light border text-center text-muted" role="alert">
+                            <div class="alert alert-light border text-center text-muted mb-3" role="alert">
                                 No tienes correos alternativos registrados.
+                            </div>
+                        }
+
+                        @if (Modelo.NuevoCorreo != null)
+                        {
+                            <div class="row g-2 p-3 border rounded bg-light position-relative">
+                                <div class="col-12 d-flex justify-content-between align-items-center mb-2">
+                                    <span class="small fw-semibold text-primary">Registrar Nuevo Correo</span>
+                                    <button type="button" class="btn-close" aria-label="Close" @onclick="CancelarNuevoCorreo"></button>
+                                </div>
+                                <div class="col-12">
+                                    <input type="email" class="form-control" @bind="Modelo.NuevoCorreo.EmailAddress1" placeholder="ejemplo@correo.com" />
+                                    <ValidationMessage For="@(() => Modelo.NuevoCorreo.EmailAddress1)" class="text-danger small" />
+                                </div>
                             </div>
                         }
                     </div>
@@ -104,35 +130,57 @@
                     <div class="card-body p-4">
                         <div class="d-flex justify-content-between align-items-center mb-3">
                             <h5 class="card-title fw-semibold mb-0">N&uacute;meros de Tel&eacute;fono</h5>
-                            <button type="button" class="btn btn-sm btn-outline-primary" @onclick="AgregarTelefono">
-                                + Agregar Tel&eacute;fono
-                            </button>
+                            @if (Modelo.NuevoTelefono == null)
+                            {
+                                <button type="button" class="btn btn-sm btn-outline-primary" @onclick="AgregarTelefono">
+                                    + Agregar Tel&eacute;fono
+                                </button>
+                            }
                         </div>
 
-                        @foreach (var phone in Modelo.Phones)
+                        @if (Modelo.Phones.Any())
                         {
-                            <div class="row g-2 mb-2 align-items-start">
-                                <div class="col-md-5">
-                                    <input type="text" class="form-control" @bind="phone.PhoneNumber" placeholder="Ej: 809-555-5555" />
-                                    <ValidationMessage For="@(() => phone.PhoneNumber)" class="text-danger small" />
+                            <div class="list-group mb-3">
+                                @foreach (var phone in Modelo.Phones)
+                                {
+                                    <div class="list-group-item d-flex justify-content-between align-items-center p-3">
+                                        <div>
+                                            <span class="fw-medium d-block">@phone.PhoneNumber</span>
+                                            <small class="text-muted">@ObtenerNombreTipoTelefono(phone.PhoneNumberTypeId)</small>
+                                        </div>
+                                        <button type="button" class="btn btn-outline-danger btn-sm" @onclick="() => EliminarTelefono(phone)">Eliminar</button>
+                                    </div>
+                                }
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="alert alert-light border text-center text-muted mb-3" role="alert">
+                                No hay tel&eacute;fonos registrados.
+                            </div>
+                        }
+
+                        @if (Modelo.NuevoTelefono != null)
+                        {
+                            <div class="row g-3 p-3 border rounded bg-light position-relative">
+                                <div class="col-12 d-flex justify-content-between align-items-center mb-1">
+                                    <span class="small fw-semibold text-primary">Registrar Nuevo Tel&eacute;fono</span>
+                                    <button type="button" class="btn-close" aria-label="Close" @onclick="CancelarNuevoTelefono"></button>
                                 </div>
-                                <div class="col-md-5">
-                                    <select class="form-select" @bind="phone.PhoneNumberTypeId">
+                                <div class="col-md-6">
+                                    <label class="form-label small fw-medium">N&uacute;mero</label>
+                                    <input type="text" class="form-control" @bind="Modelo.NuevoTelefono.PhoneNumber" placeholder="Ej: 809-555-5555" />
+                                    <ValidationMessage For="@(() => Modelo.NuevoTelefono.PhoneNumber)" class="text-danger small" />
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label small fw-medium">Tipo</label>
+                                    <select class="form-select" @bind="Modelo.NuevoTelefono.PhoneNumberTypeId">
                                         @foreach (var tipo in ListaTiposTelefono)
                                         {
                                             <option value="@tipo.PhoneNumberTypeId">@tipo.Name</option>
                                         }
                                     </select>
                                 </div>
-                                <div class="col-auto">
-                                    <button type="button" class="btn btn-outline-danger" @onclick="() => EliminarTelefono(phone)">Eliminar</button>
-                                </div>
-                            </div>
-                        }
-                        @if (!Modelo.Phones.Any())
-                        {
-                            <div class="alert alert-light border text-center text-muted" role="alert">
-                                No hay tel&eacute;fonos registrados.
                             </div>
                         }
                     </div>
@@ -156,7 +204,6 @@
 
     private AccountViewModel Modelo { get; set; } = new();
 
-    // Clases visuales con validacion
     public class AccountViewModel
     {
         public string FirstName { get; set; } = string.Empty;
@@ -165,7 +212,10 @@
         public bool WantsPromotions { get; set; }
 
         public List<EmailAddress> Emails { get; set; } = new();
+        public EmailAddress? NuevoCorreo { get; set; }
+
         public List<PersonPhone> Phones { get; set; } = new();
+        public PersonPhone? NuevoTelefono { get; set; }
     }
 
     protected override async Task OnInitializedAsync()
@@ -230,16 +280,26 @@
         }
     }
 
-    private void AgregarCorreo() { Modelo.Emails.Add(new EmailAddress()); datosSinGuardar = true; }
-    private void EliminarCorreo(EmailAddress item) { Modelo.Emails.Remove(item); datosSinGuardar = true; }
+    // Lógica para Correos
+    private void AgregarCorreo() { Modelo.NuevoCorreo = new EmailAddress(); datosSinGuardar = true; }
+    private void CancelarNuevoCorreo() { Modelo.NuevoCorreo = null; if (Modelo.NuevoTelefono == null) datosSinGuardar = false; }
+    private void EliminarCorreo(EmailAddress item) { Modelo.Emails.Remove(item); datosSinGuardar = true; toastService.ShowWarning("Correo listo para eliminar. Para abortar pulsa cancelar cambios."); }
 
+    // Lógica para Teléfonos
     private void AgregarTelefono()
     {
         int defaultType = ListaTiposTelefono.FirstOrDefault()?.PhoneNumberTypeId ?? 1;
-        Modelo.Phones.Add(new PersonPhone { PhoneNumberTypeId = defaultType });
+        Modelo.NuevoTelefono = new PersonPhone { PhoneNumberTypeId = defaultType };
         datosSinGuardar = true;
     }
-    private void EliminarTelefono(PersonPhone item) { Modelo.Phones.Remove(item); datosSinGuardar = true; }
+    private void CancelarNuevoTelefono() { Modelo.NuevoTelefono = null; if (Modelo.NuevoCorreo == null) datosSinGuardar = false; }
+    private void EliminarTelefono(PersonPhone item) { Modelo.Phones.Remove(item); datosSinGuardar = true; toastService.ShowWarning("Teléfono listo para eliminar. Para abortar pulsa cancelar cambios."); }
+
+    // Método auxiliar para la UI
+    private string ObtenerNombreTipoTelefono(int typeId)
+    {
+        return ListaTiposTelefono.FirstOrDefault(t => t.PhoneNumberTypeId == typeId)?.Name ?? "Desconocido";
+    }
 
     private async Task GuardarCambios()
     {
@@ -249,28 +309,28 @@
             return;
         }
 
-        foreach (var phone in Modelo.Phones)
+        // Validar el nuevo correo si el usuario está intentando agregar uno
+        if (Modelo.NuevoCorreo != null && !string.IsNullOrWhiteSpace(Modelo.NuevoCorreo.EmailAddress1))
         {
-            if (string.IsNullOrWhiteSpace(phone.PhoneNumber)) continue;
-            
-            var context = new ValidationContext(phone);
+            var context = new ValidationContext(Modelo.NuevoCorreo);
             var results = new List<ValidationResult>();
-            if (!Validator.TryValidateObject(phone, context, results, true))
+            if (!Validator.TryValidateObject(Modelo.NuevoCorreo, context, results, true))
             {
-                toastService.ShowError($"Error en el formato del teléfono [{phone.PhoneNumber}]. Formato correcto: (809-555-5555)");
+                var error = results.FirstOrDefault()?.ErrorMessage ?? "Error en el formato del nuevo correo.";
+                toastService.ShowError(error);
                 return;
             }
         }
 
-        foreach (var email in Modelo.Emails)
+        // Validar el nuevo teléfono 
+        if (Modelo.NuevoTelefono != null && !string.IsNullOrWhiteSpace(Modelo.NuevoTelefono.PhoneNumber))
         {
-            if (string.IsNullOrWhiteSpace(email.EmailAddress1)) continue;
-
-            var context = new ValidationContext(email);
+            var context = new ValidationContext(Modelo.NuevoTelefono);
             var results = new List<ValidationResult>();
-            if (!Validator.TryValidateObject(email, context, results, true))
+            if (!Validator.TryValidateObject(Modelo.NuevoTelefono, context, results, true))
             {
-                toastService.ShowError($"Error en el formato del correo. [{email.EmailAddress1}]. Formato correcto: (ejemplo@dominio.com)");
+                var error = results.FirstOrDefault()?.ErrorMessage ?? "Error en el formato del nuevo teléfono.";
+                toastService.ShowError(error);
                 return;
             }
         }
@@ -283,20 +343,26 @@
             EmailPromotion = Modelo.WantsPromotions ? 1 : 0
         };
 
-        //  CORREO PRINCIPAL
+        // CORREO PRINCIPAL
         if (!string.IsNullOrEmpty(UserEmail))
         {
             personaActualizada.EmailAddresses.Add(new EmailAddress { EmailAddress1 = UserEmail });
         }
 
-        //  CORREOS ALTERNATIVOS
-        foreach (var email in Modelo.Emails.Where(e => !string.IsNullOrWhiteSpace(e.EmailAddress1)))
+        // CORREOS ALTERNATIVOS EXISTENTES
+        foreach (var email in Modelo.Emails)
         {
             personaActualizada.EmailAddresses.Add(new EmailAddress { EmailAddress1 = email.EmailAddress1 });
         }
 
-        // Teléfonos
-        foreach (var phone in Modelo.Phones.Where(p => !string.IsNullOrWhiteSpace(p.PhoneNumber)))
+        // NUEVO CORREO (Si pasó validación)
+        if (Modelo.NuevoCorreo != null && !string.IsNullOrWhiteSpace(Modelo.NuevoCorreo.EmailAddress1))
+        {
+            personaActualizada.EmailAddresses.Add(new EmailAddress { EmailAddress1 = Modelo.NuevoCorreo.EmailAddress1 });
+        }
+
+        // TELÉFONOS EXISTENTES
+        foreach (var phone in Modelo.Phones)
         {
             personaActualizada.PersonPhones.Add(new PersonPhone
             {
@@ -305,15 +371,29 @@
             });
         }
 
+        // NUEVO TELÉFONO (Si pasó validación)
+        if (Modelo.NuevoTelefono != null && !string.IsNullOrWhiteSpace(Modelo.NuevoTelefono.PhoneNumber))
+        {
+            personaActualizada.PersonPhones.Add(new PersonPhone
+            {
+                PhoneNumber = Modelo.NuevoTelefono.PhoneNumber,
+                PhoneNumberTypeId = Modelo.NuevoTelefono.PhoneNumberTypeId
+            });
+        }
+
         var exito = await personService.ActualizarPerfilCompleto(_businessEntityId, personaActualizada);
 
         if (exito)
         {
-            Modelo.Emails.RemoveAll(e => string.IsNullOrEmpty(e.EmailAddress1));
-            Modelo.Phones.RemoveAll(p => string.IsNullOrEmpty(p.PhoneNumber));
-
             toastService.ShowSuccess("Tus cambios han sido guardados correctamente.");
             datosSinGuardar = false;
+            
+            // oculto los mini-formularios tras guardar exitosamente
+            Modelo.NuevoCorreo = null;
+            Modelo.NuevoTelefono = null;
+
+            // se recatgan los datos para que los nuevos elementos pasen a las listas oficiales
+            await CargarDatosDelUsuario(UserEmail!);
         }
         else
         {
