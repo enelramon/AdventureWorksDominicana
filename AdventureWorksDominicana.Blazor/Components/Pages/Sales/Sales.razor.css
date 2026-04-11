@@ -106,19 +106,29 @@
         box-shadow: 0 12px 25px rgba(0,0,0,0.08);
     }
 
-/* ===== IMAGE ===== */
+/* ===== IMAGE - TAMAÑO FIJO ===== */
 .sale-product-img {
     text-align: center;
     position: relative;
+    height: 250px; /* Altura fija para todas las imágenes */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #f8f9fa; /* Fondo claro para imágenes transparentes */
+    border-radius: 12px;
 }
 
     .sale-product-img img {
-        max-width: 100px;
+        max-width: 100%;
+        max-height: 100%;
+        width: auto;
+        height: auto;
+        object-fit: contain; /* La imagen se ajusta sin deformarse */
         transition: 0.3s;
     }
 
 .sale-product-card:hover .sale-product-img img {
-    transform: scale(1.1);
+    transform: scale(1.05);
 }
 
 /* TAG COLOR */

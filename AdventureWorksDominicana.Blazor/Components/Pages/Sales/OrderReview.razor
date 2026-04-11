@@ -1,6 +1,7 @@
 ﻿@page "/Order/Review/{SalesOrderId:int}"
 @rendermode InteractiveServer
 @inject SalesOrderHeaderService salesOrderHeaderService
+@inject ProductService productService
 @inject NavigationManager navigationManager
 
 <PageTitle>Order Review</PageTitle>
@@ -27,7 +28,30 @@
             {
                 <div class="review-product-card">
 
-                    <img src="https://www.svgrepo.com/show/486796/product-management.svg" />
+                    
+                    <div class="cart-item-img">
+                        @{
+                            Product product = s.SpecialOfferProduct.Product;
+                            // EXPLICACIÓN 1: Extraemos el brazo relacionador que marca la imagen como "True" (Primaria)
+                            var nexoFoto = product.ProductProductPhotos.FirstOrDefault(f => f.Primary == true);
+                                
+                            // EXPLICACIÓN 2: Esto es un Fallback. Si el producto recién creado no se le subió foto, mostramos el gris
+                            string imgUrl = "https://www.svgrepo.com/show/486796/product-management.svg";
+                                
+                            // EXPLICACIÓN 3: Si sí hay foto binaria cargada en la BD, la convertimos a lenguaje Web (Base64)
+                            if (nexoFoto != null && nexoFoto.ProductPhoto?.ThumbNailPhoto != null)
+                            {
+                                var base64 = Convert.ToBase64String(nexoFoto.ProductPhoto.ThumbNailPhoto);
+                                imgUrl = $"data:image/jpeg;base64,{base64}";
+                            }
+                        }
+                        <img src="@imgUrl" alt="@product.Name" style="object-fit: cover; width: 100%; height: 100%; border-radius: 8px;" />
+                            
+                        @if (!string.IsNullOrWhiteSpace(product.Color))
+                        {
+                            <span>@product.Color</span>
+                        }
+                    </div>
 
                     <div class="review-product-info">
                         <span class="category">

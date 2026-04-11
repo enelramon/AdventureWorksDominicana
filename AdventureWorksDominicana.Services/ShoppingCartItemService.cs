@@ -63,6 +63,7 @@ public class ShoppingCartItemService(IDbContextFactory<Contexto> DbFactory) : IS
         return await contexto.ShoppingCartItems.Include(p => p.Product).ThenInclude(p => p.ProductSubcategory).ThenInclude(p => p.ProductCategory)
          .Include(p => p.Product).ThenInclude(s => s.SpecialOfferProducts).ThenInclude(s => s.SpecialOffer)
          .Include(p => p.Product).ThenInclude(p => p.ProductModel).ThenInclude(d => d.ProductModelProductDescriptionCultures).ThenInclude(d => d.ProductDescription)
+         .Include(p => p.Product).ThenInclude(p => p.ProductProductPhotos).ThenInclude(p => p.ProductPhoto)
          .Where(criterio).ToListAsync();
     }
 }

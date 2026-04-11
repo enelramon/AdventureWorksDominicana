@@ -50,9 +50,28 @@
                 {
                     <div class="sale-product-card">
                         <div class="sale-product-img">
-                            <img src="https://www.svgrepo.com/show/486796/product-management.svg" alt="Product Image" />
-                            <span>@p.Color</span>
+                            @{
+                                // EXPLICACIÓN 1: Extraemos el brazo relacionador que marca la imagen como "True" (Primaria)
+                                var nexoFoto = p.ProductProductPhotos.FirstOrDefault(f => f.Primary == true);
+                                
+                                // EXPLICACIÓN 2: Esto es un Fallback. Si el producto recién creado no se le subió foto, mostramos el gris
+                                string imgUrl = "https://www.svgrepo.com/show/486796/product-management.svg";
+                                
+                                // EXPLICACIÓN 3: Si sí hay foto binaria cargada en la BD, la convertimos a lenguaje Web (Base64)
+                                if (nexoFoto != null && nexoFoto.ProductPhoto?.ThumbNailPhoto != null)
+                                {
+                                    var base64 = Convert.ToBase64String(nexoFoto.ProductPhoto.ThumbNailPhoto);
+                                    imgUrl = $"data:image/jpeg;base64,{base64}";
+                                }
+                            }
+                            <img src="@imgUrl" alt="@p.Name" style="object-fit: cover; width: 100%; height: 100%; border-radius: 8px;" />
+                            
+                            @if (!string.IsNullOrWhiteSpace(p.Color))
+                            {
+                                <span>@p.Color</span>
+                            }
                         </div>
+                        
                         <div class="sale-product-info">
                             <span>@(p.ProductSubcategory?.ProductCategory?.Name ?? "N/A")</span>
                             <div class="sale-product-name">

@@ -82,7 +82,13 @@ public class SalesOrderHeaderService(IDbContextFactory<Contexto> DbFactory) : IS
     public async Task<SalesOrderHeader?> Buscar(int id)
     {
         await using var contexto = await DbFactory.CreateDbContextAsync();
-        return await contexto.SalesOrderHeaders.Include(s => s.SalesOrderDetails).Include(d => d.SalesOrderDetails).ThenInclude(p => p.SpecialOfferProduct).ThenInclude(p => p.Product).ThenInclude(p => p.ProductSubcategory).ThenInclude(p => p.ProductCategory).FirstOrDefaultAsync(s => s.SalesOrderId == id);
+        return await contexto.SalesOrderHeaders
+            .Include(s => s.SalesOrderDetails)
+            .Include(d => d.SalesOrderDetails).ThenInclude(p => p.SpecialOfferProduct).ThenInclude(p => p.Product)
+            .ThenInclude(p => p.ProductSubcategory).ThenInclude(p => p.ProductCategory)
+            .Include(s => s.SalesOrderDetails).ThenInclude(s => s.SpecialOfferProduct).ThenInclude(p => p.Product)
+            .ThenInclude(p => p.ProductProductPhotos).ThenInclude(p => p.ProductPhoto)
+            .FirstOrDefaultAsync(s => s.SalesOrderId == id);
     }
     public async Task<bool> Eliminar(int id)
     {
@@ -109,6 +115,10 @@ public class SalesOrderHeaderService(IDbContextFactory<Contexto> DbFactory) : IS
     public async Task<List<SalesOrderHeader>> GetList(Expression<Func<SalesOrderHeader, bool>> criterio)
     {
         await using var contexto = await DbFactory.CreateDbContextAsync();
-        return await contexto.SalesOrderHeaders.Include(c => c.Customer).ThenInclude(p => p.Person).ThenInclude(e => e.EmailAddresses).Where(criterio).AsNoTracking().ToListAsync();
+        return await contexto.SalesOrderHeaders
+            .Include(c => c.Customer).ThenInclude(p => p.Person).ThenInclude(e => e.EmailAddresses)
+            .Include(s => s.SalesOrderDetails).ThenInclude(s => s.SpecialOfferProduct).ThenInclude(p => p.Product)
+            .ThenInclude(p => p.ProductProductPhotos).ThenInclude(p => p.ProductPhoto)
+            .Where(criterio).AsNoTracking().ToListAsync();
     }
 }
