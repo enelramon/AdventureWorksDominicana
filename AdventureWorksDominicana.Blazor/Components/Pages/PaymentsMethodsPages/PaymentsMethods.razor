@@ -103,13 +103,25 @@
 
                                         <div class="col-md-6">
                                             <label class="payment-form-label">Mes de Expiración</label>
-                                            <input type="number" class="payment-form-control" @bind="NuevaTarjeta.ExpMonth" placeholder="MM" min="1" max="12" />
+                                            <select class="payment-form-control" @bind="NuevaTarjeta.ExpMonth">
+                                                <option value=0 selected>MM</option>
+                                                @for (int x = 1; x <= 12; x++)
+                                                {
+                                                    <option value=@x>@x</option>
+                                                }
+                                            </select>
                                             <ValidationMessage For="@(() => NuevaTarjeta.ExpMonth)" class="text-danger small" />
                                         </div>
 
                                         <div class="col-md-6">
                                             <label class="payment-form-label">Año de Expiración</label>
-                                            <input type="number" class="payment-form-control" @bind="NuevaTarjeta.ExpYear" placeholder="YYYY" />
+                                            <select class="payment-form-control" @bind="NuevaTarjeta.ExpYear">
+                                                <option value=0 selected>YYYY</option>
+                                                @for (int x = DateTime.Today.Year; x <= DateTime.Today.Year + 5; x++)
+                                                {
+                                                    <option value=@x>@x</option>
+                                                }
+                                            </select>
                                             <ValidationMessage For="@(() => NuevaTarjeta.ExpYear)" class="text-danger small" />
                                         </div>
                                     </div>
