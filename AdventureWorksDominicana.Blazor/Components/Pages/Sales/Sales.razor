@@ -1,9 +1,7 @@
 ﻿@page "/Sales/"
-
 @attribute [Authorize(Roles = "Customer, Admin")]
 @rendermode InteractiveServer
-
-@inject ProductService productService
+@inject ProductInventoryService productInventoryService
 @inject ShoppingCartItemService shoppingCartItemService
 @inject ToastService toastService
 @inject NavigationManager navigationManager
@@ -33,6 +31,7 @@
 
         </div>
         <div class="card-body">
+            @*Filters*@
             <div class="sale-input">
                 <div class="input-group">
                     <input class="form-control" placeholder="Buscar producto..." @oninput="Buscar" />
@@ -45,6 +44,7 @@
                     <i class="btn btn-primary bi bi-filter"></i>
                 </div>
             </div>
+            @*Product List*@
             <div class="sale-products">
                 @foreach (var p in PagedProducts)
                 {
@@ -52,7 +52,7 @@
                         <div class="sale-product-img">
                             @{
                                 // EXPLICACIÓN 1: Extraemos el brazo relacionador que marca la imagen como "True" (Primaria)
-                                var nexoFoto = p.ProductProductPhotos.FirstOrDefault(f => f.Primary == true);
+                                var nexoFoto = p.Product.ProductProductPhotos.FirstOrDefault(f => f.Primary == true);
                                 
                                 // EXPLICACIÓN 2: Esto es un Fallback. Si el producto recién creado no se le subió foto, mostramos el gris
                                 string imgUrl = "https://www.svgrepo.com/show/486796/product-management.svg";
@@ -64,24 +64,24 @@
                                     imgUrl = $"data:image/jpeg;base64,{base64}";
                                 }
                             }
-                            <img src="@imgUrl" alt="@p.Name" style="object-fit: cover; width: 100%; height: 100%; border-radius: 8px;" />
+                            <img src="@imgUrl" alt="@p.Product.Name" style="object-fit: cover; width: 100%; height: 100%; border-radius: 8px;" />
                             
-                            @if (!string.IsNullOrWhiteSpace(p.Color))
+                            @if (!string.IsNullOrWhiteSpace(p.Product.Color))
                             {
-                                <span>@p.Color</span>
+                                <span>@p.Product.Color</span>
                             }
                         </div>
                         
                         <div class="sale-product-info">
-                            <span>@(p.ProductSubcategory?.ProductCategory?.Name ?? "N/A")</span>
+                            <span>@(p.Product?.ProductSubcategory?.ProductCategory?.Name ?? "N/A")</span>
                             <div class="sale-product-name">
-                                <p>@p.Name</p>
+                                <p>@p.Product?.Name</p>
                             </div>
                             <div class="sale-product-description">
-                                <p>@(p.ProductModel?.ProductModelProductDescriptionCultures.FirstOrDefault()?.ProductDescription?.Description ?? "N/A")</p>
+                                <p>@(p.Product?.ProductModel?.ProductModelProductDescriptionCultures.FirstOrDefault()?.ProductDescription?.Description ?? "N/A")</p>
                             </div>
                             <div class="sale-product-price">
-                                <span>RD$ @p.ListPrice.ToString("N2")</span>
+                                <span>RD$ @p.Product?.ListPrice.ToString("N2")</span>
                             </div>
                             <button type="button" @onclick="() => Guardar(p.ProductId)">
                                 <i class="bi bi-cart"></i>
@@ -102,18 +102,20 @@
     </div>
 </div>
 @code {
-    private List<Product> ProductList = new List<Product>();
-    private int shoppingCount = 0;
-    private string Filtro = string.Empty, ValorFiltro = string.Empty;
-    private List<Product> PagedProducts = new List<Product>();
+    private List<ProductInventory> ProductList = new List<ProductInventory>();
+    private List<ProductInventory> PagedProducts = new List<ProductInventory>();
 
+    private string Filtro = string.Empty, ValorFiltro = string.Empty;
+    private string? UserEmail { get; set; }
+
+    private int shoppingCount = 0;
     private int CurrentPage = 1;
     private int PageSize = 12;
     private int TotalPaginas => (int)Math.Ceiling((double)ProductList.Count / PageSize);
 
     private ClaimsPrincipal? User { get; set; }
     private bool IsAuthenticated { get; set; }
-    private string? UserEmail { get; set; }
+
 
     protected override async Task OnInitializedAsync()
     {
@@ -121,13 +123,9 @@
         var authState = await authenticationStateProvider.GetAuthenticationStateAsync();
         User = authState.User;
         IsAuthenticated = User.Identity?.IsAuthenticated ?? false;
-        
         if (IsAuthenticated)
-        {
             UserEmail = User.FindFirst(ClaimTypes.Email)?.Value;
-        }
-
-        ProductList = await productService.GetList(p => true);
+        ProductList = await productInventoryService.GetList(p => p.Quantity > 0);
         ActualizarVista();
         await CountProductsShopping();
     }
@@ -144,6 +142,7 @@
     {
         try
         {
+            if (UserEmail == null) return;
             var creado = await shoppingCartItemService.Guardar(
             new ShoppingCartItem
             {
@@ -156,9 +155,13 @@
             toastService.ShowSuccess("Producto añadido al carrito");
             await CountProductsShopping();
         }
+        catch(InvalidOperationException ex)
+        {
+            toastService.ShowWarning(ex.Message);
+        }
         catch (Exception ex)
         {
-            toastService.ShowSuccess("Producto no pudo ser añadido al carrito");
+            toastService.ShowError("Producto no pudo ser añadido al carrito");
             Console.WriteLine(ex.Message);
         }
     }
@@ -193,11 +196,9 @@
     {
         var value = e?.Value?.ToString();
         Expression<Func<Product, bool>> criterio = e => true;
-        if (value?.Trim() != "")
-        {
-            criterio = criterio.And(e => e.Name.ToLower().Contains(value.ToLower()) || e.ProductSubcategory.ProductCategory.Name.ToLower().Contains(value.ToLower()));
-        }
-        ProductList = await productService.GetList(criterio);
+        if (value?.Trim() != "" && value != null)
+            criterio = criterio.And(e => e.Name.Contains(value) || (e.ProductSubcategory != null && e.ProductSubcategory.ProductCategory != null && e.ProductSubcategory.ProductCategory.Name.Contains(value)));
+
         ActualizarVista();
     }
 }

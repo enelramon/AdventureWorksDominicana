@@ -73,7 +73,7 @@
                             </div>
 
                             <div class="cart-quantity">
-                                <button @onclick="() => MinusQuentity(s.ShoppingCartItemId)">-</button>
+                                <button @onclick="() => MinusQuantity(s.ShoppingCartItemId)">-</button>
                                 <span>@s.Quantity</span>
                                 <button @onclick="() => SumQuentity(s.ShoppingCartItemId)">+</button>
                             </div>
@@ -123,7 +123,7 @@
                     </span>
                 </div>
 
-                <button class="btn btn-fill w-100 mt-3">Finalizar compra</button>
+                <button class="btn btn-fill w-100 mt-3" @onclick="GoToCheckout">Finalizar compra</button>
 
             </div>
         }
@@ -134,6 +134,7 @@
     private List<ShoppingCartItem> ShoppingCartItemList = new List<ShoppingCartItem>();
 
     private ClaimsPrincipal? User { get; set; }
+    private string currencyRateId;
     private bool IsAuthenticated { get; set; }
     private string? UserEmail { get; set; }
     private List<Customer> userCurrent = new List<Customer>();
@@ -144,11 +145,8 @@
         var authState = await authenticationStateProvider.GetAuthenticationStateAsync();
         User = authState.User;
         IsAuthenticated = User.Identity?.IsAuthenticated ?? false;
-
         if (IsAuthenticated)
-        {
             UserEmail = User.FindFirst(ClaimTypes.Email)?.Value;
-        }
 
         // Solo trae los items del usuario logeado
         ShoppingCartItemList = await shoppingCartItemService.GetList(s => s.ShoppingCartId.Trim().ToLower().Equals(UserEmail));
@@ -156,6 +154,7 @@
     }
 
     private void GoToSale() => navigationManager.NavigateTo("/Sales");
+    private void GoToCheckout() => navigationManager.NavigateTo("/Checkout");
 
     private async Task SumQuentity(int itemId)
     {
@@ -167,7 +166,7 @@
         }
     }
 
-    private async Task MinusQuentity(int itemId)
+    private async Task MinusQuantity(int itemId)
     {
         var item = ShoppingCartItemList.FirstOrDefault(x => x.ShoppingCartItemId == itemId);
         if (item != null)
@@ -194,7 +193,7 @@
         }
         catch (Exception ex)
         {
-            toastService.ShowSuccess("Producto no pudo ser eliminado correctamente");
+            toastService.ShowError("Producto no pudo ser eliminado correctamente");
             Console.Write(ex.Message);
         }
     }

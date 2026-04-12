@@ -208,6 +208,12 @@ public partial class Contexto : DbContext
 
     public virtual DbSet<WorkOrderRouting> WorkOrderRoutings { get; set; }
 
+    public virtual DbSet<Payroll> Payrolls { get; set; }
+
+    public virtual DbSet<PayrollParameter> PayrollParameters { get; set; }
+
+    public virtual DbSet<PayrollDetail> PayrollDetails { get; set; }
+
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
         if (!optionsBuilder.IsConfigured)
@@ -219,6 +225,36 @@ public partial class Contexto : DbContext
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.UseCollation("SQL_Latin1_General_CP1_CI_AS");
+
+
+
+        // Configuración de Parámetros de Nómina
+        modelBuilder.Entity<PayrollParameter>(entity =>
+        {
+            // Asegura que solo exista una ley "Activa" a la vez en la base de datos
+            entity.HasIndex(e => e.IsActive)
+                  .HasFilter("[IsActive] = 1")
+                  .IsUnique();
+        });
+
+        modelBuilder.Entity<Payroll>(entity =>
+        {
+            entity.HasMany(p => p.PayrollDetails)
+                  .WithOne(d => d.Payroll)
+                  .HasForeignKey(d => d.PayrollId)
+                  .OnDelete(DeleteBehavior.Cascade) 
+                  .HasConstraintName("FK_PayrollDetail_Payroll");
+        });
+
+        // Configuración de Detalle de Nómina (Volante)
+        modelBuilder.Entity<PayrollDetail>(entity =>
+        {
+            entity.HasOne(d => d.Employee)
+                  .WithMany(e => e.PayrollDetails)
+                  .HasForeignKey(d => d.BusinessEntityId)
+                  .OnDelete(DeleteBehavior.Restrict) // Impide borrar un empleado si ya se le pagó
+                  .HasConstraintName("FK_PayrollDetail_Employee");
+        });
 
 
 

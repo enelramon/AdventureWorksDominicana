@@ -142,7 +142,11 @@ public class ProductInventoryService(IDbContextFactory<Contexto> DbFactory)
     {
         await using var contexto = await DbFactory.CreateDbContextAsync();
         return await contexto.ProductInventories
-            .Include(pi => pi.Product)
+            .Include(pi => pi.Product).ThenInclude(p => p.ProductSubcategory).ThenInclude(p => p.ProductCategory)
+            .Include(pi => pi.Product).ThenInclude(p => p.ProductModel).ThenInclude(d => d.ProductModelProductDescriptionCultures).ThenInclude(d => d.ProductDescription)
+            .Include(pi => pi.Product).ThenInclude(p => p.SizeUnitMeasureCodeNavigation)
+            .Include(pi => pi.Product).ThenInclude(p => p.WeightUnitMeasureCodeNavigation)
+            .Include(pi => pi.Product).ThenInclude(p => p.ProductProductPhotos).ThenInclude(ppp => ppp.ProductPhoto)
             .Include(pi => pi.Location)
             .Where(criterio)
             .AsNoTracking()

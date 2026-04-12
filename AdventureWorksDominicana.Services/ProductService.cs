@@ -22,10 +22,9 @@ public class ProductService(IDbContextFactory<Contexto> DbContextFactory) : ISer
     public async Task<List<Product>> GetList(Expression<Func<Product, bool>> criterio)
     {
         await using var contexto = await DbContextFactory.CreateDbContextAsync();
-        return await contexto.Products.AsNoTracking()
+        return await contexto.Products
             .Include(p => p.ProductSubcategory).ThenInclude(p => p.ProductCategory)
             .Include(p => p.ProductModel).ThenInclude(d => d.ProductModelProductDescriptionCultures).ThenInclude(d => d.ProductDescription)
-            .Include(p => p.ProductModel).ThenInclude(d => d.ProductModelProductDescriptionCultures).ThenInclude(c => c.Culture)
             .Include(p => p.SizeUnitMeasureCodeNavigation)
             .Include(p => p.WeightUnitMeasureCodeNavigation)
             .Include(p => p.ProductProductPhotos).ThenInclude(ppp => ppp.ProductPhoto)
@@ -114,7 +113,7 @@ public class ProductService(IDbContextFactory<Contexto> DbContextFactory) : ISer
                 producto.SellEndDate = DateTime.Now;
                 contexto.Products.Update(producto);
                 await contexto.SaveChangesAsync();
-                return true; ¿
+                return true; 
             }
             return false;
         }

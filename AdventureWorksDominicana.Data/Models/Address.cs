@@ -20,12 +20,14 @@ public partial class Address
     /// </summary>
     [Key]
     [Column("AddressID")]
+    [Required(ErrorMessage = "Campo Obligatorio")]
     public int AddressId { get; set; }
 
     /// <summary>
     /// First street address line.
     /// </summary>
     [StringLength(60)]
+    [Required(ErrorMessage = "Campo Obligatorio")]
     public string AddressLine1 { get; set; } = null!;
 
     /// <summary>
@@ -38,18 +40,21 @@ public partial class Address
     /// Name of the city.
     /// </summary>
     [StringLength(30)]
+    [Required(ErrorMessage = "Campo Obligatorio")]
     public string City { get; set; } = null!;
 
     /// <summary>
     /// Unique identification number for the state or province. Foreign key to StateProvince table.
     /// </summary>
     [Column("StateProvinceID")]
+    [Required(ErrorMessage = "Campo Obligatorio")]
     public int StateProvinceId { get; set; }
 
     /// <summary>
     /// Postal code for the street address.
     /// </summary>
     [StringLength(15)]
+    [Required(ErrorMessage = "Campo Obligatorio")]
     public string PostalCode { get; set; } = null!;
 
     /// <summary>

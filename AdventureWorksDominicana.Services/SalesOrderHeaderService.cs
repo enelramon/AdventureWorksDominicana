@@ -42,39 +42,16 @@ public class SalesOrderHeaderService(IDbContextFactory<Contexto> DbFactory) : IS
     {
         await using var contexto = await DbFactory.CreateDbContextAsync();
         var modificatedSale = await contexto.SalesOrderHeaders.Include(d => d.SalesOrderDetails).FirstOrDefaultAsync(s => s.SalesOrderId == sale.SalesOrderId);
-        if (modificatedSale == null) return false;
-        foreach (var detalle in modificatedSale.SalesOrderDetails)
+        if(sale.Status == 4)
         {
-            var productInventory = await contexto.ProductInventories.FirstOrDefaultAsync(i => i.ProductId == detalle.ProductId);
-            if (productInventory != null)
+            if (modificatedSale == null) return false;
+            foreach (var d in modificatedSale.SalesOrderDetails)
             {
-                productInventory.Quantity += detalle.OrderQty;
-            }
-        }
-        contexto.SalesOrderDetails.RemoveRange(modificatedSale.SalesOrderDetails);
-        contexto.Entry(modificatedSale).CurrentValues.SetValues(sale);
-        modificatedSale.ModifiedDate = DateTime.Now;
-        foreach (var newDetalle in sale.SalesOrderDetails)
-        {
-            modificatedSale.SalesOrderDetails.Add(
-                new SalesOrderDetail
+                var productInventory = await contexto.ProductInventories.FirstOrDefaultAsync(i => i.ProductId == d.ProductId);
+                if (productInventory != null)
                 {
-                    CarrierTrackingNumber = newDetalle.CarrierTrackingNumber,
-                    OrderQty = newDetalle.OrderQty,
-                    ProductId = newDetalle.ProductId,
-                    SpecialOfferId = newDetalle.SpecialOfferId,
-                    UnitPrice = newDetalle.UnitPrice,
-                    UnitPriceDiscount = newDetalle.UnitPriceDiscount,
-                    LineTotal = newDetalle.LineTotal,
-                    Rowguid = newDetalle.Rowguid,
-                    ModifiedDate = DateTime.Now
+                    productInventory.Quantity += d.OrderQty;
                 }
-            );
-            var productInventory = await contexto.ProductInventories.FirstOrDefaultAsync(i => i.ProductId == newDetalle.ProductId);
-            if (productInventory != null)
-            {
-                productInventory.Quantity -= newDetalle.OrderQty;
-                productInventory.ModifiedDate = DateTime.Now;
             }
         }
         return await contexto.SaveChangesAsync() > 0;

@@ -82,7 +82,7 @@ public class PersonService(IDbContextFactory<Contexto> DbFactory) : IService<Per
         await using var contexto = await DbFactory.CreateDbContextAsync();
 
         return await contexto.People
-            .Where(criterio)
+            .Where(criterio).Include(a => a.EmailAddresses)
             .AsNoTracking()
             .ToListAsync();
     }
