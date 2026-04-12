@@ -1,6 +1,7 @@
 ﻿@page "/shipping-orders"
 @using Microsoft.AspNetCore.Components.QuickGrid
-@inject AdventureWorksDominicana.Blazor.Services.ShippingService ShippingService
+@using AdventureWorksDominicana.Data.Models
+@inject AdventureWorksDominicana.Services.ShippingService ShippingService
 @inject NavigationManager Navigation
 
 <div class="card shadow-lg">
@@ -118,7 +119,7 @@
         return order.Customer?.Store?.Name ?? "N/A";
     }
 
-    private static string GetStatusText(short? status)
+    private static string GetStatusText(byte status)
     {
         return status switch
         {

@@ -3,6 +3,7 @@ using AdventureWorksDominicana.Blazor.Components.Account;
 using AdventureWorksDominicana.Data.Context;
 using AdventureWorksDominicana.Data.Models;
 using AdventureWorksDominicana.Services;
+using Aplicada1.Core;
 using Blazored.Toast;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -98,7 +99,14 @@ builder.Services.AddScoped<TransactionHistoryService>();
 builder.Services.AddScoped<PurchaseOrderService>();
 builder.Services.AddScoped<ProductInventoryService>();
 builder.Services.AddScoped<ProductPhotoService>();
+builder.Services.AddScoped<UserService>();
+builder.Services.AddScoped<ProductVendorService>();
+builder.Services.AddScoped<BusinessEntityAddressService>();
+builder.Services.AddScoped<PersonCreditCardService>();
+builder.Services.AddScoped<IService<SalesOrderHeader, int>, ShippingService>();
 builder.Services.AddScoped<ShippingService>();
+
+
 
 var app = builder.Build();
 
