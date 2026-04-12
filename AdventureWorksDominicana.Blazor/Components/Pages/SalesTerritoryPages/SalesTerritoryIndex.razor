@@ -1,4 +1,5 @@
 ﻿@page "/SalesTerritory/Index"
+@attribute [Authorize(Roles = "Admin")]
 
 @inject SalesTerritoryService salesTerritoryService;
 @rendermode InteractiveServer

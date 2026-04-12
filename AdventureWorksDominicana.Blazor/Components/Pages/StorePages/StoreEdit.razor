@@ -1,5 +1,5 @@
 @page "/Store/Edit/{Id:int}"
-
+@attribute [Authorize(Roles = "ProductionManager, Admin")]
 @using Microsoft.EntityFrameworkCore;
 @using AdventureWorksDominicana.Data.Context;
 @using AdventureWorksDominicana.Data.Models;

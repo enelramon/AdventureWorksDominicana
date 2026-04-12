@@ -1,4 +1,6 @@
 ﻿@page "/Customer/Index"
+@attribute [Authorize(Roles = "Admin, SalesManager")]
+
 @using AdventureWorksDominicana.Data.Models
 @using AdventureWorksDominicana.Data.Context
 @using Microsoft.AspNetCore.Components.QuickGrid

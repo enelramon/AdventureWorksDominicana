@@ -1,4 +1,6 @@
 ﻿@page "/Department/Index"
+@attribute [Authorize(Roles = "Admin,HRManager")]
+
 @rendermode InteractiveServer
 @inject DepartmentService departmentService
 

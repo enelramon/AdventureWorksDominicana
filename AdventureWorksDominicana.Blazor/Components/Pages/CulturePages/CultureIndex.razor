@@ -1,4 +1,5 @@
 ﻿@page "/Culture/Index"
+@attribute [Authorize(Roles = "Admin")]
 
 @inject CultureService cultureService
 @rendermode InteractiveServer

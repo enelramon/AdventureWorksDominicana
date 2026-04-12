@@ -1,0 +1,144 @@
+﻿@page "/User/Index"
+@attribute [Authorize(Roles = "Admin")]
+@inject NavigationManager navigationManager
+@inject UserService userService
+@inject ToastService toastService
+
+@rendermode InteractiveServer
+
+
+<PageTitle>Users</PageTitle>
+
+<div class="container-fluid">
+    <div class="card shadow-lg">
+        <div class="card-header d-flex justify-content-between">
+            <h4>Users</h4>
+            <div class="form-check form-switch col-md-3">
+                <input class="form-check-input" type="checkbox" checked="@VerEliminados" @onchange="ToggleEliminados" id="chkEliminados">
+                    <label class="form-check-label" for="chkEliminados">Ver Papelera</label>
+                </div>
+        </div>
+        <div class="card-body">
+            <div class="row g-3 mb-3">
+                <div class="col-md-3">
+                    <label class="form-label">Filtro</label>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Buscar</label>
+                </div>
+            </div>
+
+            <div class="row g-3 mb-3 align-items-end">
+                <div class="col-md-3">
+                    <InputSelect class="form-select" @bind-Value="Filtros">
+                        <option disabled value="">Elige un filtro</option>
+                        <option value="Nombre">User Name</option>
+                        <option value="Rol">Role</option>
+                    </InputSelect>
+                </div>
+                <div class="col-md-3">
+                    <div class="d-flex">
+                        <InputText class="form-control me-2" @bind-Value="ValorFiltro" placeholder="Buscar..." />
+                        <button class="btn btn-primary me-2" @onclick="Buscar">
+                            <i class="bi bi-search"></i>
+                        </button>
+                        <button type="button" class="btn btn-outline-primary bi bi-arrow-counterclockwise" @onclick="Restablecer"></button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="table table-striped table-bordered table-hover">
+                <QuickGrid Items="ListaUsuarios" Class="table table-striped table-bordered table-hover">
+                    <PropertyColumn Property="@(e => e.Email)"  Title="Email" Sortable="true" />
+                    <PropertyColumn Property="@(e => e.Roles.Select(r => r.Name).FirstOrDefault())" Title="Role" Sortable="true" />
+
+                    <TemplateColumn Title="Acciones">
+                        <div class="d-flex justify-content-center align-items-center">
+                            @if (VerEliminados)
+                            {
+                                <button class="btn btn-outline-success btn-sm" @onclick="() => Restaurar(context.Id)">
+                                    <i class="bi bi-arrow-counterclockwise"></i> Restaurar
+                                </button>
+                            }
+                            else
+                            {
+                                    <a class="btn btn-outline-primary btn-sm" href="/User/Edit/@context.Id">
+                                        <i class="bi bi-pencil-square"></i> Modificar
+                                    </a>
+                            }
+                            
+                        </div>
+                    </TemplateColumn>
+                </QuickGrid>
+            </div>
+        </div>
+
+        <div class="card-footer text-end">
+            <strong>Conteo Registros: @ListaUsuarios.Count()</strong>
+        </div>
+    </div>
+</div>
+
+@code {
+    public IQueryable<AspNetUser> ListaUsuarios { get; set; } = Enumerable.Empty<AspNetUser>().AsQueryable();
+    public string Filtros { get; set; } = string.Empty;
+    public string ValorFiltro { get; set; } = string.Empty;
+    bool VerEliminados = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await Buscar();
+    }
+    private async Task ToggleEliminados(ChangeEventArgs e)
+    {
+        VerEliminados = (bool)e.Value;
+        await Buscar();
+    }
+    public async Task Buscar()
+    {
+        List<AspNetUser> resultado;
+        var valorBusqueda = ValorFiltro.ToLower().Trim();
+        try
+        {
+            if (!string.IsNullOrWhiteSpace(ValorFiltro))
+            {
+                if (Filtros == "Nombre")
+                {
+                    resultado = await userService.GetList(x => x.Id != null && x.NormalizedUserName.ToLower().Trim().Contains(valorBusqueda));
+                }
+                else if (Filtros == "Rol" && !string.IsNullOrEmpty(ValorFiltro))
+                {
+                    resultado = await userService.GetList(x => x.Roles.Any(r => r.Name.ToLower().Contains(valorBusqueda)));
+                }
+                else
+                {
+                    resultado = await userService.GetList(x => true);
+                }
+            }
+            else
+            {
+                resultado = await userService.GetList(x => true);
+            }
+            resultado = await userService.GetListConEliminados(VerEliminados, Filtros, ValorFiltro);
+            ListaUsuarios = resultado.AsQueryable();
+        }catch(Exception e)
+        {
+            Console.WriteLine("ERROR\n\n" + e.Message);
+        }
+    }
+
+    private async Task Restablecer()
+    {
+        ValorFiltro = string.Empty;
+        Filtros = string.Empty;
+        await Buscar();
+    }
+    private async Task Restaurar(string id)
+    {
+        if (await userService.RestaurarUsuario(id))
+        {
+            toastService.ShowSuccess("Usuario restaurado.");
+            navigationManager.NavigateTo("/User/Index");
+        }
+    }
+}

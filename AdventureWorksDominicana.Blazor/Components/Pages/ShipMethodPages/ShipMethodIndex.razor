@@ -1,4 +1,6 @@
 ﻿@page "/ShipMethods"
+@attribute [Authorize(Roles = "Admin, PurchasingManager")]
+
 @using AdventureWorksDominicana.Data.Models
 @using AdventureWorksDominicana.Services
 @using Microsoft.AspNetCore.Components.QuickGrid

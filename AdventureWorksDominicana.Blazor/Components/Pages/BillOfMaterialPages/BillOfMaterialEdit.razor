@@ -1,4 +1,6 @@
 ﻿@page "/BillOfMaterial/Edit/{BomId:int}"
+@attribute [Authorize(Roles = "Admin")]
+
 @rendermode InteractiveServer
 @inject BillOfMaterialService BOMService
 @inject ProductService ProductService

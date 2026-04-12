@@ -1,4 +1,5 @@
 ﻿@page "/CountryRegions/Edit/{CountryCode}";
+@attribute [Authorize(Roles = "Admin")]
 
 @inject CountryRegionsService countryRegionsService;
 @inject ToastService toastService;

@@ -1,4 +1,5 @@
 ﻿@page "/Employee/Create"
+@attribute [Authorize(Roles = "Admin,HRManager")]
 
 @inject EmployeeService employeeService;
 @inject ToastService toastService;

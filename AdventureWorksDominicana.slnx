@@ -8,5 +8,4 @@
   <Project Path="AdventureWorksDominicana.Data/AdventureWorksDominicana.Data.csproj" />
   <Project Path="AdventureWorksDominicana.Services/AdventureWorksDominicana.Services.csproj" />
   <Project Path="AdventureWorksDominicana.Tests/AdventureWorksDominicana.Tests.csproj" />
-  <Project Path="AdventureWorksIdentity/AdventureWorksIdentity.csproj" Id="174e154b-eb18-49b0-bdcd-660cfce20713" />
 </Solution>

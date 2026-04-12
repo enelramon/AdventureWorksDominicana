@@ -1,0 +1,235 @@
+﻿@page "/PurchaseOrder/Create"
+@attribute [Authorize(Roles = "Admin, PurchasingManager")]
+
+@using AdventureWorksDominicana.Data.Models
+@using AdventureWorksDominicana.Data.Context
+@using Microsoft.EntityFrameworkCore
+@inject Contexto Db
+@inject NavigationManager navigationManager
+@inject PurchaseOrderService purchaseOrderService
+@rendermode InteractiveServer
+
+<PageTitle>Crear Orden de Compra</PageTitle>
+
+<div class="border-bottom pb-2 mb-4">
+    <h4>Crear Registro de Orden de Compra</h4>
+</div>
+
+<EditForm Model="order" OnValidSubmit="GuardarOrden">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label class="form-label fw-bold">Proveedor</label>
+                    <InputSelect @bind-Value="order.VendorId" class="form-control">
+                        <option value="0">Ej: Seleccione un Proveedor</option>
+                        @if (proveedores != null)
+                        {
+                            @foreach (var v in proveedores)
+                            {
+                                <option value="@v.BusinessEntityId">@v.Name</option>
+                            }
+                        }
+                    </InputSelect>
+                </div>
+
+                <div class="col-md-6 mb-3">
+                    <label class="form-label fw-bold">Método de Envío</label>
+                    <InputSelect @bind-Value="order.ShipMethodId" class="form-control">
+                        <option value="0">Ej: Seleccione Método</option>
+                        @if (metodos != null)
+                        {
+                            @foreach (var m in metodos)
+                            {
+                                <option value="@m.ShipMethodId">@m.Name</option>
+                            }
+                        }
+                    </InputSelect>
+                </div>
+
+                <div class="col-md-4 mb-3">
+                    <label class="form-label fw-bold">Fecha de Orden</label>
+                    <InputDate @bind-Value="order.OrderDate" class="form-control" />
+                </div>
+
+                <div class="col-md-4 mb-3">
+                    <label class="form-label fw-bold">Revisión</label>
+                    <input type="number" class="form-control bg-light" value="@order.RevisionNumber" readonly />
+                </div>
+
+                <div class="col-md-4 mb-3">
+                    <label class="form-label fw-bold">Estado</label>
+                    <input type="text" class="form-control bg-light" value="Pendiente" readonly />
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="border border-success p-3 mb-3">
+        <h5 class="mb-3">Detalle de Orden de Compra</h5>
+
+        <div class="row mb-3">
+            <div class="col-md-4">
+                <label class="form-label fw-bold">Producto</label>
+                <InputSelect class="form-select" @bind-Value="detalleActual.ProductId">
+                    <option value="0" disabled>Seleccione un producto...</option>
+                    @foreach (var p in listaProductos)
+                    {
+                        <option value="@p.ProductId">@p.Name</option>
+                    }
+                </InputSelect>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label fw-bold">Cantidad</label>
+                <InputNumber class="form-control" @bind-Value="detalleActual.OrderQty" />
+            </div>
+            <div class="col-md-3">
+                <label class="form-label fw-bold">Precio Unitario</label>
+                <InputNumber class="form-control" @bind-Value="detalleActual.UnitPrice" />
+            </div>
+            <div class="col-md-3">
+                <label class="form-label fw-bold">Fecha Esperada</label>
+                <InputDate class="form-control" @bind-Value="detalleActual.DueDate" />
+            </div>
+        </div>
+
+        <div class="row mb-3">
+            <div class="col-md-3 d-flex align-items-end">
+                <button type="button" class="btn btn-primary w-100" @onclick="AgregarDetalle">
+                    <i class="bi bi-plus"></i> Agregar
+                </button>
+            </div>
+        </div>
+
+        <QuickGrid Items="order.PurchaseOrderDetails.AsQueryable()" Class="table table-striped table-bordered table-hover">
+            <PropertyColumn Property="@(d => listaProductos.FirstOrDefault(p => p.ProductId == d.ProductId)!.Name)" Title="Producto" />
+            <PropertyColumn Property="@(d => d.OrderQty)" Title="Cantidad" />
+            <PropertyColumn Property="@(d => d.UnitPrice)" Title="Precio Unitario" Format="C" />
+            <PropertyColumn Property="@(d => d.OrderQty * d.UnitPrice)" Title="Subtotal" Format="C" />
+            <PropertyColumn Property="@(d => d.DueDate)" Title="Fecha Esperada" Format="dd/MM/yyyy" />
+            <TemplateColumn>
+                <ChildContent Context="det">
+                    <button type="button" class="btn btn-outline-dark btn-sm bi bi-trash"
+                            @onclick="(() => RemoverDetalle(det))">
+                        Eliminar
+                    </button>
+                </ChildContent>
+            </TemplateColumn>
+        </QuickGrid>
+
+        @if (!string.IsNullOrWhiteSpace(mensajeDetalle))
+        {
+            <div class="alert alert-danger mt-2">@mensajeDetalle</div>
+        }
+    </div>
+
+    <div class="row justify-content-end mb-4">
+        <div class="col-md-3 text-end border-top pt-2">
+            <p class="mb-1"><strong>SubTotal:</strong> @order.SubTotal.ToString("C")</p>
+            <p class="mb-1"><strong>Impuestos:</strong> @order.TaxAmt.ToString("C")</p>
+            <h5 class="text-primary"><strong>Total Final: @order.TotalDue.ToString("C")</strong></h5>
+        </div>
+    </div>
+
+    <div class="d-flex justify-content-center gap-2">
+        <a href="/PurchaseOrder" class="btn btn-primary d-flex align-items-center">
+            ← Volver
+        </a>
+        <button type="submit" class="btn btn-success d-flex align-items-center">
+            💾 Guardar
+        </button>
+    </div>
+</EditForm>
+
+@code {
+    private PurchaseOrderHeader order = new PurchaseOrderHeader
+    {
+        OrderDate = DateTime.Now,
+        RevisionNumber = 0,
+        Status = 1,
+        ModifiedDate = DateTime.Now,
+        EmployeeId = 1,
+        PurchaseOrderDetails = new List<PurchaseOrderDetail>()
+    };
+
+    private List<Vendor>? proveedores;
+    private List<ShipMethod>? metodos;
+    private List<Product> listaProductos = new();
+    private PurchaseOrderDetail detalleActual = new PurchaseOrderDetail();
+    private string mensajeDetalle = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        proveedores = await Db.Vendors.OrderBy(v => v.Name).ToListAsync();
+        metodos = await Db.ShipMethods.OrderBy(s => s.Name).ToListAsync();
+        listaProductos = await purchaseOrderService.ListarProductos();
+    }
+
+    private void AgregarDetalle()
+    {
+        if (detalleActual.ProductId == 0)
+        {
+            mensajeDetalle = "Debe seleccionar un producto.";
+            return;
+        }
+        if (detalleActual.OrderQty <= 0)
+        {
+            mensajeDetalle = "La cantidad debe ser mayor a 0.";
+            return;
+        }
+        if (detalleActual.UnitPrice <= 0)
+        {
+            mensajeDetalle = "El precio unitario debe ser mayor a 0.";
+            return;
+        }
+
+        order.PurchaseOrderDetails.Add(new PurchaseOrderDetail
+        {
+            ProductId = detalleActual.ProductId,
+            OrderQty = detalleActual.OrderQty,
+            UnitPrice = detalleActual.UnitPrice,
+            LineTotal = detalleActual.OrderQty * detalleActual.UnitPrice,
+            DueDate = detalleActual.DueDate == default ? DateTime.Now : detalleActual.DueDate,
+            ModifiedDate = DateTime.Now,
+            ReceivedQty = 0,
+            RejectedQty = 0,
+            StockedQty = 0
+        });
+
+        order.SubTotal = order.PurchaseOrderDetails.Sum(d => d.LineTotal);
+        order.TotalDue = order.SubTotal + order.TaxAmt + order.Freight;
+
+        detalleActual = new PurchaseOrderDetail();
+        mensajeDetalle = string.Empty;
+    }
+
+    private void RemoverDetalle(PurchaseOrderDetail det)
+    {
+        order.PurchaseOrderDetails.Remove(det);
+        order.SubTotal = order.PurchaseOrderDetails.Sum(d => d.LineTotal);
+        order.TotalDue = order.SubTotal + order.TaxAmt + order.Freight;
+    }
+
+    private async Task GuardarOrden()
+    {
+        if (!order.PurchaseOrderDetails.Any())
+        {
+            mensajeDetalle = "Debe agregar al menos un producto al detalle.";
+            return;
+        }
+
+        try
+        {
+            Db.PurchaseOrderHeaders.Add(order);
+            await Db.SaveChangesAsync();
+            navigationManager.NavigateTo("/PurchaseOrder");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error: {ex.Message}");
+        }
+    }
+}

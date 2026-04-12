@@ -1,4 +1,5 @@
 ﻿@page "/ShoppingCart"
+@attribute [Authorize(Roles = "Admin, Customer, SalesManager")]
 
 @rendermode InteractiveServer
 
@@ -33,7 +34,26 @@
                     <div class="cart-item">
 
                         <div class="cart-item-img">
-                            <img src="https://www.svgrepo.com/show/486796/product-management.svg" />
+                            @{
+                                // EXPLICACIÓN 1: Extraemos el brazo relacionador que marca la imagen como "True" (Primaria)
+                                var nexoFoto = s.Product.ProductProductPhotos.FirstOrDefault(f => f.Primary == true);
+                                
+                                // EXPLICACIÓN 2: Esto es un Fallback. Si el producto recién creado no se le subió foto, mostramos el gris
+                                string imgUrl = "https://www.svgrepo.com/show/486796/product-management.svg";
+                                
+                                // EXPLICACIÓN 3: Si sí hay foto binaria cargada en la BD, la convertimos a lenguaje Web (Base64)
+                                if (nexoFoto != null && nexoFoto.ProductPhoto?.ThumbNailPhoto != null)
+                                {
+                                    var base64 = Convert.ToBase64String(nexoFoto.ProductPhoto.ThumbNailPhoto);
+                                    imgUrl = $"data:image/jpeg;base64,{base64}";
+                                }
+                            }
+                            <img src="@imgUrl" alt="@s.Product.Name" style="object-fit: cover; width: 100%; height: 100%; border-radius: 8px;" />
+                            
+                            @if (!string.IsNullOrWhiteSpace(s.Product.Color))
+                            {
+                                <span>@s.Product.Color</span>
+                            }
                         </div>
 
                         <div class="cart-item-info">
@@ -54,7 +74,7 @@
                             </div>
 
                             <div class="cart-quantity">
-                                <button @onclick="() => MinusQuentity(s.ShoppingCartItemId)">-</button>
+                                <button @onclick="() => MinusQuantity(s.ShoppingCartItemId)">-</button>
                                 <span>@s.Quantity</span>
                                 <button @onclick="() => SumQuentity(s.ShoppingCartItemId)">+</button>
                             </div>
@@ -104,7 +124,7 @@
                     </span>
                 </div>
 
-                <button class="btn btn-fill w-100 mt-3">Finalizar compra</button>
+                <button class="btn btn-fill w-100 mt-3" @onclick="GoToCheckout">Finalizar compra</button>
 
             </div>
         }
@@ -115,6 +135,7 @@
     private List<ShoppingCartItem> ShoppingCartItemList = new List<ShoppingCartItem>();
 
     private ClaimsPrincipal? User { get; set; }
+    private string currencyRateId;
     private bool IsAuthenticated { get; set; }
     private string? UserEmail { get; set; }
     private List<Customer> userCurrent = new List<Customer>();
@@ -125,11 +146,8 @@
         var authState = await authenticationStateProvider.GetAuthenticationStateAsync();
         User = authState.User;
         IsAuthenticated = User.Identity?.IsAuthenticated ?? false;
-
         if (IsAuthenticated)
-        {
             UserEmail = User.FindFirst(ClaimTypes.Email)?.Value;
-        }
 
         // Solo trae los items del usuario logeado
         ShoppingCartItemList = await shoppingCartItemService.GetList(s => s.ShoppingCartId.Trim().ToLower().Equals(UserEmail));
@@ -137,6 +155,7 @@
     }
 
     private void GoToSale() => navigationManager.NavigateTo("/Sales");
+    private void GoToCheckout() => navigationManager.NavigateTo("/Checkout");
 
     private async Task SumQuentity(int itemId)
     {
@@ -148,7 +167,7 @@
         }
     }
 
-    private async Task MinusQuentity(int itemId)
+    private async Task MinusQuantity(int itemId)
     {
         var item = ShoppingCartItemList.FirstOrDefault(x => x.ShoppingCartItemId == itemId);
         if (item != null)
@@ -175,7 +194,7 @@
         }
         catch (Exception ex)
         {
-            toastService.ShowSuccess("Producto no pudo ser eliminado correctamente");
+            toastService.ShowError("Producto no pudo ser eliminado correctamente");
             Console.Write(ex.Message);
         }
     }

@@ -1,4 +1,5 @@
 ﻿@page "/ShoppingCartItem/Index"
+@attribute [Authorize(Roles = "Admin")]
 
 @inject NavigationManager navigationManager
 @inject ShoppingCartItemService shoppingCartItemService

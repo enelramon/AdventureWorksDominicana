@@ -57,6 +57,6 @@ public class CurrencyService(IDbContextFactory<Contexto> DbFactory) : IService<C
     public async Task<List<Currency>> GetList(Expression<Func<Currency, bool>> criterio)
     {
         await using var contexto = await DbFactory.CreateDbContextAsync();
-        return await contexto.Currencies.AsNoTracking().Where(criterio).ToListAsync();
+        return await contexto.Currencies.AsNoTracking().Where(criterio).Include(c => c.CurrencyRateToCurrencyCodeNavigations).ToListAsync();
     }
 }

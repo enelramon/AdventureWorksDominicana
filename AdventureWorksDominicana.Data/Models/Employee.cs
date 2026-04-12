@@ -119,4 +119,7 @@ public partial class Employee
 
     [InverseProperty("BusinessEntity")]
     public virtual SalesPerson? SalesPerson { get; set; }
+
+    [InverseProperty("Employee")]
+    public virtual ICollection<PayrollDetail> PayrollDetails { get; set; } = new List<PayrollDetail>();
 }

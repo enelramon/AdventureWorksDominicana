@@ -1,4 +1,6 @@
 ﻿@page "/Department/Edit/{DepartmentId:int}"
+@attribute [Authorize(Roles = "Admin,HRManager")]
+
 @rendermode InteractiveServer
 @inject DepartmentService departmentService
 @inject PersonService personService

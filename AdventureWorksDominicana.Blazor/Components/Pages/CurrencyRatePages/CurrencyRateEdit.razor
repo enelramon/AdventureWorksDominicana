@@ -1,4 +1,6 @@
 ﻿@page "/CurrencyRate/Edit/{Id:int}"
+@attribute [Authorize(Roles = "Admin")]
+
 @inject CurrencyRateService currencyRateService
 @inject CurrencyService currencyService
 @inject NavigationManager navigationManager

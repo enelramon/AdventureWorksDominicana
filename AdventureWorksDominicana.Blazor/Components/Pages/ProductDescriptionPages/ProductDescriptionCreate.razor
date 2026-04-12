@@ -1,4 +1,6 @@
 ﻿@page "/ProductDescription/Create"
+@attribute [Authorize(Roles = "Admin, ProductionManager")]
+
 
 @inject ProductDescriptionService productDescriptionService;
 @inject ToastService toastService;

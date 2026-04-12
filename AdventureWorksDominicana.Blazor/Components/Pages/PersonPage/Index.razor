@@ -1,4 +1,6 @@
 ﻿@page "/Person/Index"
+@attribute [Authorize(Roles = "Admin,HRManager")]
+
 @using AdventureWorksDominicana.Data.Models
 @using AdventureWorksDominicana.Services
 @using Microsoft.AspNetCore.Components.QuickGrid

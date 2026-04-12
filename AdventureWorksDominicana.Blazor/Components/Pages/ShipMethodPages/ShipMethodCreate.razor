@@ -1,4 +1,6 @@
 ﻿@page "/ShipMethods/Create"
+@attribute [Authorize(Roles = "Admin, PurchasingManager")]
+
 @using AdventureWorksDominicana.Data.Models
 @using AdventureWorksDominicana.Services
 @inject ToastService toastService

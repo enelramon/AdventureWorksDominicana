@@ -1,4 +1,6 @@
 ﻿@page "/StateProvince/Index"
+@attribute [Authorize(Roles = "Admin")]
+
 @inject StateProvinceService stateProvinceService;
 @inject SalesTerritoryService salesTerritoryService;
 @rendermode InteractiveServer

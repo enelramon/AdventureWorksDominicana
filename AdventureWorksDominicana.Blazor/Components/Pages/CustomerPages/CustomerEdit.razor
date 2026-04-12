@@ -1,4 +1,5 @@
 ﻿@page "/Customer/Edit/{id:int}"
+@attribute [Authorize(Roles = "Admin, SalesManager")]
 
 @using AdventureWorksDominicana.Data.Models
 @using AdventureWorksDominicana.Data.Context

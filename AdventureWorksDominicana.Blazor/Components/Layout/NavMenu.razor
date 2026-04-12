@@ -82,7 +82,7 @@
                         </div>
                         <div class="nav-item">
                             <NavLink class="nav-link" href="/ProductVendor/Index">
-                                <span class="bi bi-people-nav-menu"></span> <small>Categories</small>
+                                <span class="bi bi-people-nav-menu"></span> <small>Product for vendor</small>
                             </NavLink>
                         </div>
                         <div class="nav-item">
@@ -95,14 +95,28 @@
                                 <span class="bi bi-translate-nav-menu"></span> <small>Cultures</small>
                             </NavLink>
                         </div>
-                        <div class="nav-item">
+                    </div>
+                </div>
+            </div>
+        </div>
+        @* ========== INVENTORY & WAREHOUSE MODULE ========== *@
+        <div class="accordion px-3 nav-item" id="accordionInventory">
+            <div class="accordion-item bg-transparent border-0">
+                <div class="accordion-header">
+                    <button class="accordion-button collapsed bg-transparent px-3" type="button" data-bs-toggle="collapse" data-bs-target="#collapseInventory">
+                        <span class="bi bi-boxes-nav-menu"></span> <small>Inventory</small>
+                    </button>
+                </div>
+                <div id="collapseInventory" class="accordion-collapse collapse" data-bs-parent="#accordionInventory">
+                    <div class="accordion-body p-0 ps-3">
+                        <div class="nav-item pt-2">
                             <NavLink class="nav-link" href="/Location/Index">
                                 <span class="bi bi-pin-map-nav-menu"></span> <small>Locations</small>
                             </NavLink>
                         </div>
                         <div class="nav-item">
                             <NavLink class="nav-link" href="/Product/Inventory">
-                                <span class="bi bi-pin-map-nav-menu"></span> <small>Inventario</small>
+                                <span class="bi bi-inboxes-fill-nav-menu"></span> <small class="ms-2">Inventory</small>
                             </NavLink>
                         </div>
                     </div>
@@ -230,6 +244,11 @@
                                 <span class="bi bi-person-lines-fill-nav-menu"></span> <small>Contact Types</small>
                             </NavLink>
                         </div>
+                        <div class="nav-item">
+                            <NavLink class="nav-link" href="/User/Index">
+                                <span class="bi bi-person-fill-gear-nav-menu"></span> <small>Users</small>
+                            </NavLink>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -237,13 +256,25 @@
 
         <div class="nav-item px-3">
             <NavLink class="nav-link" href="/Customer/Index">
-                <span class="bi bi-people-nav-menu" aria-hidden="true"></span> Customers
+                <span class="bi bi-people-nav-menu" aria-hidden="true"></span> <small>Customers</small>
             </NavLink>
         </div>
 
         <div class="nav-item px-3">
             <NavLink class="nav-link" href="/Store/Index">
-                <span class="bi bi-shop-fill-nav-menu" aria-hidden="true"></span> Store
+                <span class="bi bi-shop-fill-nav-menu" aria-hidden="true"></span> <small>Store</small>
+            </NavLink>
+        </div>
+
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="/MyAccount">
+                <span class="bi bi-person-circle-nav-menu" aria-hidden="true"></span> <small>My Account</small>
+            </NavLink>
+        </div>
+
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="/PaymentsMethods">
+                <span class="bi bi-shop-fill-nav-menu" aria-hidden="true"></span> <small>Payments Methods</small>
             </NavLink>
         </div>
 

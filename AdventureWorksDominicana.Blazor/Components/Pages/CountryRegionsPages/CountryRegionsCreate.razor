@@ -1,4 +1,6 @@
 ﻿@page "/CountryRegions/Create";
+@attribute [Authorize(Roles = "Admin")]
+
 @inject CountryRegionsService countryRegionsService;
 @inject ToastService toastService;
 @inject NavigationManager navigationManager;

@@ -1,4 +1,5 @@
 ﻿@page "/PhoneNumberType/Index";
+@attribute [Authorize(Roles = "Admin")]
 
 @inject PhoneNumberTypeService phoneNumberTypeService;
 @rendermode InteractiveServer

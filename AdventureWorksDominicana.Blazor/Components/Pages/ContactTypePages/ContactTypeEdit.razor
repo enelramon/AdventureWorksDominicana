@@ -1,4 +1,5 @@
 ﻿@page "/ContactType/Edit/{ContactTypeId:int}";
+@attribute [Authorize(Roles = "Admin")]
 
 @inject ContactTypeService contactTypeService;
 @inject ToastService toastService;

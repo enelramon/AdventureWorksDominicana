@@ -1,4 +1,6 @@
 ﻿@page "/Currency/Create"
+@attribute [Authorize(Roles = "Admin")]
+
 @rendermode InteractiveServer
 @inject CurrencyService CurrencyService
 @inject ToastService toast

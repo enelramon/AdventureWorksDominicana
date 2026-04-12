@@ -1,4 +1,6 @@
 ﻿@page "/Product/Inventory"
+@attribute [Authorize(Roles = "Admin, ProductionManager")]
+
 @rendermode InteractiveServer
 @using AdventureWorksDominicana.Services
 @using AdventureWorksDominicana.Data.Models

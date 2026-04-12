@@ -1,4 +1,6 @@
 ﻿@page "/Location/Index"
+@attribute [Authorize(Roles = "Admin")]
+
 @rendermode InteractiveServer
 @inject LocationService locationService
 

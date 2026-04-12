@@ -1,4 +1,5 @@
 ﻿@page "/ShoppingCartItem/Edit/{Id:int}";
+@attribute [Authorize(Roles = "Admin")]
 
 @using Microsoft.EntityFrameworkCore;
 @using AdventureWorksDominicana.Data.Context;

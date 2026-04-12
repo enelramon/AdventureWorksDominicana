@@ -1,0 +1,196 @@
+﻿@page "/User/Edit/{Id}"
+@attribute [Authorize(Roles = "Admin")]
+@using AdventureWorksDominicana.Data.Models
+@using AdventureWorksDominicana.Services
+@using Microsoft.AspNetCore.Identity
+@inject ToastService toastService
+@inject NavigationManager navigationManager
+@inject UserService userService
+@inject UserManager<AspNetUser> userManager
+@inject AuthenticationStateProvider authStateProvider
+@rendermode InteractiveServer
+
+<PageTitle>Editar User</PageTitle>
+
+<EditForm Model="@usuario" OnValidSubmit="PreviaGuardar">
+    <DataAnnotationsValidator />
+    <div class="container">
+        <div class="card shadow-lg">
+            <div class="card-header d-flex justify-content-between">
+                <h4>Editar User</h4>
+            </div>
+            <div class="card-body bg-light">
+                <div class="justify-content-between">
+                    <div class="row g-4 mb-6 align-items-end">
+                        <div class="col-md-6">
+                            <label class="form-label"><strong>Email: </strong></label>
+                            <label class="form-label"> @usuario.Email</label>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label"><strong>Rol: </strong></label>
+                            <InputSelect class="form-select" @bind-Value="IdRolSeleccionado">
+                                @foreach (var rol in ListaRoles)
+                                {
+                                    <option value="@rol.Id">@rol.Name</option>
+                                }
+                            </InputSelect>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="card-footer text-center">
+                <a class="btn btn-secondary bi bi-arrow-left" href="/User/Index"> Volver</a>
+                <button class="btn btn-primary bi bi-floppy" type="submit"> Guardar</button>
+                <button class="btn btn-danger bi bi-trash" type="button" @onclick="PreviaEliminar"> Eliminar</button>
+            </div>
+        </div>
+    </div>
+</EditForm>
+
+@* Modal de Confirmación de Seguridad *@
+@if (MostrarModalConfirmacion)
+{
+    <div class="modal fade show d-block" style="background-color: rgba(0,0,0,0.5);" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content shadow-lg border-0">
+                <div class="modal-header bg-dark text-white">
+                    <h5 class="modal-title"><i class="bi bi-shield-lock me-2"></i>Confirmación de Seguridad</h5>
+                    <button type="button" class="btn-close btn-close-white" @onclick="CerrarModal"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <p class="text-muted">Para realizar cambios críticos, por favor introduzca su contraseña de administrador:</p>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Contraseña Admin</label>
+                        <input type="password" class="form-control" @bind="PasswordConfirmacion" placeholder="********" />
+                        @if (!string.IsNullOrEmpty(MensajeErrorModal))
+                        {
+                            <div class="text-danger small mt-2">@MensajeErrorModal</div>
+                        }
+                    </div>
+                </div>
+                <div class="modal-footer bg-light">
+                    <button type="button" class="btn btn-secondary" @onclick="CerrarModal">Cancelar</button>
+                    <button type="button" class="btn btn-primary" @onclick="ConfirmarAccion">
+                        @if (CargandoValidacion)
+                        {
+                            <span class="spinner-border spinner-border-sm me-1"></span>
+                        }
+                        Confirmar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter] public string Id { get; set; }
+
+    AspNetUser usuario = new AspNetUser();
+    List<AspNetRole> ListaRoles = new List<AspNetRole>();
+
+    string IdRolSeleccionado = "";
+    string IdRolOriginal = ""; 
+    private bool MostrarModalConfirmacion = false;
+    private string PasswordConfirmacion = string.Empty;
+    private string MensajeErrorModal = string.Empty;
+    private bool CargandoValidacion = false;
+    private string AccionPendiente = string.Empty; 
+
+    protected override async Task OnInitializedAsync()
+    {
+        var user = await userService.Buscar(Id);
+        if (user != null)
+        {
+            usuario = user;
+            IdRolSeleccionado = usuario.Roles.Select(r => r.Id).FirstOrDefault() ?? "";
+            IdRolOriginal = IdRolSeleccionado;
+        }
+
+        ListaRoles = await userService.GetListRoles(x => true);
+    }
+    private void PreviaGuardar()
+    {
+        AccionPendiente = "Guardar";
+        MostrarModal();
+    }
+
+    private void PreviaEliminar()
+    {
+        AccionPendiente = "Eliminar";
+        MostrarModal();
+    }
+
+    private void MostrarModal()
+    {
+        PasswordConfirmacion = string.Empty;
+        MensajeErrorModal = string.Empty;
+        MostrarModalConfirmacion = true;
+    }
+
+    private void CerrarModal() => MostrarModalConfirmacion = false;
+
+    private async Task ConfirmarAccion()
+    {
+        if (string.IsNullOrWhiteSpace(PasswordConfirmacion))
+        {
+            MensajeErrorModal = "La contraseña es requerida.";
+            return;
+        }
+
+        CargandoValidacion = true;
+        MensajeErrorModal = string.Empty;
+
+        var authState = await authStateProvider.GetAuthenticationStateAsync();
+        var adminActual = await userManager.GetUserAsync(authState.User);
+
+        var esValido = await userManager.CheckPasswordAsync(adminActual, PasswordConfirmacion);
+
+        if (esValido)
+        {
+            CerrarModal();
+            if (AccionPendiente == "Guardar") await EjecutarGuardar();
+            else if (AccionPendiente == "Eliminar") await EjecutarEliminar();
+        }
+        else
+        {
+            MensajeErrorModal = "Contraseña incorrecta o el usuario no tiene permisos de administrador.";
+        }
+        CargandoValidacion = false;
+    }
+
+    public async Task EjecutarGuardar()
+    {
+        var rolNuevo = ListaRoles.FirstOrDefault(r => r.Id == IdRolSeleccionado);
+
+        if (rolNuevo != null)
+        {
+            usuario.Roles.Clear();
+            usuario.Roles.Add(rolNuevo);
+            var guardado = await userService.Guardar(usuario);
+
+            if (guardado)
+            {
+                toastService.ShowSuccess("Usuario actualizado con éxito.");
+                navigationManager.NavigateTo("/User/Index");
+            }
+            else
+            {
+                toastService.ShowError("Error al guardar.");
+            }
+        }
+    }
+
+    private async Task EjecutarEliminar()
+    {
+        if (await userService.Eliminar(usuario.Id))
+        {
+            toastService.ShowSuccess("Usuario eliminado.");
+            navigationManager.NavigateTo("/User/Index");
+        }
+        else
+        {
+            toastService.ShowError("Error al eliminar.");
+        }
+    }
+}

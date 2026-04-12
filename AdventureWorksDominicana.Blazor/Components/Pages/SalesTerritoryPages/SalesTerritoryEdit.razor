@@ -1,4 +1,5 @@
 ﻿@page "/SalesTerritory/Edit/{SalesTerritoryId:int}"
+@attribute [Authorize(Roles = "Admin")]
 
 @inject SalesTerritoryService salesTerritoryService;
 @inject ToastService toastService;

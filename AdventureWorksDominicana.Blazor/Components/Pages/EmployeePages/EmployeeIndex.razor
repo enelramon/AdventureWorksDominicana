@@ -1,4 +1,5 @@
 ﻿@page "/Employee/Index"
+@attribute [Authorize(Roles = "Admin,HRManager")]
 
 @inject EmployeeService employeeService;
 @rendermode InteractiveServer

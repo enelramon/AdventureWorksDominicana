@@ -1,4 +1,6 @@
 ﻿@page "/Currency/Index"
+@attribute [Authorize(Roles = "Admin")]
+
 @rendermode InteractiveServer
 @inject CurrencyService CurrencyService
 

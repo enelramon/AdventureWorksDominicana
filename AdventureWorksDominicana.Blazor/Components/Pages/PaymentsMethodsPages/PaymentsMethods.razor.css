@@ -1,0 +1,335 @@
+﻿/* payments.css - Para PaymentsMethods */
+
+.payment-container {
+    max-width: 1200px;
+    margin: auto;
+    padding: 20px;
+}
+
+.payment-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+    padding-bottom: 16px;
+    border-bottom: 2px solid #e5e7eb;
+}
+
+    .payment-header h2 {
+        margin: 0;
+        color: #01398C;
+        font-weight: 600;
+    }
+
+    .payment-header p {
+        margin: 4px 0 0;
+        font-size: 0.85rem;
+        color: #6b7280;
+    }
+
+.payment-card {
+    background: #F5F5F5;
+    border-radius: 20px;
+    border: 2px solid #E6E6E6;
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 20px -6px rgba(0, 0, 0, 0.02);
+    transition: all 0.3s ease;
+    overflow: hidden;
+}
+
+    .payment-card:hover {
+        box-shadow: 0 20px 30px -12px rgba(0, 0, 0, 0.1);
+    }
+
+    .payment-card .card-body {
+        padding: 24px;
+    }
+
+.payment-section-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #01398C;
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #e5e7eb;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+    .payment-section-title i {
+        font-size: 1.2rem;
+    }
+
+.payment-header-with-button {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+    .payment-header-with-button h5,
+    .payment-header-with-button h6 {
+        margin: 0;
+    }
+
+.payment-form-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #6b7280;
+    margin-bottom: 4px;
+}
+
+.payment-form-control {
+    border-radius: 10px;
+    border: 1px solid #dbeafe;
+    padding: 8px 12px;
+    font-size: 0.9rem;
+    width: 100%;
+    transition: all 0.2s ease;
+    background-color: white;
+}
+
+    .payment-form-control:focus {
+        border-color: #466EDB;
+        box-shadow: 0 0 0 2px rgba(70, 110, 219, 0.15);
+        outline: none;
+    }
+
+    .payment-form-control.bg-light {
+        background-color: #f9fafb;
+    }
+
+/* LISTA DE TARJETAS */
+.payment-card-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+.payment-card-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px;
+    background: white;
+    border-radius: 16px;
+    border: 1px solid #e5e7eb;
+    transition: all 0.2s ease;
+}
+
+    .payment-card-item:hover {
+        border-color: #466EDB;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    }
+
+.payment-card-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.payment-card-icon {
+    font-size: 1.8rem;
+    color: #6b7280;
+}
+
+.payment-card-details h6 {
+    margin: 0 0 4px;
+    font-weight: 600;
+    color: #1f2937;
+}
+
+.payment-card-details small {
+    color: #6b7280;
+    font-size: 0.75rem;
+}
+
+/* FORMULARIO NUEVA TARJETA */
+.payment-new-card-form {
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid #e5e7eb;
+}
+
+.payment-form-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+}
+
+    .payment-form-header h6 {
+        margin: 0;
+        color: #466EDB;
+        font-weight: 600;
+    }
+
+.payment-form-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.payment-form-grid {
+    background: #f9fafb;
+    border-radius: 16px;
+    padding: 20px;
+    border: 1px solid #e5e7eb;
+}
+
+/* BOTONES */
+.btn-payment-primary {
+    background: #466EDB;
+    border: none;
+    padding: 8px 20px;
+    border-radius: 10px;
+    font-weight: 500;
+    color: white;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+    .btn-payment-primary:hover {
+        background: #01398C;
+        transform: translateY(-1px);
+    }
+
+.btn-payment-outline {
+    background: transparent;
+    border: 1px solid #466EDB;
+    padding: 6px 14px;
+    border-radius: 8px;
+    font-weight: 500;
+    color: #466EDB;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+    .btn-payment-outline:hover {
+        background: #466EDB;
+        color: white;
+        transform: translateY(-1px);
+    }
+
+.btn-payment-danger {
+    background: transparent;
+    border: 1px solid #dc2626;
+    padding: 6px 14px;
+    border-radius: 8px;
+    font-weight: 500;
+    color: #dc2626;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+    .btn-payment-danger:hover {
+        background: #dc2626;
+        color: white;
+        transform: translateY(-1px);
+    }
+
+.btn-payment-secondary {
+    background: transparent;
+    border: 1px solid #9ca3af;
+    padding: 6px 14px;
+    border-radius: 8px;
+    font-weight: 500;
+    color: #6b7280;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+    .btn-payment-secondary:hover {
+        background: #f3f4f6;
+        border-color: #6b7280;
+        transform: translateY(-1px);
+    }
+
+/* ALERTAS */
+.payment-alert {
+    background: #fef3c7;
+    border: 1px solid #fcd34d;
+    border-radius: 12px;
+    padding: 12px 16px;
+    color: #92400e;
+    font-size: 0.85rem;
+}
+
+.payment-alert-info {
+    background: #f0f9ff;
+    border: 1px solid #bae6fd;
+    color: #0369a1;
+}
+
+.payment-empty-state {
+    text-align: center;
+    padding: 32px;
+    background: white;
+    border-radius: 16px;
+    border: 1px dashed #d1d5db;
+    color: #6b7280;
+}
+
+    .payment-empty-state i {
+        font-size: 2rem;
+        margin-bottom: 8px;
+        opacity: 0.5;
+    }
+
+/* DIVISORES */
+.payment-divider {
+    margin: 20px 0;
+    border: none;
+    border-top: 1px solid #e5e7eb;
+}
+
+/* RESPONSIVE */
+@media (max-width: 768px) {
+    .payment-container {
+        padding: 12px;
+    }
+
+    .payment-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+    }
+
+    .payment-card-item {
+        flex-direction: column;
+        gap: 12px;
+        text-align: center;
+    }
+
+    .payment-card-info {
+        flex-direction: column;
+    }
+
+    .payment-form-grid .row {
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .payment-card .card-body {
+        padding: 16px;
+    }
+
+    .payment-form-actions {
+        flex-direction: column;
+    }
+
+        .payment-form-actions button {
+            width: 100%;
+            justify-content: center;
+        }
+}

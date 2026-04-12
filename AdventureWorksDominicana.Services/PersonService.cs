@@ -82,7 +82,7 @@ public class PersonService(IDbContextFactory<Contexto> DbFactory) : IService<Per
         await using var contexto = await DbFactory.CreateDbContextAsync();
 
         return await contexto.People
-            .Where(criterio)
+            .Where(criterio).Include(a => a.EmailAddresses)
             .AsNoTracking()
             .ToListAsync();
     }
@@ -115,7 +115,6 @@ public class PersonService(IDbContextFactory<Contexto> DbFactory) : IService<Per
             .AsNoTracking()
             .Include(p => p.EmailAddresses)
             .Include(p => p.PersonPhones)
-            .Include(p => p.PersonCreditCards) 
             .FirstOrDefaultAsync(p => p.EmailAddresses.Any(e => e.EmailAddress1 == email));
     }
     public async Task<bool> ActualizarPerfilCompleto(int id, Person datosNuevos)
@@ -168,4 +167,53 @@ public class PersonService(IDbContextFactory<Contexto> DbFactory) : IService<Per
         // Guardo todos los cambios
         return await contexto.SaveChangesAsync() > 0;
     }
+
+    public async Task<List<PersonCreditCard>> ObtenerTarjetasPorPersonaId(int businessEntityId)
+    {
+        await using var contexto = await DbFactory.CreateDbContextAsync();
+
+        return await contexto.PersonCreditCards
+            .AsNoTracking()
+            .Include(pcc => pcc.CreditCard) 
+            .Where(pcc => pcc.BusinessEntityId == businessEntityId)
+            .ToListAsync();
+    }
+
+    public async Task<bool> AgregarTarjetaAPersona(int businessEntityId, CreditCard nuevaTarjeta)
+    {
+        await using var contexto = await DbFactory.CreateDbContextAsync();
+
+        var existePersona = await contexto.People
+            .AnyAsync(p => p.BusinessEntityId == businessEntityId);
+
+        if (!existePersona) return false;
+
+        nuevaTarjeta.ModifiedDate = DateTime.Now;
+
+        var personCreditCard = new PersonCreditCard
+        {
+            BusinessEntityId = businessEntityId,
+            CreditCard = nuevaTarjeta,
+            ModifiedDate = DateTime.Now
+        };
+
+        contexto.PersonCreditCards.Add(personCreditCard);
+
+        return await contexto.SaveChangesAsync() > 0;
+    }
+
+    public async Task<bool> EliminarTarjetaDePersona(int businessEntityId, int creditCardId)
+    {
+        await using var contexto = await DbFactory.CreateDbContextAsync();
+
+        var vinculoTarjeta = await contexto.PersonCreditCards
+            .FirstOrDefaultAsync(pcc => pcc.BusinessEntityId == businessEntityId && pcc.CreditCardId == creditCardId);
+
+        if (vinculoTarjeta == null) return false;
+
+        contexto.PersonCreditCards.Remove(vinculoTarjeta);
+
+        return await contexto.SaveChangesAsync() > 0;
+    }
+
 }

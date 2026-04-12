@@ -1,4 +1,5 @@
 ﻿@page "/Product/Index"
+@attribute [Authorize(Roles = "Admin, ProductionManager, SalesManager")]
 
 @inject ProductService productService;
 @rendermode InteractiveServer
@@ -101,11 +102,11 @@
     public DateTime? FechaHasta { get; set; }
     public string Filtro { get; set; } = "";
     public string ValorFiltro { get; set; } = "";
-    private PaginationState pages = new PaginationState { ItemsPerPage = 5 };
+    private PaginationState pages = new PaginationState { ItemsPerPage = 10 };
 
     protected override async Task OnInitializedAsync()
     {
-        ListaProducts = await productService.GetList(p => p.ProductId > 0);
+        ListaProducts = await productService.GetListIndex(p => p.ProductId > 0);
         ListaProducts = ListaProducts.OrderByDescending(p => p.ModifiedDate).ToList();
     }
 
@@ -147,7 +148,7 @@
             }
         }
 
-        ListaProducts = await productService.GetList(criterio);
+        ListaProducts = await productService.GetListIndex(criterio);
         ListaProducts = ListaProducts.OrderByDescending(s => s.ModifiedDate).ToList();
     }
 

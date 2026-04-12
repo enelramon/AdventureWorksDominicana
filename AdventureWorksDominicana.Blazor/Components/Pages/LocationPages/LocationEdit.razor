@@ -1,4 +1,6 @@
 ﻿@page "/Location/Edit/{LocationId:int}"
+@attribute [Authorize(Roles = "Admin")]
+
 @inject NavigationManager navigationManager
 @inject ToastService toastService
 @inject LocationService locationService

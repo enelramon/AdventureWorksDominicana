@@ -1,4 +1,6 @@
 ﻿@page "/ProductCategory/Index"
+@attribute [Authorize(Roles = "Admin, ProductionManager")]
+
 
 @inject NavigationManager navigationManager
 @inject ProductCategoryService productCategoryService

@@ -1,4 +1,7 @@
 @page "/ProductCategory/Edit/{Id:int}"
+@attribute [Authorize(Roles = "Admin, ProductionManager")]
+
+
 @inject NavigationManager navigationManager
 @inject ToastService toastService
 @inject ProductCategoryService categoryService

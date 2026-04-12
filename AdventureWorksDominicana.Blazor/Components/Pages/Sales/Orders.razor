@@ -1,9 +1,11 @@
 ﻿@page "/Orders"
+@attribute [Authorize(Roles = "Admin, Customer, SalesManager")]
+
 @rendermode InteractiveServer
 @inject SalesOrderHeaderService salesOrderHeaderService
 @inject NavigationManager navigationManager
 @inject AuthenticationStateProvider authenticationStateProvider;
-
+@inject ToastService toastService
 <PageTitle>Orders</PageTitle>
 
 <div class="orders-container">
@@ -90,11 +92,47 @@
         {
             UserEmail = User.FindFirst(ClaimTypes.Email)?.Value;
         }
-        SalesOrderHeadersList = await salesOrderHeaderService.GetList(s => s.Customer.Person.EmailAddresses.Any(e => e.EmailAddress1.Trim().ToLower().Equals(UserEmail)));
+        SalesOrderHeadersList = await salesOrderHeaderService.GetList(s => s.Customer.Person.EmailAddresses.Any(e => e.EmailAddress1 == UserEmail));
+        await RefreshStatus();
     }
 
     private void GoToSale() => navigationManager.NavigateTo("/Sales");
 
-    private void GoToOrderReview(int saleId) => navigationManager.NavigateTo($"Order/Review/{saleId}");
+    private async Task RefreshStatus(){
+        foreach(var s in SalesOrderHeadersList)
+        {
+            try
+            {
+                if (s.ShipDate == null) return;
+                if (DateTime.Today == s.ShipDate.Value.Date)
+                {
+                    s.Status = 2;
+                    await salesOrderHeaderService.Guardar(s);
+                }
+                if (DateTime.Today > s.ShipDate.Value.Date.AddDays(5))
+                {
+                    s.Status = 3;
+                    await salesOrderHeaderService.Guardar(s);
+                }
+            }
+            catch (Exception ex)
+            {
+                toastService.ShowError("Estados de orden no pudieron ser actualizados");
+            }
+        }
+    }
 
+    private async Task ChangeCancelOrder(SalesOrderHeader sale){
+        sale.Status = 4;
+        try
+        {
+            await salesOrderHeaderService.Guardar(sale);
+            toastService.ShowSuccess("Orden Cancelada");
+        }catch(Exception ex)
+        {
+            toastService.ShowError("Orden no pudo ser Cancelada");
+        }
+    }
+
+    private void GoToOrderReview(int saleId) => navigationManager.NavigateTo($"Order/Review/{saleId}");
 }

@@ -1,4 +1,6 @@
 ﻿@page "/Product/Detail/{ProductId:int}"
+@attribute [Authorize(Roles = "Admin, Customer, SalesManager")]
+
 @rendermode InteractiveServer
 
 @inject ProductService productService

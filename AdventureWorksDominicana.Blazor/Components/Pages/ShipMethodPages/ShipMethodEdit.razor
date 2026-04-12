@@ -1,4 +1,6 @@
 ﻿@page "/ShipMethods/Edit/{Id:int}"
+@attribute [Authorize(Roles = "Admin, PurchasingManager")]
+
 @using AdventureWorksDominicana.Data.Models
 @using AdventureWorksDominicana.Services
 @inject ToastService toastService

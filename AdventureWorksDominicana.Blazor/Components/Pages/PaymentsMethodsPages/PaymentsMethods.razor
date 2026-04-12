@@ -1,0 +1,249 @@
+﻿@page "/PaymentsMethods"
+@using System.Security.Claims
+@using System.ComponentModel.DataAnnotations
+@using AdventureWorksDominicana.Data.Models
+@inject AuthenticationStateProvider authenticationStateProvider
+@inject ToastService toastService
+@inject PersonService personService
+@rendermode InteractiveServer
+
+<div class="payment-container">
+    <div class="payment-header">
+        <div>
+            <h2>Métodos de Pago</h2>
+            <p>Gestiona tus tarjetas de crédito registradas.</p>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            
+            <div class="payment-card mb-4">
+                <div class="card-body">
+                    <div class="payment-header-with-button">
+                        <h5 class="payment-section-title mb-0">
+                            <i class="bi bi-credit-card"></i> Mis Tarjetas
+                        </h5>
+                        @if (NuevaTarjeta == null)
+                        {
+                            <button type="button" class="btn-payment-outline" @onclick="AgregarNuevaTarjeta">
+                                <i class="bi bi-plus-lg"></i> Agregar Tarjeta
+                            </button>
+                        }
+                    </div>
+
+                    @if (TarjetasExistentes.Any())
+                    {
+                        <div class="payment-card-list">
+                            @foreach (var pcc in TarjetasExistentes)
+                            {
+                                <div class="payment-card-item">
+                                    <div class="payment-card-info">
+                                        <i class="bi bi-credit-card-fill payment-card-icon"></i>
+                                        <div class="payment-card-details">
+                                            <h6>@pcc.CreditCard.CardType</h6>
+                                            <small>
+                                                Termina en •••• @ObtenerUltimosDigitos(pcc.CreditCard.CardNumber) |
+                                                Vence: @pcc.CreditCard.ExpMonth.ToString("D2")/@pcc.CreditCard.ExpYear
+                                            </small>
+                                        </div>
+                                    </div>
+                                    <button type="button" class="btn-payment-danger btn-sm" @onclick="() => EliminarTarjetaExistente(pcc)">
+                                        <i class="bi bi-trash"></i> Eliminar
+                                    </button>
+                                </div>
+                            }
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="payment-empty-state">
+                            <i class="bi bi-credit-card"></i>
+                            <p>No tienes tarjetas guardadas.</p>
+                        </div>
+                    }
+
+                    @if (NuevaTarjeta != null)
+                    {
+                        <div class="payment-new-card-form">
+                            <EditForm Model="NuevaTarjeta" OnValidSubmit="GuardarCambios">
+                                <DataAnnotationsValidator />
+
+                                <div class="payment-form-header">
+                                    <h6>
+                                        <i class="bi bi-plus-circle"></i> Registrar Nueva Tarjeta
+                                    </h6>
+                                    <div class="payment-form-actions">
+                                        <button type="button" class="btn-payment-secondary" @onclick="CancelarNuevaTarjeta">
+                                            <i class="bi bi-x-lg"></i> Cancelar
+                                        </button>
+                                        <button type="submit" class="btn-payment-primary">
+                                            <i class="bi bi-floppy"></i> Guardar Tarjeta
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div class="payment-form-grid">
+                                    <div class="row g-3">
+                                        <div class="col-md-6">
+                                            <label class="payment-form-label">Tipo de Tarjeta</label>
+                                            <select class="payment-form-control" @bind="NuevaTarjeta.CardType">
+                                                <option value="" disabled selected>Seleccione...</option>
+                                                <option value="Visa">Visa</option>
+                                                <option value="MasterCard">MasterCard</option>
+                                            </select>
+                                            <ValidationMessage For="@(() => NuevaTarjeta.CardType)" class="text-danger small" />
+                                        </div>
+
+                                        <div class="col-md-6">
+                                            <label class="payment-form-label">Número de Tarjeta</label>
+                                            <input type="text" class="payment-form-control" @bind="NuevaTarjeta.CardNumber" placeholder="Ej: 1111-2222-3333-4444" />
+                                            <ValidationMessage For="@(() => NuevaTarjeta.CardNumber)" class="text-danger small" />
+                                        </div>
+
+                                        <div class="col-md-6">
+                                            <label class="payment-form-label">Mes de Expiración</label>
+                                            <select class="payment-form-control" @bind="NuevaTarjeta.ExpMonth">
+                                                <option value=0 selected>MM</option>
+                                                @for (int x = 1; x <= 12; x++)
+                                                {
+                                                    <option value=@x>@x</option>
+                                                }
+                                            </select>
+                                            <ValidationMessage For="@(() => NuevaTarjeta.ExpMonth)" class="text-danger small" />
+                                        </div>
+
+                                        <div class="col-md-6">
+                                            <label class="payment-form-label">Año de Expiración</label>
+                                            <select class="payment-form-control" @bind="NuevaTarjeta.ExpYear">
+                                                <option value=0 selected>YYYY</option>
+                                                @for (int x = DateTime.Today.Year; x <= DateTime.Today.Year + 5; x++)
+                                                {
+                                                    <option value=@x>@x</option>
+                                                }
+                                            </select>
+                                            <ValidationMessage For="@(() => NuevaTarjeta.ExpYear)" class="text-danger small" />
+                                        </div>
+                                    </div>
+                                </div>
+                            </EditForm>
+                        </div>
+                    }
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+@code {
+    private ClaimsPrincipal? User { get; set; }
+    private bool IsAuthenticated { get; set; }
+    private string? UserEmail { get; set; }
+    private string UserId { get; set; } = string.Empty;
+    private int _businessEntityId = 0;
+
+    private List<PersonCreditCard> TarjetasExistentes { get; set; } = new();
+
+    private CreditCard? NuevaTarjeta { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await authenticationStateProvider.GetAuthenticationStateAsync();
+        User = authState.User;
+        IsAuthenticated = User.Identity?.IsAuthenticated ?? false;
+
+        if (IsAuthenticated)
+        {
+            UserEmail = User.FindFirst(ClaimTypes.Email)?.Value;
+            var idClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            if (!string.IsNullOrEmpty(idClaim) && !string.IsNullOrEmpty(UserEmail))
+            {
+                UserId = idClaim;
+                await CargarTarjetasDelUsuario(UserEmail);
+            }
+            else
+            {
+                toastService.ShowError("No se pudo identificar al usuario.");
+            }
+        }
+    }
+
+    private async Task CargarTarjetasDelUsuario(string email)
+    {
+        var personaDB = await personService.BuscarPorEmailCompleto(email);
+
+        if (personaDB != null)
+        {
+            _businessEntityId = personaDB.BusinessEntityId;
+            TarjetasExistentes = await personService.ObtenerTarjetasPorPersonaId(_businessEntityId);
+        }
+        else
+        {
+            toastService.ShowWarning("No encontramos tu perfil en el sistema.");
+        }
+    }
+
+    private void AgregarNuevaTarjeta()
+    {
+        NuevaTarjeta = new CreditCard
+        {
+
+        };
+    }
+
+    private void CancelarNuevaTarjeta()
+    {
+        NuevaTarjeta = null;
+    }
+
+    private async Task EliminarTarjetaExistente(PersonCreditCard pcc)
+    {
+        var exito = await personService.EliminarTarjetaDePersona(_businessEntityId, pcc.CreditCardId);
+        
+        if (exito)
+        {
+            TarjetasExistentes.Remove(pcc);
+            toastService.ShowSuccess("Tarjeta eliminada correctamente.");
+        }
+        else
+        {
+            toastService.ShowError("No se pudo eliminar la tarjeta.");
+        }
+    }
+
+    private async Task GuardarCambios()
+    {
+        if (_businessEntityId == 0)
+        {
+            toastService.ShowWarning("Aún no tienes un perfil base.");
+            return;
+        }
+
+        if (NuevaTarjeta == null) return;
+
+        var exito = await personService.AgregarTarjetaAPersona(_businessEntityId, NuevaTarjeta);
+
+        if (exito)
+        {
+            toastService.ShowSuccess("Tu tarjeta ha sido guardada correctamente.");
+            NuevaTarjeta = null; // Limpio el formulario tras guardar
+            
+            // Recargo la lista
+            TarjetasExistentes = await personService.ObtenerTarjetasPorPersonaId(_businessEntityId);
+        }
+        else
+        {
+            toastService.ShowError("Ocurrió un error al intentar guardar la tarjeta.");
+        }
+    }
+
+    private string ObtenerUltimosDigitos(string numeroTarjeta)
+    {
+        if (string.IsNullOrWhiteSpace(numeroTarjeta)) return "0000";
+        var cleanNumber = numeroTarjeta.Replace(" ", "").Replace("-", "");
+        if (cleanNumber.Length <= 4) return cleanNumber;
+        return cleanNumber.Substring(cleanNumber.Length - 4);
+    }
+}

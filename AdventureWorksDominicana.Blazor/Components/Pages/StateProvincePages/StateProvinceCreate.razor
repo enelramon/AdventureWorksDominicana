@@ -1,4 +1,5 @@
 ﻿@page "/StateProvince/Create"
+@attribute [Authorize(Roles = "Admin")]
 
 @inject StateProvinceService stateProvinceService;
 @inject CountryRegionsService countryRegionsService;

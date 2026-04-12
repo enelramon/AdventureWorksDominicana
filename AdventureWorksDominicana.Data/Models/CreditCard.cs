@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore;
-
 namespace AdventureWorksDominicana.Data.Models;
 
 /// <summary>
@@ -23,23 +22,29 @@ public partial class CreditCard
     /// <summary>
     /// Credit card name.
     /// </summary>
-    [StringLength(50)]
+    [Required(ErrorMessage = "El tipo de tarjeta es obligatorio.")]
+    [StringLength(50, ErrorMessage = "El tipo de tarjeta no puede exceder los 50 caracteres.")]
     public string CardType { get; set; } = null!;
 
     /// <summary>
     /// Credit card number.
     /// </summary>
-    [StringLength(25)]
+    [Required(ErrorMessage = "El número de tarjeta es obligatorio.")]
+    [StringLength(25, ErrorMessage = "El número de tarjeta no puede exceder los 25 caracteres.")]
     public string CardNumber { get; set; } = null!;
 
     /// <summary>
     /// Credit card expiration month.
     /// </summary>
+    [Required(ErrorMessage = "El mes de expiración es obligatorio.")]
+    [Range(1, 12, ErrorMessage = "El mes de expiración debe estar entre 1 y 12.")]
     public byte ExpMonth { get; set; }
 
     /// <summary>
     /// Credit card expiration year.
     /// </summary>
+    [Required(ErrorMessage = "El año de expiración es obligatorio.")]
+    [AnoActualOFuturo]
     public short ExpYear { get; set; }
 
     /// <summary>
