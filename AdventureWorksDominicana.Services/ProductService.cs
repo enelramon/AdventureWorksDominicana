@@ -119,6 +119,22 @@ public class ProductService(IDbContextFactory<Contexto> DbContextFactory) : ISer
         }
     }
 
+    public async Task<List<Product>> GetTopFeaturedProducts(int cantidad = 4)
+    {
+        await using var contexto = await DbContextFactory.CreateDbContextAsync();
+
+        return await contexto.Products
+            .AsNoTracking()
+            .Where(p => p.SellStartDate <= DateTime.Now)
+            .OrderByDescending(p => p.ListPrice)
+            .Take(cantidad)
+            .Include(p => p.ProductSubcategory)
+                .ThenInclude(ps => ps.ProductCategory)
+            .Include(p => p.ProductProductPhotos)
+                .ThenInclude(ppp => ppp.ProductPhoto)
+            .ToListAsync();
+    }
+
 }
 
 public class ProductDependentDataException : Exception

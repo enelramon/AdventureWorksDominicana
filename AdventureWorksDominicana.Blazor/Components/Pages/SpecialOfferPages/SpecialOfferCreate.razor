@@ -1,0 +1,83 @@
+﻿@page "/SpecialOffer/Create"
+
+@inject SpecialOfferService specialOfferService;
+@inject ToastService toastService;
+@inject NavigationManager navigationManager;
+@rendermode InteractiveServer
+
+<EditForm Model="Offer" OnValidSubmit="Guardar">
+    <DataAnnotationsValidator />
+
+    <div class="container pb-5">
+        <div class="card shadow-lg">
+            <div class="card-header text-center">
+                <h4>Nueva Oferta Especial</h4>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-12 mb-3">
+                        <label><strong>Descripci&oacute;n del Descuento</strong></label>
+                        <input class="form-control" @bind="Offer.Description" placeholder="Ej: Rebaja de Verano 2024" />
+                        <ValidationMessage For="(() => Offer.Description)" />
+                    </div>
+                    
+                    <div class="col-md-4 mb-3">
+                        <label><strong>% Descuento (Decimal: 0.15 = 15%)</strong></label>
+                        <input class="form-control" type="number" step="0.01" @bind="Offer.DiscountPct" />
+                        <ValidationMessage For="(() => Offer.DiscountPct)" />
+                    </div>
+
+                    <div class="col-md-4 mb-3">
+                        <label><strong>Tipo</strong></label>
+                        <input class="form-control" @bind="Offer.Type" placeholder="Ej: Seasonal Sale" />
+                        <ValidationMessage For="(() => Offer.Type)" />
+                    </div>
+
+                    <div class="col-md-4 mb-3">
+                        <label><strong>Categor&iacute;a</strong></label>
+                        <input class="form-control" @bind="Offer.Category" placeholder="Ej: Customer" />
+                        <ValidationMessage For="(() => Offer.Category)" />
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label><strong>Fecha Inicio</strong></label>
+                        <input class="form-control" type="date" @bind="Offer.StartDate" />
+                        <ValidationMessage For="(() => Offer.StartDate)" />
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label><strong>Fecha Fin</strong></label>
+                        <input class="form-control" type="date" @bind="Offer.EndDate" />
+                        <ValidationMessage For="(() => Offer.EndDate)" />
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label><strong>Cantidad M&iacute;nima</strong></label>
+                        <input class="form-control" type="number" @bind="Offer.MinQty" />
+                    </div>
+                </div>
+            </div>
+            <div class="card-footer text-center">
+                <a class="btn btn-secondary bi bi-arrow-left" href="/SpecialOffer/Index"> Volver</a>
+                <button class="btn btn-primary bi bi-floppy" type="submit"> Guardar</button>
+            </div>
+        </div>
+    </div>
+</EditForm>
+
+@code {
+    public SpecialOffer Offer { get; set; } = new SpecialOffer { StartDate = DateTime.Now, EndDate = DateTime.Now.AddMonths(1), MinQty = 0 };
+
+    public async Task Guardar()
+    {
+        if (await specialOfferService.Guardar(Offer))
+        {
+            toastService.ShowSuccess("Oferta creada correctamente.");
+            navigationManager.NavigateTo("/SpecialOffer/Index");
+        }
+        else
+        {
+            toastService.ShowError("Error al guardar.");
+        }
+    }
+}

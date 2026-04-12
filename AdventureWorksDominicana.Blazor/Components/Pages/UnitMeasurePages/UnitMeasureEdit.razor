@@ -1,0 +1,74 @@
+﻿@page "/UnitMeasure/Edit/{UnitCode}"
+
+@inject UnitMeasureService unitMeasureService;
+@inject ToastService toastService;
+@inject NavigationManager navigationManager;
+@rendermode InteractiveServer
+
+<EditForm Model="UnitMeasure" OnValidSubmit="Guardar">
+    <DataAnnotationsValidator />
+
+    <div class="container">
+        <div class="card shadow-lg">
+            <div class="card-header text-center">
+                <h4>Modificar Unidad de Medida</h4>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <label><strong>C&oacute;digo (Inmutable)</strong></label>
+                    <input class="form-control" type="text" @bind="UnitMeasure.UnitMeasureCode" disabled />
+                    <small class="text-muted">El código es la clave primaria y no se puede cambiar.</small>
+                </div>
+
+                <div class="mb-3">
+                    <label><strong>Nombre descriptivo</strong></label>
+                    <input class="form-control" type="text" maxlength="50" @bind="UnitMeasure.Name" />
+                    <ValidationMessage For="(() => UnitMeasure.Name)" />
+                </div>
+            </div>
+            <div class="card-footer text-center">
+                <a class="btn btn-secondary bi bi-arrow-left" href="/UnitMeasure/Index"> Volver</a>
+                <button class="btn btn-primary bi bi-floppy" type="submit"> Guardar Cambios</button>
+                <button class="btn btn-danger bi bi-trash" type="button" @onclick="Eliminar"> Eliminar</button>
+            </div>
+        </div>
+    </div>
+</EditForm>
+
+@code {
+    [Parameter] public string UnitCode { get; set; } = string.Empty;
+    public UnitMeasure UnitMeasure { get; set; } = new UnitMeasure();
+
+    protected override async Task OnInitializedAsync()
+    {
+        var encontrado = await unitMeasureService.Buscar(UnitCode);
+        if (encontrado != null) UnitMeasure = encontrado;
+        else navigationManager.NavigateTo("/UnitMeasure/Index");
+    }
+
+    public async Task Guardar()
+    {
+        if (await unitMeasureService.Guardar(UnitMeasure))
+        {
+            toastService.ShowSuccess("Unidad actualizada.");
+            navigationManager.NavigateTo("/UnitMeasure/Index");
+        }
+        else
+        {
+            toastService.ShowError("Error al modificar.");
+        }
+    }
+
+    public async Task Eliminar()
+    {
+        if (await unitMeasureService.Eliminar(UnitCode))
+        {
+            toastService.ShowSuccess("Unidad eliminada.");
+            navigationManager.NavigateTo("/UnitMeasure/Index");
+        }
+        else
+        {
+            toastService.ShowError("No se pudo eliminar (posibles dependencias).");
+        }
+    }
+}

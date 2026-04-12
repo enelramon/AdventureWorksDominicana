@@ -30,7 +30,6 @@ public partial class CreditCard
     /// Credit card number.
     /// </summary>
     [Required(ErrorMessage = "El número de tarjeta es obligatorio.")]
-    [Range(16, 16, ErrorMessage = "Número de tarjeta inválida, solo puede registrar 16 números.")]
     [StringLength(25, ErrorMessage = "El número de tarjeta no puede exceder los 25 caracteres.")]
     public string CardNumber { get; set; } = null!;
 

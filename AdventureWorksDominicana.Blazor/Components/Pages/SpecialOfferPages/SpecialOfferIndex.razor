@@ -1,0 +1,67 @@
+﻿@page "/SpecialOffer/Index"
+
+@inject SpecialOfferService specialOfferService;
+@rendermode InteractiveServer
+
+<div class="container">
+    <div class="card shadow-lg">
+        <div class="card-header d-flex justify-content-between">
+            <h4>Ofertas Especiales</h4>
+            <a class="btn btn-primary bi bi-plus-square" href="/SpecialOffer/Create"> Crear</a>
+        </div>
+        <div class="card-body">
+            <div class="row pb-3">
+                <div class="col-md-6">
+                    <label>Buscar por Descripci&oacute;n:</label>
+                    <div class="input-group">
+                        <input class="form-control" type="text" @bind-value="ValorFiltro" placeholder="Nombre de la oferta..." />
+                        <button class="btn btn-primary bi bi-search" type="button" @onclick="Filtrar"></button>
+                        <button class="btn btn-outline-primary bi bi-arrow-clockwise" type="button" @onclick="Restablecer"></button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="table-responsive">
+                <QuickGrid Class="table table-striped table-bordered table-hover" Pagination="@pages" Items="ListaOfertas.AsQueryable()" ItemKey="@(s => s.SpecialOfferId)">
+                    <PropertyColumn Property="@(s => s.Description)" Sortable="true" Title="Descripci&oacute;n"></PropertyColumn>
+                    <PropertyColumn Property="@(s => s.Type)" Sortable="true" Title="Tipo"></PropertyColumn>
+                    <TemplateColumn Title="Descuento" Sortable="true">
+                        @((context.DiscountPct * 100).ToString("N0")) %
+                    </TemplateColumn>
+                    <PropertyColumn Property="@(s => s.StartDate)" Format="dd/MM/yyyy" Title="Inicio"></PropertyColumn>
+                    <PropertyColumn Property="@(s => s.EndDate)" Format="dd/MM/yyyy" Title="Fin"></PropertyColumn>
+                    
+                    <TemplateColumn Title="Estado">
+                        @if (context.EndDate >= DateTime.Now && context.StartDate <= DateTime.Now)
+                        {
+                            <span class="badge bg-success">Vigente</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-secondary">Expirada/Pr&oacute;xima</span>
+                        }
+                    </TemplateColumn>
+
+                    <TemplateColumn Class="text-center" Context="item" Title="Acci&oacute;n">
+                        <a href="/SpecialOffer/Edit/@item.SpecialOfferId" class="btn btn-outline-primary bi bi-pencil-square"> Modificar</a>
+                    </TemplateColumn>
+                </QuickGrid>
+            </div>
+            <Paginator State="@pages" />
+        </div>
+    </div>
+</div>
+
+@code {
+    public List<SpecialOffer> ListaOfertas { get; set; } = new List<SpecialOffer>();
+    public string ValorFiltro { get; set; } = "";
+    private PaginationState pages = new PaginationState { ItemsPerPage = 5 };
+
+    protected override async Task OnInitializedAsync()
+    {
+        ListaOfertas = await specialOfferService.GetList(s => s.SpecialOfferId > 0);
+    }
+
+    public async Task Filtrar() => ListaOfertas = await specialOfferService.GetList(s => s.Description.Contains(ValorFiltro));
+    public async Task Restablecer() { ValorFiltro = ""; ListaOfertas = await specialOfferService.GetList(s => s.SpecialOfferId > 0); }
+}
