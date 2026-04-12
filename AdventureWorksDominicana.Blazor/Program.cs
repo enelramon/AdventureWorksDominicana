@@ -100,8 +100,9 @@ builder.Services.AddScoped<ProductInventoryService>();
 builder.Services.AddScoped<ProductPhotoService>();
 builder.Services.AddScoped<UserService>();
 builder.Services.AddScoped<ProductVendorService>();
-
-
+builder.Services.AddScoped<PayrollService>();
+builder.Services.AddScoped<PayrollParameterService>();
+builder.Services.AddScoped<EmployeePayHistoryService>();
 
 builder.Services.AddScoped<BusinessEntityAddressService>();
 builder.Services.AddScoped<PersonCreditCardService>();
