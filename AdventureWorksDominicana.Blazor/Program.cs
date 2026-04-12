@@ -99,8 +99,12 @@ builder.Services.AddScoped<PurchaseOrderService>();
 builder.Services.AddScoped<ProductInventoryService>();
 builder.Services.AddScoped<ProductPhotoService>();
 builder.Services.AddScoped<UserService>();
+builder.Services.AddScoped<ProductVendorService>();
 
 
+
+builder.Services.AddScoped<BusinessEntityAddressService>();
+builder.Services.AddScoped<PersonCreditCardService>();
 var app = builder.Build();
 
 

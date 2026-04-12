@@ -16,18 +16,21 @@ public class ShoppingCartItemService(IDbContextFactory<Contexto> DbFactory) : IS
     public async Task<bool> Guardar(ShoppingCartItem CartItem)
     {
         if (!await Existe(CartItem.ShoppingCartItemId))
-        {
             return await Insertar(CartItem);
-        }
         else
-        {
             return await Modificar(CartItem);
-        }
     }
 
     public async Task<bool> Insertar(ShoppingCartItem cartItem)
     {
         await using var contexto = await DbFactory.CreateDbContextAsync();
+        bool existeParaEsteUsuario = await contexto.ShoppingCartItems
+        .AnyAsync(p => p.ProductId == cartItem.ProductId
+                    && p.ShoppingCartId == cartItem.ShoppingCartId);
+        if (existeParaEsteUsuario)
+        {
+            throw new InvalidOperationException("Ya tienes este producto en tu carrito.");
+        }
         contexto.ShoppingCartItems.Add(cartItem);
         return await contexto.SaveChangesAsync() > 0;
     }
@@ -62,6 +65,7 @@ public class ShoppingCartItemService(IDbContextFactory<Contexto> DbFactory) : IS
         await using var contexto = await DbFactory.CreateDbContextAsync();
         return await contexto.ShoppingCartItems.Include(p => p.Product).ThenInclude(p => p.ProductSubcategory).ThenInclude(p => p.ProductCategory)
          .Include(p => p.Product).ThenInclude(s => s.SpecialOfferProducts).ThenInclude(s => s.SpecialOffer)
+         .Include(p => p.Product).ThenInclude(i => i.ProductInventories)
          .Include(p => p.Product).ThenInclude(p => p.ProductModel).ThenInclude(d => d.ProductModelProductDescriptionCultures).ThenInclude(d => d.ProductDescription)
          .Include(p => p.Product).ThenInclude(p => p.ProductProductPhotos).ThenInclude(p => p.ProductPhoto)
          .Where(criterio).ToListAsync();

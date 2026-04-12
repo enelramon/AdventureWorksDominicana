@@ -135,6 +135,6 @@ public class CustomerService(IDbContextFactory<Contexto> DbFactory) : IService<C
     public async Task<List<Customer>> GetList(Expression<Func<Customer, bool>> criterio)
     {
         await using var contexto = await DbFactory.CreateDbContextAsync();
-        return await contexto.Customers.Where(criterio).Include(c => c.Person).Include(c => c.Store).Include(c => c.Territory).OrderBy(c => c.CustomerId).ToListAsync();
+        return await contexto.Customers.Where(criterio).Include(c => c.Person).OrderBy(c => c.CustomerId).ToListAsync();
     }
 }

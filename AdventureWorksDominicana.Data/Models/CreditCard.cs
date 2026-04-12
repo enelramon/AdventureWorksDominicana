@@ -30,7 +30,7 @@ public partial class CreditCard
     /// Credit card number.
     /// </summary>
     [Required(ErrorMessage = "El número de tarjeta es obligatorio.")]
-    [RegularExpression(@"^\d{4}-\d{4}-\d{4}-\d{4}$", ErrorMessage = "El formato de la tarjeta debe ser xxxx-xxxx-xxxx-xxxx (ej. 1234-5678-9012-3456).")]
+    [Range(16, 16, ErrorMessage = "Número de tarjeta inválida, solo puede registrar 16 números.")]
     [StringLength(25, ErrorMessage = "El número de tarjeta no puede exceder los 25 caracteres.")]
     public string CardNumber { get; set; } = null!;
 

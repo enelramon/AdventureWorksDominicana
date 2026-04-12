@@ -1,0 +1,108 @@
+﻿.checkout-container{
+    display: grid;
+    grid-template-columns: 50% 50%;
+}
+.form-container{
+    max-height: 90vh;
+    overflow-y:auto;
+}
+.shopping-products {
+    display: flex;
+    flex-direction: column;
+    max-height: 75vh;
+    overflow-y: auto;
+    gap: 20px;
+}
+
+.shopping-product-card {
+    width: auto;
+    display: flex;
+    border: 1px solid #e0e0e0;
+    border-radius: 10px;
+    transition: all 0.5s cubic-bezier(0.25, 0.8, 0.25, 1);
+    transform: translateY(0px);
+    cursor: pointer;
+}
+
+    .shopping-product-card:hover {
+        transform: translateY(-10px);
+        transition: all 0.5s cubic-bezier(0.25, 0.8, 0.25, 1);
+    }
+
+        .shopping-product-card:hover > .shopping-product-img > img {
+            transform: translateX(-20px);
+            transition: all 0.5s cubic-bezier(0.25, 0.8, 0.25, 1);
+        }
+
+.shopping-product-img > img {
+    transform: translateX(0px);
+    transition: all 0.5s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+.shopping-product-img {
+    position: relative;
+    border-radius: 20px;
+    width: 20%;
+}
+
+    .shopping-product-img > span {
+        position: absolute;
+        left: 5px;
+        top: 5px;
+        border: 1px solid orange;
+        background-color: orange;
+        border-radius: 10px;
+        padding: 2px 10px 2px 10px;
+    }
+
+    .shopping-product-img > img {
+        max-width: 100%;
+    }
+
+.shopping-product-info {
+    padding: 10px;
+    width: 70%;
+}
+
+.shopping-product-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+    .shopping-product-header > span {
+        background-color: rgb(255, 106, 0);
+        color: white;
+        border-radius: 10px;
+        padding: 2px 10px 2px 10px;
+    }
+
+.balance-general {
+    border: 1px solid #e0e0e0;
+    border-radius: 10px;
+    width: 50%;
+    margin: auto;
+}
+
+    .balance-general > p {
+        text-align: center;
+        font-size: 3vw;
+        padding: 0;
+        margin: 0;
+    }
+
+    .balance-general > div {
+        display: grid;
+        grid-template-columns: auto auto;
+        padding: 20px;
+        gap: 20px;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .balance-general > button {
+        border: 1px solid orange;
+        border-radius: 20px;
+        width: 100%;
+        padding: 10px;
+    }
