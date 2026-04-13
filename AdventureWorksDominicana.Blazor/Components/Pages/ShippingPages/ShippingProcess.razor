@@ -72,13 +72,12 @@
 </div>
 
 @code {
-
     [Parameter]
     public int Id { get; set; }
 
     private SalesOrderHeader? orden;
     private decimal pesoTotal;
-
+ 
     protected override async Task OnInitializedAsync()
     {
         orden = await shippingService.Buscar(Id);
@@ -88,7 +87,7 @@
             pesoTotal = await shippingService.GetPesoTotal(Id);
         }
     }
-
+   
     private async Task Procesar()
     {
         await shippingService.ProcesarEnvio(Id);

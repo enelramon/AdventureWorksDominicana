@@ -106,6 +106,11 @@ builder.Services.AddScoped<PersonCreditCardService>();
 builder.Services.AddScoped<ShippingService>();
 builder.Services.AddScoped<UserService>();
 builder.Services.AddScoped<SpecialOfferService>();
+builder.Services.AddScoped<ShipMethodService>();
+builder.Services.AddScoped<UserService>();
+builder.Services.AddScoped<UnitMeasureService>();
+builder.Services.AddScoped<EmployeeService>();
+builder.Services.AddScoped<ProductCategoryService>();
 
 var app = builder.Build();
 
