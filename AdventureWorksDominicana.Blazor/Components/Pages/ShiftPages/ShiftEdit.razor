@@ -1,0 +1,163 @@
+﻿@page "/Shift/Edit/{ShiftId:int}"
+
+@inject NavigationManager navigationManager
+@inject ToastService toastService
+@inject ShiftService shiftService
+@rendermode InteractiveServer
+
+<PageTitle>Editar Tanda</PageTitle>
+
+<div class="container mt-4">
+    <div class="card shadow-lg border-0">
+        <div class="card-header bg-white border-bottom py-3">
+            <h4 class="mb-0 text-primary fw-bold">
+                <i class="bi bi-pencil-square me-2"></i>Editar Tanda
+            </h4>
+            <small class="text-muted">Modificación de turno laboral</small>
+        </div>
+
+        @if (tanda == null)
+        {
+            <div class="card-body p-4 text-center">
+                <div class="spinner-border text-primary" role="status"></div>
+                <p class="mt-2 text-muted">Cargando datos...</p>
+            </div>
+        }
+        else
+        {
+            <EditForm Model="tanda" OnValidSubmit="Guardar">
+                <DataAnnotationsValidator />
+                
+                <div class="card-body p-4">
+                    <div class="row g-3">
+                        <div class="col-md-2 mb-3">
+                            <label class="form-label fw-bold small text-muted text-uppercase">ID</label>
+                            <input class="form-control bg-light" value="@tanda.ShiftId" readonly />
+                        </div>
+
+                        <div class="col-md-10 mb-3">
+                            <label class="form-label fw-bold small text-muted text-uppercase">Nombre de la Tanda</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-white"><i class="bi bi-card-text"></i></span>
+                                <InputText class="form-control" @bind-Value="tanda.Name" />
+                            </div>
+                            <ValidationMessage For="() => tanda.Name" class="text-danger small mt-1" />
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold small text-muted text-uppercase">Hora de Entrada</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-white"><i class="bi bi-box-arrow-in-right"></i></span>
+                                <input type="time" class="form-control" value="@StartTimeString" @onchange="@(e => StartTimeString = e.Value?.ToString())" />
+                            </div>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold small text-muted text-uppercase">Hora de Salida</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-white"><i class="bi bi-box-arrow-right"></i></span>
+                                <input type="time" class="form-control" value="@EndTimeString" @onchange="@(e => EndTimeString = e.Value?.ToString())" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card-footer bg-light p-3 d-flex justify-content-center ">
+                    <a class="btn btn-secondary me-2" href="/Shift/Index">
+                        <i class="bi bi-arrow-left me-1"></i> Cancelar
+                    </a>
+                    <button type="submit" class="btn btn-primary me-2">
+                        <i class="bi bi-floppy me-1"></i> Modificar Tanda
+                    </button>
+                    <button type="button" class="btn btn-danger " @onclick="() => Eliminar()">
+                        <i class="bi bi-x me-1"></i> Eliminar
+                    </button>
+                </div>
+            </EditForm>
+        }
+    </div>
+</div>
+
+@code {
+    [Parameter] public int ShiftId { get; set; }
+
+    private Shift tanda { get; set; }
+
+    // Variables STRING para la UI
+    private string StartTimeString { get; set; } = "";
+    private string EndTimeString { get; set; } = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        tanda = await shiftService.Buscar((byte)ShiftId);
+
+        if (tanda != null)
+        {
+            StartTimeString = tanda.StartTime.ToString("HH:mm");
+            EndTimeString = tanda.EndTime.ToString("HH:mm");
+        }
+    }
+
+    private async Task Eliminar()
+    {
+        try
+        {
+
+            // De vuelta al modelo antes de eliminar
+            if (TimeOnly.TryParse(StartTimeString, out var start))
+                tanda.StartTime = start;
+
+            if (TimeOnly.TryParse(EndTimeString, out var end))
+                tanda.EndTime = end;
+
+            tanda.ModifiedDate = DateTime.Now;
+
+            var exito = await shiftService.Eliminar(tanda.ShiftId);
+            if (exito)
+            {
+                toastService.ShowSuccess("Tanda eliminada correctamente.");
+                navigationManager.NavigateTo("/Shift/Index");
+            }
+            else
+            {
+                toastService.ShowError("Error al actualizar la tanda.");
+            }
+        }
+        catch (Exception ex)
+        {
+            toastService.ShowError(ex.Message);
+        }
+    }
+
+    private async Task Guardar()
+    {
+        try
+        {
+
+
+            // De vuelta al modelo antes de guardar
+            if (TimeOnly.TryParse(StartTimeString, out var start))
+                tanda.StartTime = start;
+
+            if (TimeOnly.TryParse(EndTimeString, out var end))
+                tanda.EndTime = end;
+
+            tanda.ModifiedDate = DateTime.Now;
+
+            var exito = await shiftService.Guardar(tanda);
+            if (exito)
+            {
+                toastService.ShowSuccess("Tanda actualizada correctamente.");
+                navigationManager.NavigateTo("/Shift/Index");
+            }
+            else
+            {
+                toastService.ShowError("Error al actualizar la tanda.");
+            }
+        }
+        catch (Exception ex)
+        {
+            toastService.ShowError(ex.Message);
+        }
+    }
+    }

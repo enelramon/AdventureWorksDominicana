@@ -10,8 +10,8 @@
 <div class="payment-container">
     <div class="payment-header">
         <div>
-            <h2>Métodos de Pago</h2>
-            <p>Gestiona tus tarjetas de crédito registradas.</p>
+            <h2>M&eacute;todos de Pago</h2>
+            <p>Gestiona tus tarjetas de cr&eacute;dito registradas.</p>
         </div>
     </div>
 
@@ -31,6 +31,78 @@
                             </button>
                         }
                     </div>
+
+                    @if (NuevaTarjeta != null)
+                    {
+                        <div class="payment-new-card-form mb-3">
+                            <EditForm Model="NuevaTarjeta" OnValidSubmit="GuardarCambios">
+                                <DataAnnotationsValidator />
+
+                                <div class="payment-form-header">
+                                    <h6>
+                                        <i class="bi bi-plus-circle"></i> Registrar Nueva Tarjeta
+                                    </h6>
+                                    <div class="payment-form-actions">
+                                        <button type="button" class="btn-payment-secondary" @onclick="CancelarNuevaTarjeta">
+                                            <i class="bi bi-x-lg"></i> Cancelar
+                                        </button>
+                                        <button type="submit" class="btn-payment-primary">
+                                            <i class="bi bi-floppy"></i> Guardar Tarjeta
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div class="payment-form-grid">
+                                    <div class="row g-3">
+                                        <div class="col-md-6">
+                                            <label class="payment-form-label">Tipo de Tarjeta</label>
+                                            <select class="payment-form-control" @bind="NuevaTarjeta.CardType">
+                                                <option value="" disabled selected>Seleccione...</option>
+                                                <option value="Visa">Visa</option>
+                                                <option value="MasterCard">MasterCard</option>
+                                            </select>
+                                            <ValidationMessage For="@(() => NuevaTarjeta.CardType)" class="text-danger small" />
+                                        </div>
+
+                                        <div class="col-md-6">
+                                            <label class="payment-form-label">Número de Tarjeta</label>
+                                            <input type="text"
+                                                   class="payment-form-control"
+                                                   @bind="NumeroTarjetaFormateado"
+                                                   @bind:event="oninput"
+                                                   placeholder="Ej: 1111 2222 3333 4444"
+                                                   maxlength="19" />
+                                            <ValidationMessage For="@(() => NuevaTarjeta.CardNumber)" class="text-danger small" />
+                                        </div>
+
+                                        <div class="col-md-6">
+                                            <label class="payment-form-label">Mes de Expiraci&oacute;n</label>
+                                            <select class="payment-form-control" @bind="NuevaTarjeta.ExpMonth">
+                                                <option value=0 selected>MM</option>
+                                                @for (int x = 1; x <= 12; x++)
+                                                {
+                                                    <option value=@x>@x</option>
+                                                }
+                                            </select>
+                                            <ValidationMessage For="@(() => NuevaTarjeta.ExpMonth)" class="text-danger small" />
+                                        </div>
+
+                                        <div class="col-md-6">
+                                            <label class="payment-form-label">Año de Expiraci&oacute;n</label>
+                                            <select class="payment-form-control" @bind="NuevaTarjeta.ExpYear">
+                                                <option value=0 selected>YYYY</option>
+                                                @for (int x = DateTime.Today.Year; x <= DateTime.Today.Year + 5; x++)
+                                                {
+                                                    <option value=@x>@x</option>
+                                                }
+                                            </select>
+                                            <ValidationMessage For="@(() => NuevaTarjeta.ExpYear)" class="text-danger small" />
+                                        </div>
+                                    </div>
+                                </div>
+                            </EditForm>
+                        </div>
+                    }
 
                     @if (TarjetasExistentes.Any())
                     {
@@ -63,72 +135,7 @@
                         </div>
                     }
 
-                    @if (NuevaTarjeta != null)
-                    {
-                        <div class="payment-new-card-form">
-                            <EditForm Model="NuevaTarjeta" OnValidSubmit="GuardarCambios">
-                                <DataAnnotationsValidator />
-
-                                <div class="payment-form-header">
-                                    <h6>
-                                        <i class="bi bi-plus-circle"></i> Registrar Nueva Tarjeta
-                                    </h6>
-                                    <div class="payment-form-actions">
-                                        <button type="button" class="btn-payment-secondary" @onclick="CancelarNuevaTarjeta">
-                                            <i class="bi bi-x-lg"></i> Cancelar
-                                        </button>
-                                        <button type="submit" class="btn-payment-primary">
-                                            <i class="bi bi-floppy"></i> Guardar Tarjeta
-                                        </button>
-                                    </div>
-                                </div>
-
-                                <div class="payment-form-grid">
-                                    <div class="row g-3">
-                                        <div class="col-md-6">
-                                            <label class="payment-form-label">Tipo de Tarjeta</label>
-                                            <select class="payment-form-control" @bind="NuevaTarjeta.CardType">
-                                                <option value="" disabled selected>Seleccione...</option>
-                                                <option value="Visa">Visa</option>
-                                                <option value="MasterCard">MasterCard</option>
-                                            </select>
-                                            <ValidationMessage For="@(() => NuevaTarjeta.CardType)" class="text-danger small" />
-                                        </div>
-
-                                        <div class="col-md-6">
-                                            <label class="payment-form-label">Número de Tarjeta</label>
-                                            <input type="text" class="payment-form-control" @bind="NuevaTarjeta.CardNumber" placeholder="Ej: 1111-2222-3333-4444" />
-                                            <ValidationMessage For="@(() => NuevaTarjeta.CardNumber)" class="text-danger small" />
-                                        </div>
-
-                                        <div class="col-md-6">
-                                            <label class="payment-form-label">Mes de Expiración</label>
-                                            <select class="payment-form-control" @bind="NuevaTarjeta.ExpMonth">
-                                                <option value=0 selected>MM</option>
-                                                @for (int x = 1; x <= 12; x++)
-                                                {
-                                                    <option value=@x>@x</option>
-                                                }
-                                            </select>
-                                            <ValidationMessage For="@(() => NuevaTarjeta.ExpMonth)" class="text-danger small" />
-                                        </div>
-
-                                        <div class="col-md-6">
-                                            <label class="payment-form-label">Año de Expiración</label>
-                                            <select class="payment-form-control" @bind="NuevaTarjeta.ExpYear">
-                                                <option value=0 selected>YYYY</option>
-                                                @for (int x = DateTime.Today.Year; x <= DateTime.Today.Year + 5; x++)
-                                                {
-                                                    <option value=@x>@x</option>
-                                                }
-                                            </select>
-                                            <ValidationMessage For="@(() => NuevaTarjeta.ExpYear)" class="text-danger small" />
-                                        </div>
-                                    </div>
-                                </div>
-                            </EditForm>
-                        </div>
-                    }
+                   
                 </div>
             </div>
 
@@ -146,6 +153,23 @@
     private List<PersonCreditCard> TarjetasExistentes { get; set; } = new();
 
     private CreditCard? NuevaTarjeta { get; set; }
+
+    private string numeroTarjetaFormateado = "";
+
+    public string NumeroTarjetaFormateado
+    {
+        get => numeroTarjetaFormateado;
+        set
+        {
+            // Extrae solo los números y toma un máximo de 16 dígitos
+            var soloNumeros = new string((value ?? "").Where(char.IsDigit).Take(16).ToArray());
+
+            // Divide el texto en bloques de 4 y los une con un espacio
+            numeroTarjetaFormateado = string.Join(" ", soloNumeros.Chunk(4).Select(c => new string(c)));
+
+            if (NuevaTarjeta != null) NuevaTarjeta.CardNumber = numeroTarjetaFormateado;
+        }
+    }
 
     protected override async Task OnInitializedAsync()
     {
@@ -187,6 +211,7 @@
 
     private void AgregarNuevaTarjeta()
     {
+        numeroTarjetaFormateado = ""; 
         NuevaTarjeta = new CreditCard
         {
 
@@ -195,6 +220,7 @@
 
     private void CancelarNuevaTarjeta()
     {
+        numeroTarjetaFormateado = ""; 
         NuevaTarjeta = null;
     }
 

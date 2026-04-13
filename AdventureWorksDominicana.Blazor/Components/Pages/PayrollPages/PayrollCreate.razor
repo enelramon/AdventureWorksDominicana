@@ -1,0 +1,158 @@
+﻿@page "/Payroll/Create"
+
+@inject NavigationManager navigationManager
+@inject ToastService toastService
+@inject PayrollService payrollService
+@attribute [Authorize(Roles = "Admin,HRManager")]
+
+@rendermode InteractiveServer
+
+<PageTitle>Crear N&oacute;mina</PageTitle>
+
+<EditForm Model="NuevaNomina" OnValidSubmit="Guardar" FormName="FormularioCrearNomina">
+    <DataAnnotationsValidator />
+
+    <div class="container-fluid mt-4">
+        <div class="card shadow-lg">
+            <div class="card-header">
+                <h4 class="mb-0">Registro de N&oacute;mina</h4>
+            </div>
+
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-2 mb-3">
+                        <label class="form-label fw-bold">ID N&oacute;mina</label>
+                        <input class="form-control" value="@NuevaNomina.PayrollId" readonly />
+                    </div>
+
+                    <div class="col-md-10 mb-3">
+                        <label class="form-label fw-bold">Descripci&oacute;n de la N&oacute;mina</label>
+                        <InputText class="form-control" @bind-Value="NuevaNomina.Description" placeholder="Ej: 1ra Quincena Abril 2026" />
+                        <ValidationMessage For="() => NuevaNomina.Description" class="text-danger" />
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label fw-bold">Fecha Inicio</label>
+                        <InputDate class="form-control" @bind-Value="NuevaNomina.PeriodStartDate" />
+                        <ValidationMessage For="() => NuevaNomina.PeriodStartDate" class="text-danger" />
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label fw-bold">Fecha Fin</label>
+                        <InputDate class="form-control" @bind-Value="NuevaNomina.PeriodEndDate" />
+                        <ValidationMessage For="() => NuevaNomina.PeriodEndDate" class="text-danger" />
+                    </div>
+                </div>
+
+                <div class="mb-4 mt-2">
+                    <button type="button" class="btn btn-warning" @onclick="CalcularBorrador">
+                        <i class="bi bi-calculator"></i> Procesar C&aacute;lculos
+                    </button>
+                </div>
+
+                @* Mostrar los errores capturados *@
+                @if (ErroresDeCalculo.Any())
+                {
+                    <div class="alert alert-warning shadow-sm border-warning mb-4">
+                        <h6 class="fw-bold text-dark"><i class="bi bi-exclamation-triangle-fill text-warning me-2"></i> Empleados Omitidos</h6>
+                        <p class="small mb-2">Los siguientes empleados no fueron incluidos en este cálculo de nómina. Debe corregir sus perfiles antes de guardar:</p>
+                        <ul class="mb-0 small text-danger fw-bold">
+                            @foreach(var error in ErroresDeCalculo)
+                            {
+                                <li>@error</li>
+                            }
+                        </ul>
+                    </div>
+                }
+
+                @if (NuevaNomina.PayrollDetails.Any())
+                {
+                    <h5 class="fw-bold text-secondary mb-3">Previsualizaci&oacute;n de Pagos</h5>
+                    
+                    <div class="table-responsive">
+                        <QuickGrid Items="NuevaNomina.PayrollDetails.AsQueryable()" Class="table table-striped table-bordered table-hover" Pagination="@pagesBorrador">
+                            <PropertyColumn Property="@(d => d.BusinessEntityId)" Title="Empleado ID" Sortable="true" />
+                            <PropertyColumn Property="@(d => d.GrossSalary)" Title="Sueldo Bruto" Format="N2" Sortable="true" />
+                            <PropertyColumn Property="@(d => d.SfsDeduction)" Title="SFS" Format="N2" Class="text-danger" />
+                            <PropertyColumn Property="@(d => d.AfpDeduction)" Title="AFP" Format="N2" Class="text-danger" />
+                            <PropertyColumn Property="@(d => d.IsrDeduction)" Title="ISR" Format="N2" Class="text-danger" />
+                            <PropertyColumn Property="@(d => d.NetSalary)" Title="Sueldo Neto" Format="N2" Class="fw-bold text-success" Sortable="true" />
+                        </QuickGrid>
+                    </div>
+
+                    <div class="d-flex justify-content-end mt-2">
+                        <Paginator State="@pagesBorrador" />
+                    </div>
+                }
+            </div>
+
+            <div class="card-footer text-center">
+                <a class="btn btn-secondary bi bi-arrow-left" href="/Payroll/Index"> Volver</a>
+                <button type="submit" class="btn btn-success bi bi-floppy" disabled="@(!NuevaNomina.PayrollDetails.Any())"> Guardar N&oacute;mina</button>
+            </div>
+        </div>
+    </div>
+</EditForm>
+
+@code {
+    private Payroll NuevaNomina { get; set; } = new Payroll
+    {
+        PeriodStartDate = DateTime.Today,
+        PeriodEndDate = DateTime.Today.AddDays(15),
+        Status = PayrollStatus.Borrador
+    };
+
+    // lista para atrapar los errores
+    private List<string> ErroresDeCalculo = new List<string>();
+
+    private PaginationState pagesBorrador = new PaginationState { ItemsPerPage = 5 };
+
+    private async Task CalcularBorrador()
+    {
+        try
+        {
+            NuevaNomina.PayrollDetails.Clear();
+            ErroresDeCalculo.Clear(); // Limpiamos errores anteriores
+            
+            // la lista que devuelve el servicio
+            ErroresDeCalculo = await payrollService.ProcesarNomina(NuevaNomina);
+
+            if (ErroresDeCalculo.Any())
+            {
+                toastService.ShowWarning("Cálculo finalizado con advertencias. Revisa la lista de empleados omitidos.");
+            }
+            else
+            {
+                toastService.ShowSuccess("Cálculos procesados correctamente para todos los empleados activos.");
+            }
+        }
+        catch (Exception ex)
+        {
+            toastService.ShowError("Error en el cálculo: " + ex.Message);
+        }
+    }
+
+    private async Task Guardar()
+    {
+        try
+        {
+            var exito = await payrollService.Guardar(NuevaNomina);
+
+            if (exito)
+            {
+                toastService.ShowSuccess("Nómina creada exitosamente.");
+                navigationManager.NavigateTo("/Payroll/Index");
+            }
+            else
+            {
+                toastService.ShowError("No se pudo completar el registro en la base de datos.");
+            }
+        }
+        catch (Exception ex)
+        {
+            toastService.ShowError("Error al intentar guardar: " + ex.Message);
+        }
+    }
+}

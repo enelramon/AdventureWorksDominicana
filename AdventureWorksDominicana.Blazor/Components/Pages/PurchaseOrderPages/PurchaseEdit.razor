@@ -1,0 +1,196 @@
+﻿@page "/PurchaseOrder/Edit/{PurchaseOrderId:int}"
+@attribute [Authorize(Roles = "Admin, PurchasingManager")]
+@rendermode InteractiveServer
+
+@using AdventureWorksDominicana.Data.Models
+@using AdventureWorksDominicana.Data.Context
+@using Microsoft.EntityFrameworkCore
+@using System.Linq
+
+@inject VendorService vendorService
+@inject ShipMethodService shipMethodService
+@inject Contexto Db
+@inject NavigationManager navigationManager
+@inject ToastService toastService
+
+<PageTitle>Editar Estado de Orden de Compra</PageTitle>
+
+@if (order == null)
+{
+    <div class="text-center mt-5">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Cargando...</span>
+        </div>
+        <p class="mt-2">Cargando información de la orden...</p>
+    </div>
+}
+else
+{
+    <EditForm Model="order" OnValidSubmit="GuardarOrden">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+
+        <div class="card shadow-sm mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h4 class="mb-0">1. Datos Generales de la Orden #@order.PurchaseOrderId</h4>
+            </div>
+            <div class="card-body row">
+                <div class="col-md-4 mb-3">
+                    <label class="form-label fw-bold">Proveedor</label>
+                    <InputSelect @bind-Value="order.VendorId" class="form-control bg-light" disabled>
+                        <option value="0">Seleccione Proveedor</option>
+                        @if (proveedores != null)
+                        {
+                            @foreach (var v in proveedores)
+                            {
+                                <option value="@v.BusinessEntityId">@v.Name</option>
+                            }
+                        }
+                    </InputSelect>
+                </div>
+                
+                <div class="col-md-4 mb-3">
+                    <label class="form-label fw-bold">Método de Envío</label>
+                    <InputSelect @bind-Value="order.ShipMethodId" class="form-control bg-light" disabled>
+                        <option value="0">Seleccione Método</option>
+                        @if (metodos != null)
+                        {
+                            @foreach (var m in metodos)
+                            {
+                                <option value="@m.ShipMethodId">@m.Name</option>
+                            }
+                        }
+                    </InputSelect>
+                </div>
+
+                <div class="col-md-4 mb-3">
+                    <label class="form-label fw-bold">Fecha de Orden</label>
+                    <InputDate @bind-Value="order.OrderDate" class="form-control bg-light" disabled />
+                </div>
+
+                <div class="col-md-6 mb-3">
+                    <label class="form-label fw-bold">Número de Revisión</label>
+                    <input type="number" class="form-control bg-light" value="@order.RevisionNumber" readonly />
+                </div>
+
+                <div class="col-md-6 mb-3">
+                    <label class="form-label fw-bold">Estado (Editable)</label>
+                    <InputSelect @bind-Value="order.Status" class="form-control border-primary shadow-sm">
+                        <option value="1">Pendiente</option>
+                        <option value="2">Aprobada</option>
+                        <option value="3">Rechazada</option>
+                        <option value="4">Completada</option>
+                    </InputSelect>
+                </div>
+            </div>
+        </div>
+
+        <div class="card shadow-sm mb-4 border-info">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0">2. Detalles de los Productos (Solo Lectura)</h5>
+            </div>
+            <div class="card-body">
+                <table class="table table-bordered table-striped">
+                    <thead>
+                        <tr>
+                            <th>Producto ID</th>
+                            <th>Cantidad</th>
+                            <th>Precio Unitario</th>
+                            <th>Total Línea</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (order.PurchaseOrderDetails == null || order.PurchaseOrderDetails.Count == 0)
+                        {
+                            <tr>
+                                <td colspan="4" class="text-center text-muted">No hay productos en esta orden.</td>
+                            </tr>
+                        }
+                        else
+                        {
+                            @foreach (var detalle in order.PurchaseOrderDetails)
+                            {
+                                <tr>
+                                    <td>@detalle.ProductId</td>
+                                    <td>@detalle.OrderQty</td>
+                                    <td>@detalle.UnitPrice.ToString("C")</td>
+                                    <td>@((detalle.OrderQty * detalle.UnitPrice).ToString("C"))</td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="row justify-content-end mb-4">
+            <div class="col-md-4 text-end">
+                <p class="mb-1"><strong>SubTotal:</strong> @order.SubTotal.ToString("C")</p>
+                <p class="mb-1"><strong>Impuestos (8%):</strong> @order.TaxAmt.ToString("C")</p>
+                <h4 class="text-primary"><strong>Total Final: @order.TotalDue.ToString("C")</strong></h4>
+            </div>
+        </div>
+
+        <div class="text-center mt-4 mb-4">
+            <a class="btn btn-secondary bi bi-arrow-left" href="/PurchaseOrder/Index"> Volver</a>
+            <button type="submit" class="btn btn-primary bi bi-floppy"> Actualizar Estado</button>
+        </div>
+    </EditForm>
+}
+
+@code {
+    [Parameter]
+    public int PurchaseOrderId { get; set; }
+
+    private PurchaseOrderHeader? order;
+    private List<Vendor>? proveedores;
+    private List<ShipMethod>? metodos;
+
+    protected override async Task OnInitializedAsync()
+    {
+        proveedores = await vendorService.GetList(v => true);
+        metodos = await shipMethodService.GetList(s => true);
+
+        order = await Db.PurchaseOrderHeaders
+            .Include(o => o.PurchaseOrderDetails)
+            .FirstOrDefaultAsync(o => o.PurchaseOrderId == PurchaseOrderId);
+
+        if (order == null)
+        {
+            toastService.ShowError("La orden de compra no fue encontrada.");
+            navigationManager.NavigateTo("/PurchaseOrder/Index");
+        }
+    }
+
+    private async Task GuardarOrden()
+    {
+        try
+        {
+            if (order != null)
+            {
+                var orderInDb = await Db.PurchaseOrderHeaders.FindAsync(order.PurchaseOrderId);
+                
+                if (orderInDb != null)
+                {
+                    orderInDb.Status = order.Status;
+                    orderInDb.ModifiedDate = DateTime.Now;
+                    orderInDb.RevisionNumber = (byte)(orderInDb.RevisionNumber + 1);
+
+                    await Db.SaveChangesAsync();
+                    
+                    toastService.ShowSuccess("Estado de la orden actualizado exitosamente.");
+                    navigationManager.NavigateTo("/PurchaseOrder/Index");
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error principal: {ex.Message}");
+            if (ex.InnerException != null)
+            {
+                Console.WriteLine($"Error interno DB: {ex.InnerException.Message}");
+            }
+            toastService.ShowError("Error al actualizar la orden de compra.");
+        }
+    }
+}

@@ -1,104 +1,149 @@
 ﻿@page "/Employee/Index"
 @attribute [Authorize(Roles = "Admin,HRManager")]
 
-@inject EmployeeService employeeService;
+@using AdventureWorksDominicana.Data.Models
+@using Microsoft.AspNetCore.Components.QuickGrid
+@using System.Linq.Expressions
+
+@inject EmployeeService employeeService
 @rendermode InteractiveServer
 
-<div class="container">
-    <div class="card shadow-lg">
-        <div class="card-header d-flex justify-content-between">
-            <h4>Employees</h4>
-            <a class="btn btn-primary bi bi-plus-square" href="/Employee/Create"> Crear</a>
-        </div>
-        <div class="card-body">
-            @* Encabezados *@
-            <div class="row">
-                <div class="col-3">
-                    <label>Desde:</label>
-                </div>
-                <div class="col-3">
-                    <label>Hasta:</label>
-                </div>
-                <div class="col-3">
-                    <label>Filtro:</label>
-                </div>
-                <div class="col-3">
-                    <label>Buscar:</label>
-                </div>
-            </div>
+<PageTitle>Listado de Empleados</PageTitle>
 
-            @* Inputs *@
-            <div class="row pb-3">
-                <div class="col-3">
-                    <input class="form-control" type="datetime-local" @bind-value="FechaHasta" />
+<div class="container mb-5">
+    <div class="card shadow-lg">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h5 class="card-title m-0">Registro de Empleados</h5>
+            <a href="/Employee/Create" class="btn btn-primary bi bi-plus-square"> Crear</a>
+        </div>
+        
+        <div class="card-body">
+            @if (!string.IsNullOrWhiteSpace(mensajeError))
+            {
+                <div class="alert alert-danger" role="alert">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i> @mensajeError
                 </div>
-                <div class="col-3">
-                    <input class="form-control" type="datetime-local" @bind-value="FechaDesde" />
+            }
+
+            <div class="row align-items-end mb-4">
+                <div class="col-md-3">
+                    <label class="form-label fw-bold">Desde:</label>
+                    <input class="form-control" type="date" @bind-value="FechaDesde" />
                 </div>
-                <div class="col-3">
+                <div class="col-md-3">
+                    <label class="form-label fw-bold">Hasta:</label>
+                    <input class="form-control" type="date" @bind-value="FechaHasta" />
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label fw-bold">Filtro:</label>
                     <select class="form-select" @bind="Filtro">
-                        <option value="" disabled selected hidden>Seleccione un filtro...</option>
+                        <option value="" disabled selected hidden>Seleccione...</option>
                         <option value="Nombre">Nombre</option>
                         <option value="Apellido">Apellido</option>
                         <option value="Puesto">Puesto</option>
                     </select>
                 </div>
-                <div class="col-3">
+                <div class="col-md-3">
+                    <label class="form-label fw-bold">Buscar:</label>
                     <div class="input-group">
                         <input class="form-control" type="text" @bind-value="ValorFiltro" placeholder="Buscar..." />
                         <button class="btn btn-primary bi bi-search" type="button" @onclick="Filtrar"></button>
-                        <button class="btn btn-outline-primary bi bi-arrow-clockwise" type="button" @onclick="Restablecer"></button>
+                        <button class="btn btn-outline-secondary bi bi-arrow-clockwise" type="button" @onclick="Restablecer"></button>
                     </div>
                 </div>
             </div>
 
             <div class="table-responsive">
-                <QuickGrid Class="table table-striped table-bordered table-hover" Pagination="@pages" Items="ListaEmployees.AsQueryable()" ItemKey="@(e => e.BusinessEntityId)">
-                    <PropertyColumn Property="@(e => e.BusinessEntityId)" Sortable="true" Title="Id"></PropertyColumn>
-                    <PropertyColumn Property="@(e => e.BusinessEntity.FirstName)" Sortable="true" Title="Nombre"></PropertyColumn>
-                    <PropertyColumn Property="@(e => e.BusinessEntity.LastName)" Sortable="true" Title="Apellido"></PropertyColumn>
-                    <PropertyColumn Property="@(e => e.JobTitle)" Sortable="true" Title="Puesto"></PropertyColumn>
-                    <PropertyColumn Property="@(e => e.Gender)" Sortable="true" Title="G&eacute;nero"></PropertyColumn>
-                    <PropertyColumn Property="@(e => e.HireDate)" Sortable="true" Format="dd-MM-yyyy" Title="Contrataci&oacute;n"></PropertyColumn>
-                    <TemplateColumn Class="text-center" Context="employee" Title="Estado">
-                        @if (employee.CurrentFlag == true)
+                <QuickGrid TGridItem="Employee" Class="table table-striped table-hover align-middle mb-0" Pagination="@pages" Items="ListaEmployees.AsQueryable()" ItemKey="@(e => e.BusinessEntityId)">
+                    
+                    <PropertyColumn Property="@(e => e.BusinessEntityId)" Sortable="true" Title="Id" />
+                    <PropertyColumn Property="@(e => e.BusinessEntity.FirstName)" Sortable="true" Title="Nombre" />
+                    <PropertyColumn Property="@(e => e.BusinessEntity.LastName)" Sortable="true" Title="Apellido" />
+                    <PropertyColumn Property="@(e => e.JobTitle)" Sortable="true" Title="Puesto" />
+                    <PropertyColumn Property="@(e => e.HireDate)" Sortable="true" Format="dd/MM/yyyy" Title="Contrataci&oacute;n" />
+                    
+                    <TemplateColumn Class="text-center" Context="emp" Title="Estado">
+                        @if (emp.CurrentFlag)
                         {
-                            <span>Activo</span>
+                            <span class="badge bg-success">Activo</span>
                         }
                         else
                         {
-                            <span>Inactivo</span>
+                            <span class="badge bg-secondary">Inactivo</span>
                         }
                     </TemplateColumn>
-                    <TemplateColumn Class="text-center" Context="options" Title="Acci&oacute;n">
-                        <a href="/Employee/Edit/@options.BusinessEntityId" class="btn btn-outline-primary bi bi-pencil-square"> Modificar</a>
+
+                    <TemplateColumn Class="text-center" Context="emp" Title="Alertas">
+                        @if (emp.CurrentFlag)
+                        {
+                            bool faltaDepto = emp.EmployeeDepartmentHistories == null || !emp.EmployeeDepartmentHistories.Any();
+                            bool faltaSueldo = emp.EmployeePayHistories == null || !emp.EmployeePayHistories.Any();
+
+                            if (faltaDepto)
+                            {
+                                <span class="badge bg-danger mb-1" title="Empleado sin departamento ni tanda asignada">
+                                    <i class="bi bi-building-exclamation"></i> Sin Depto
+                                </span><br />
+                            }
+                            if (faltaSueldo)
+                            {
+                                <span class="badge bg-warning text-dark" title="Empleado sin sueldo registrado">
+                                    <i class="bi bi-cash-coin"></i> Sin Sueldo
+                                </span>
+                            }
+                            if (!faltaDepto && !faltaSueldo)
+                            {
+                                <span class="text-success"><i class="bi bi-check-circle-fill"></i> OK</span>
+                            }
+                        }
+                    </TemplateColumn>
+
+                    <TemplateColumn Class="text-center" Context="emp" Title="Acci&oacute;n">
+                        <a href="/Employee/Edit/@emp.BusinessEntityId"
+                           class="btn btn-outline-primary btn-sm bi bi-pencil-square me-1"
+                           title="Editar Datos"></a>
+    
+                        <a href="/Employee/PayHistory/@emp.BusinessEntityId"
+                           class="btn btn-outline-success btn-sm bi bi-cash-stack me-1"
+                           title="Gestionar Sueldo"></a>
+
+                        <a href="/Employee/DepartmentHistory/@emp.BusinessEntityId"
+                           class="btn btn-outline-info btn-sm bi bi-building-up"
+                           title="Trasladar Departamento"></a>
                     </TemplateColumn>
                 </QuickGrid>
             </div>
-            @*Pagination*@
-            <Paginator State="@pages" />
+            
+            <div class="d-flex justify-content-end mt-3">
+                <Paginator State="@pages" />
+            </div>
         </div>
     </div>
 </div>
 
 @code {
-    public List<Employee> ListaEmployees { get; set; } = new List<Employee>();
+    public List<Employee> ListaEmployees { get; set; } = new();
     public DateTime? FechaDesde { get; set; }
     public DateTime? FechaHasta { get; set; }
     public string Filtro { get; set; } = "";
     public string ValorFiltro { get; set; } = "";
+    
+    private string mensajeError = string.Empty;
     private PaginationState pages = new PaginationState { ItemsPerPage = 5 };
 
     protected override async Task OnInitializedAsync()
     {
+        // Traigo la lista completa de empleados al entrar a la pagina
         ListaEmployees = await employeeService.GetList(e => e.BusinessEntityId > 0);
         ListaEmployees = ListaEmployees.OrderByDescending(e => e.ModifiedDate).ToList();
     }
 
     public async Task Filtrar()
     {
+        mensajeError = string.Empty;
         Expression<Func<Employee, bool>> criterio = e => e.BusinessEntityId > 0;
 
+        // Armo la logica para el filtro por fechas de modificacion
         if (FechaDesde.HasValue && FechaHasta.HasValue)
         {
             DateTime fechaHasta = FechaHasta.Value.Date.AddDays(1).AddTicks(-1);
@@ -113,31 +158,44 @@
             var fechaHasta = FechaHasta.Value.Date.AddDays(1).AddTicks(-1);
             criterio = criterio.And(e => e.ModifiedDate <= fechaHasta);
         }
-        if (Filtro != "" && ValorFiltro != "")
+        
+        // Agrego las condiciones para buscar por texto dependiendo del combo box
+        if (!string.IsNullOrWhiteSpace(Filtro) && !string.IsNullOrWhiteSpace(ValorFiltro))
         {
             if (Filtro == "Nombre")
             {
-                criterio = criterio.And(e => e.BusinessEntity.FirstName.Trim().ToLower().Contains(ValorFiltro.ToLower()));
+                criterio = criterio.And(e => e.BusinessEntity.FirstName.ToLower().Contains(ValorFiltro.ToLower()));
             }
-            if (Filtro == "Apellido")
+            else if (Filtro == "Apellido")
             {
-                criterio = criterio.And(e => e.BusinessEntity.LastName.Trim().ToLower().Contains(ValorFiltro.ToLower()));
+                criterio = criterio.And(e => e.BusinessEntity.LastName.ToLower().Contains(ValorFiltro.ToLower()));
             }
-            if (Filtro == "Puesto")
+            else if (Filtro == "Puesto")
             {
-                criterio = criterio.And(e => e.JobTitle.Trim().ToLower().Contains(ValorFiltro.ToLower()));
+                criterio = criterio.And(e => e.JobTitle.ToLower().Contains(ValorFiltro.ToLower()));
             }
         }
+        
+        // Mando a ejecutar la busqueda en la base de datos
         ListaEmployees = await employeeService.GetList(criterio);
         ListaEmployees = ListaEmployees.OrderByDescending(s => s.ModifiedDate).ToList();
+
+        // Si la busqueda me llega vacia, mando el mensaje de error para la alerta
+        if (!ListaEmployees.Any())
+        {
+            mensajeError = "No se encontraron empleados con los criterios ingresados.";
+        }
     }
 
     public async Task Restablecer()
     {
+        // Limpio todos los campos de busqueda y vuelvo a cargar
         FechaDesde = null;
         FechaHasta = null;
         Filtro = "";
         ValorFiltro = "";
+        mensajeError = string.Empty;
+        
         await Filtrar();
     }
 }

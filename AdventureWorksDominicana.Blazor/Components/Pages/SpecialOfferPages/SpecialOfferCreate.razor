@@ -31,6 +31,7 @@
 
                     <div class="col-md-4">
                         <label class="form-label fw-bold">% Descuento (Decimal: 0.15 = 15%)</label>
+                        <label class="form-label fw-bold">% Descuento (Decimal)</label>
                         <InputNumber class="form-control" step="0.01" @bind-Value="Offer.DiscountPct" />
                         <ValidationMessage For="(() => Offer.DiscountPct)" />
                     </div>
@@ -143,6 +144,7 @@
         else
         {
             toastService.ShowError("Error al guardar en la base de datos.");
+            toastService.ShowError("Error al guardar la oferta.");
         }
     }
 }

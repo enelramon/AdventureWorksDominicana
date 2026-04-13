@@ -1,112 +1,152 @@
 ﻿@page "/PurchaseOrder/Create"
 @attribute [Authorize(Roles = "Admin, PurchasingManager")]
-
-@inject PurchaseOrderService purchaseOrderService
-@inject VendorService vendorService
-@inject ShipMethodService shipMethodService
-
+@rendermode InteractiveServer
 
 @using AdventureWorksDominicana.Data.Models
 @using AdventureWorksDominicana.Data.Context
 @using Microsoft.EntityFrameworkCore
+@using System.Linq
+
+@inject VendorService vendorService
+@inject ShipMethodService shipMethodService
 @inject Contexto Db
 @inject NavigationManager navigationManager
-@rendermode InteractiveServer
+@inject ToastService toastService
 
 <PageTitle>Crear Orden de Compra</PageTitle>
-
-<div class="border-bottom pb-2 mb-4">
-    <h4>Crear Registro de Orden de Compra</h4>
-</div>
 
 <EditForm Model="order" OnValidSubmit="GuardarOrden">
     <DataAnnotationsValidator />
     <ValidationSummary />
 
-    
     <div class="card shadow-sm mb-4">
-        <div class="card-body">
-            <div class="row">
-                
-                <div class="col-md-6 mb-3">
-                    <label class="form-label fw-bold">Proveedor</label>
-                    <InputSelect @bind-Value="order.VendorId" class="form-control">
-                        <option value="0">Ej: Seleccione un Proveedor</option>
-                        @if (proveedores != null)
+        <div class="card-header">
+            <h4>1. Datos Generales de la Orden</h4>
+        </div>
+        <div class="card-body row">
+            <div class="col-md-4 mb-3">
+                <label class="form-label fw-bold">Proveedor</label>
+                <InputSelect @bind-Value="order.VendorId" @bind-Value:after="CargarProductosDelProveedor" class="form-control">
+                    <option value="0">Seleccione Proveedor</option>
+                    @if (proveedores != null)
+                    {
+                        @foreach (var v in proveedores)
                         {
-                            @foreach (var v in proveedores)
-                            {
-                                <option value="@v.BusinessEntityId">@v.Name</option>
-                            }
+                            <option value="@v.BusinessEntityId">@v.Name</option>
                         }
-                    </InputSelect>
-                </div>
-
-               
-                <div class="col-md-6 mb-3">
-                    <label class="form-label fw-bold">Método de Envío</label>
-                    <InputSelect @bind-Value="order.ShipMethodId" class="form-control">
-                        <option value="0">Ej: Seleccione Método</option>
-                        @if (metodos != null)
+                    }
+                </InputSelect>
+            </div>
+            
+            <div class="col-md-4 mb-3">
+                <label class="form-label fw-bold">Método de Envío</label>
+                <InputSelect @bind-Value="order.ShipMethodId" class="form-control">
+                    <option value="0">Seleccione Método</option>
+                    @if (metodos != null)
+                    {
+                        @foreach (var m in metodos)
                         {
-                            @foreach (var m in metodos)
-                            {
-                                <option value="@m.ShipMethodId">@m.Name</option>
-                            }
+                            <option value="@m.ShipMethodId">@m.Name</option>
                         }
-                    </InputSelect>
-                </div>
+                    }
+                </InputSelect>
+            </div>
 
-                
-                <div class="col-md-4 mb-3">
-                    <label class="form-label fw-bold">Fecha de Orden</label>
-                    <InputDate @bind-Value="order.OrderDate" class="form-control" />
-                </div>
-
-               
-                <div class="col-md-4 mb-3">
-                    <label class="form-label fw-bold">Revisión</label>
-                    <input type="number" class="form-control bg-light" value="@order.RevisionNumber" readonly />
-                </div>
-
-                <div class="col-md-4 mb-3">
-                    <label class="form-label fw-bold">Estado</label>
-                    <input type="text" class="form-control bg-light" value="Pendiente" readonly />
-                </div>
+            <div class="col-md-4 mb-3">
+                <label class="form-label fw-bold">Fecha de Orden</label>
+                <InputDate @bind-Value="order.OrderDate" class="form-control" />
             </div>
         </div>
     </div>
 
-    
     <div class="card shadow-sm mb-4 border-info">
-        <div class="card-header bg-info text-white py-1">
-            <h6 class="mb-0">Detalles de la Orden (Parte de Hanlet)</h6>
+        <div class="card-header bg-info text-white">
+            <h5 class="mb-0">2. Agregar Productos (Detalles)</h5>
         </div>
-        <div class="card-body text-center">
-            @if (order.PurchaseOrderDetails == null || order.PurchaseOrderDetails.Count == 0)
-            {
-                <p class="text-muted small italic">Aquí Hanlet implementará la tabla para agregar productos.</p>
-            }
+        <div class="card-body">
+            <div class="row align-items-end mb-3">
+                <div class="col-md-4">
+                    <label class="form-label">Producto</label>
+                    <select class="form-select" @bind="detalleTemporal.ProductId" @bind:after="CargarPrecioProducto">
+                        @if (order.VendorId == 0)
+                        {
+                            <option value="0">Primero seleccione un Proveedor arriba</option>
+                        }
+                        else if (productosFiltrados.Count == 0)
+                        {
+                            <option value="0">Este proveedor no tiene productos registrados</option>
+                        }
+                        else
+                        {
+                            <option value="0">Seleccione Producto</option>
+                            @foreach (var p in productosFiltrados)
+                            {
+                                <option value="@p.ProductId">@p.Name</option>
+                            }
+                        }
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Cantidad</label>
+                    <input type="number" class="form-control" @bind="detalleTemporal.OrderQty" min="1" />
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Precio Unitario</label>
+                    <input type="number" class="form-control bg-light" @bind="detalleTemporal.UnitPrice" step="0.01" readonly />
+                </div>
+                <div class="col-md-2">
+                    <button type="button" class="btn btn-primary w-100" @onclick="AgregarDetalle">Agregar</button>
+                </div>
+            </div>
+
+            <table class="table table-bordered table-striped mt-3">
+                <thead>
+                    <tr>
+                        <th>Producto ID</th>
+                        <th>Cantidad</th>
+                        <th>Precio Unitario</th>
+                        <th>Total Línea</th>
+                        <th>Acción</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (order.PurchaseOrderDetails == null || order.PurchaseOrderDetails.Count == 0)
+                    {
+                        <tr>
+                            <td colspan="5" class="text-center text-muted">No hay productos agregados.</td>
+                        </tr>
+                    }
+                    else
+                    {
+                        @foreach (var detalle in order.PurchaseOrderDetails)
+                        {
+                            <tr>
+                                <td>@detalle.ProductId</td>
+                                <td>@detalle.OrderQty</td>
+                                <td>@detalle.UnitPrice.ToString("C")</td>
+                                <td>@((detalle.OrderQty * detalle.UnitPrice).ToString("C"))</td>
+                                <td>
+                                    <button type="button" class="btn btn-danger btn-sm" @onclick="() => EliminarDetalle(detalle)">Eliminar</button>
+                                </td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
         </div>
     </div>
 
-    
     <div class="row justify-content-end mb-4">
-        <div class="col-md-3 text-end border-top pt-2">
+        <div class="col-md-4 text-end">
             <p class="mb-1"><strong>SubTotal:</strong> @order.SubTotal.ToString("C")</p>
-            <p class="mb-1"><strong>Impuestos:</strong> @order.TaxAmt.ToString("C")</p>
-            <h5 class="text-primary"><strong>Total Final: @order.TotalDue.ToString("C")</strong></h5>
+            <p class="mb-1"><strong>Impuestos (8%):</strong> @order.TaxAmt.ToString("C")</p>
+            <h4 class="text-primary"><strong>Total Final: @order.TotalDue.ToString("C")</strong></h4>
         </div>
     </div>
 
-    
-    <div class="d-flex justify-content-center gap-2">
-        <a href="/PurchaseOrder" class="btn btn-primary d-flex align-items-center">
-            ← Volver
-        </a>
-        <button type="submit" class="btn btn-success d-flex align-items-center">
-            💾 Guardar
-        </button>
+    <div class="text-center mt-4 mb-4">
+        <a class="btn btn-secondary bi bi-arrow-left" href="/PurchaseOrder/Index"> Volver</a>
+        <button type="submit" class="btn btn-primary bi bi-floppy" disabled="@(!order.PurchaseOrderDetails.Any())"> Guardar Orden</button>
     </div>
 </EditForm>
 
@@ -116,36 +156,139 @@
         OrderDate = DateTime.Now,
         RevisionNumber = 0,
         Status = 1,
+        Freight = 0,
         ModifiedDate = DateTime.Now,
-        EmployeeId = 1, 
+        EmployeeId = 1,
         PurchaseOrderDetails = new List<PurchaseOrderDetail>()
     };
 
+    private PurchaseOrderDetail detalleTemporal = new PurchaseOrderDetail { OrderQty = 1 };
+
     private List<Vendor>? proveedores;
     private List<ShipMethod>? metodos;
+    private List<Product> productosFiltrados = new List<Product>();
 
     protected override async Task OnInitializedAsync()
     {
-        
         proveedores = await vendorService.GetList(v => true);
         metodos = await shipMethodService.GetList(s => true);
+    }
+
+    private async Task CargarProductosDelProveedor()
+    {
+        detalleTemporal.ProductId = 0;
+        detalleTemporal.UnitPrice = 0;
+        productosFiltrados.Clear();
+
+        if (order.VendorId > 0)
+        {
+            try
+            {
+                productosFiltrados = await Db.ProductVendors
+                    .Include(pv => pv.Product)
+                    .Where(pv => pv.BusinessEntityId == order.VendorId)
+                    .Select(pv => pv.Product)
+                    .Distinct()
+                    .ToListAsync();
+                    
+                if (order.PurchaseOrderDetails.Any())
+                {
+                    order.PurchaseOrderDetails.Clear();
+                    CalcularTotales();
+                    toastService.ShowWarning("Se limpiaron los detalles porque cambiaste de proveedor.");
+                }
+            }
+            catch (Exception ex)
+            {
+                toastService.ShowError($"Error al buscar productos: {ex.Message}");
+            }
+        }
+    }
+
+    private async Task CargarPrecioProducto()
+    {
+        if (detalleTemporal.ProductId > 0 && order.VendorId > 0)
+        {
+            try
+            {
+                var proveedorProducto = await Db.ProductVendors
+                    .FirstOrDefaultAsync(pv => pv.ProductId == detalleTemporal.ProductId && pv.BusinessEntityId == order.VendorId);
+
+                if (proveedorProducto != null)
+                {
+                    detalleTemporal.UnitPrice = proveedorProducto.StandardPrice;
+                }
+                else
+                {
+                    detalleTemporal.UnitPrice = 0;
+                }
+            }
+            catch (Exception ex)
+            {
+                toastService.ShowError($"Error al obtener el precio: {ex.Message}");
+                detalleTemporal.UnitPrice = 0;
+            }
+        }
+        else
+        {
+            detalleTemporal.UnitPrice = 0;
+        }
+    }
+
+    private void AgregarDetalle()
+    {
+        if (detalleTemporal.ProductId == 0 || detalleTemporal.OrderQty <= 0 || detalleTemporal.UnitPrice <= 0)
+        {
+            toastService.ShowWarning("Verifique los datos del producto y asegúrese de que el precio sea mayor a 0.");
+            return;
+        }
+
+        order.PurchaseOrderDetails.Add(new PurchaseOrderDetail
+        {
+            ProductId = detalleTemporal.ProductId,
+            OrderQty = detalleTemporal.OrderQty,
+            UnitPrice = detalleTemporal.UnitPrice,
+            DueDate = DateTime.Now.AddDays(7),
+            ReceivedQty = 0,
+            RejectedQty = 0,
+            ModifiedDate = DateTime.Now
+        });
+
+        detalleTemporal = new PurchaseOrderDetail { OrderQty = 1, UnitPrice = 0, ProductId = 0 };
+        CalcularTotales();
+    }
+
+    private void EliminarDetalle(PurchaseOrderDetail detalle)
+    {
+        order.PurchaseOrderDetails.Remove(detalle);
+        CalcularTotales();
+    }
+
+    private void CalcularTotales()
+    {
+        order.SubTotal = order.PurchaseOrderDetails.Sum(d => d.OrderQty * d.UnitPrice);
+        order.TaxAmt = order.SubTotal * 0.08m;
+        order.TotalDue = order.SubTotal + order.TaxAmt;
     }
 
     private async Task GuardarOrden()
     {
         try
         {
-            
             Db.PurchaseOrderHeaders.Add(order);
             await Db.SaveChangesAsync();
             
-            
-            navigationManager.NavigateTo("/PurchaseOrder");
+            toastService.ShowSuccess("Orden guardada exitosamente.");
+            navigationManager.NavigateTo("/PurchaseOrder/Index");
         }
         catch (Exception ex)
         {
-            
-            Console.WriteLine($"Error: {ex.Message}");
+            Console.WriteLine($"Error principal: {ex.Message}");
+            if (ex.InnerException != null)
+            {
+                Console.WriteLine($"Error interno DB: {ex.InnerException.Message}");
+            }
+            toastService.ShowError("Error al guardar la orden de compra. Revisa la consola.");
         }
     }
 }

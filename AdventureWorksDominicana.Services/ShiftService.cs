@@ -16,6 +16,11 @@ public class ShiftService(IDbContextFactory<Contexto> DbFactory) : IService<Shif
         await using var contexto = await DbFactory.CreateDbContextAsync();
         return await contexto.Shifts.AnyAsync(s => s.ShiftId.Equals(Id));
     }
+    public async Task<bool> ExisteNombre(byte Id, string nombre)
+    {
+        await using var contexto = await DbFactory.CreateDbContextAsync();
+        return await contexto.Shifts.AnyAsync(s => s.Name == nombre && s.ShiftId != Id);
+    }
     public async Task<bool> Insertar(Shift shift)
     {
         await using var contexto = await DbFactory.CreateDbContextAsync();
@@ -56,6 +61,10 @@ public class ShiftService(IDbContextFactory<Contexto> DbFactory) : IService<Shif
         if(shift.StartTime == shift.EndTime)
         {
             throw new InvalidOperationException("La hora de inicio y la hora de fin no pueden ser iguales");
+        }
+        if(await ExisteNombre(shift.ShiftId, shift.Name))
+        {
+            throw new InvalidOperationException($"Ya existe una tanda con el nombre ingresado.");
         }
         if (!await Existe(shift.ShiftId))
         {

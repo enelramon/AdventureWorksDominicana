@@ -1,209 +1,100 @@
 ﻿@page "/Department/Create"
 @attribute [Authorize(Roles = "Admin,HRManager")]
 
-@rendermode InteractiveServer
 @inject DepartmentService departmentService
-@inject PersonService personService
-@inject ShiftService shiftService
-@inject EmployeeService employeeService
 @inject ToastService toastService
 @inject NavigationManager navigationManager
+@rendermode InteractiveServer
 
-<PageTitle>Department Create</PageTitle>
-<EditForm Model="@Department" OnValidSubmit="Guardar">
-    <DataAnnotationsValidator/>
-    <div class="container">
+<PageTitle>Crear Departamento</PageTitle>
+
+<EditForm Model="Department" FormName="crearDepartamento" OnValidSubmit="Guardar">
+    <DataAnnotationsValidator />
+
+    <div class="container mb-5">
         <div class="card shadow-lg">
-            @*Header*@
-            <div class="card-header d-flex justify-content-start">
-                <h5 class="card-title">Creaci&oacute;n de Departamento</h5>
+            <div class="card-header text-center bg-light">
+                <h4 class="card-title">Crear Departamento</h4>
             </div>
-        
-            <div class="card-body">
-                <div>
-                    <label class="form-label fw-bold">Nombre Departamento</label>
-                    <InputText class="form-control" @bind-Value="Department.Name"/>
-                    <ValidationMessage For="()=> Department.Name"/>
-                </div>
-                <div class="mt-2">
-                    <label class="form-label fw-bold">Nombre del Grupo</label>
-                    <InputText class="form-control" @bind-Value="Department.GroupName" />
-                    <ValidationMessage For="() => Department.GroupName" />
-                </div>
-                @*Lista de Detalle Empleados*@
-                <div class="mt-2 border border-success p-3 mb-3">
-                    <h4 class="form-label">Lista de Empleados</h4>
-                    <div class="row mt-2">
-                        <div class="col-5">
-                            <label class="form-label fw-bold">Seleccione un Empleado</label>
-                            <InputSelect class="form-select" @bind-Value="EmployeeDepartmentHistory.BusinessEntityId">
-                                <option value=0>Seleccione un Empleado</option>
-                                @foreach (var p in EmployeesList)
-                                {
-                                    <option value="@p.BusinessEntityId">@p.BusinessEntity.FirstName @p.BusinessEntity.LastName</option>
-                                }
-                            </InputSelect>
-                        </div>
-                        <div class="col-5">
-                            <label class="form-label fw-bold">Seleccione un Horario</label>
-                            <InputSelect class="form-select" @bind-Value="EmployeeDepartmentHistory.ShiftId">
-                                <option value=0>Seleccione un Horario</option>
-                                @foreach (var s in ShifList)
-                                {
-                                    <option value="@s.ShiftId">@s.Name @s.StartTime - @s.EndTime</option>
-                                }
-                            </InputSelect>
-                        </div>
-                        <div class="col-2">
-                            <label class="form-label fw-bold"></label>
-                            <button type="button" class="btn btn-primary d-flex justify-content-center gap-2 mt-2" @onclick="GuardarDetalle">
-                                <i class="bi bi-plus-square"></i>
-                                <span>Agregar</span>
-                            </button>
-                        </div>
+            <div class="card-body bg-light">
+                
+                @if (!string.IsNullOrWhiteSpace(mensajeError))
+                {
+                    <div class="alert alert-danger" role="alert">
+                        <i class="bi bi-exclamation-triangle-fill me-2"></i> @mensajeError
                     </div>
-                    <div class="row">
-                        <div class="col-5">
-                            <label class="form-label fw-bold">Seleccione una Fecha de Inicio</label>
-                            <InputDate class="form-control" @bind-Value="EmployeeDepartmentHistory.StartDate" />
-                        </div>
-                        <div class="col-5">
-                            <label class="form-label fw-bold">Seleccione una Fecha de Fin</label>
-                            <InputDate class="form-control" @bind-Value="EmployeeDepartmentHistory.EndDate" />
-                        </div>
+                }
+
+                <h5 class="mt-2">Datos del Departamento</h5>
+                <hr />
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label"><strong>Nombre Departamento:</strong></label>
+                        <InputText class="form-control" maxlength="50" @bind-Value="Department.Name" placeholder="Ej: Ventas" />
+                        <ValidationMessage For="(() => Department.Name)" class="text-danger" />
                     </div>
-                    @if(!string.IsNullOrWhiteSpace(message)){
-                        <div class="alert alert-danger">
-                            @message
-                        </div>
-                    }
-                    <div class="table-responsive mt-2">
-                        <QuickGrid Items="Department.EmployeeDepartmentHistories.AsQueryable()" Class="table table-striped table-bordered">
-                            <TemplateColumn Context="per" Title="Empleado" Sortable="true">
-                                @{
-                                    var person = EmployeesList?.FirstOrDefault(p => p.BusinessEntityId == per.BusinessEntityId);
-                                }
-                                @(person != null ? $"{person.BusinessEntity.FirstName}" + " " + $"{person.BusinessEntity.LastName}" : "N/A")
-                            </TemplateColumn>
-                            <TemplateColumn Context="st" Title="Tanda-Horario" Sortable="true">
-                                @{
-                                    var shift = ShifList?.FirstOrDefault(s => s.ShiftId == st.ShiftId);
-                                }
-                                @(shift != null ? $"{shift.Name}" + " " + $"{shift.StartTime}" + " - " + $"{shift?.EndTime}" : "N/A")
-                            </TemplateColumn>
-                            <TemplateColumn Context="option" Title="Opci&oacute;n">
-                                <button type="button" class="btn btn-outline-danger bi bi-trash" @onclick="() => Eliminar(option)"></button>
-                            </TemplateColumn>
-                        </QuickGrid>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label"><strong>Nombre del Grupo:</strong></label>
+                        <InputText class="form-control" maxlength="50" @bind-Value="Department.GroupName" placeholder="Ej: Comercial" />
+                        <ValidationMessage For="(() => Department.GroupName)" class="text-danger" />
                     </div>
                 </div>
+
             </div>
-            <div class="card-footer d-flex justify-content-center gap-2">
-                <a href="Department/Index" class="btn btn-secondary d-flex gap-1">
-                    <i class="bi bi-arrow-left"></i>
-                    <span>Volver</span>
-                </a>
-                <button class="btn btn-primary bi bi-floppy">Guardar</button>
+            <div class="card-footer text-center">
+                <a class="btn btn-secondary bi bi-arrow-left" href="/Department/Index"> Volver</a>
+                <button class="btn btn-primary bi bi-floppy" type="submit"> Guardar</button>
             </div>
         </div>
     </div>
 </EditForm>
 
 @code {
-    private Department Department = new Department();
-    private EmployeeDepartmentHistory EmployeeDepartmentHistory = new EmployeeDepartmentHistory();
-    private List<Shift> ShifList = new List<Shift>();
-    private List<Employee> EmployeesList = new List<Employee>();
-    private PaginationState pages = new PaginationState { ItemsPerPage = 5 };
-    private string message = string.Empty;
+    public Department Department { get; set; } = new Department();
+    private string mensajeError = string.Empty;
 
-    protected override async Task OnInitializedAsync()
+    protected override void OnInitialized()
     {
-        EmployeesList = await employeeService.GetList(p => true);
-        ShifList = await shiftService.GetList(s => true);
+        // Agrego la fecha de modificacion inicial por defecto
+        Department.ModifiedDate = DateTime.Now;
     }
 
-    private async Task GuardarDetalle()
+    public async Task Guardar()
     {
-        if (EmployeeDepartmentHistory.BusinessEntityId == 0)
-        {
-            message = "Debe de Seleccionar un Empleado";
-            return;
-        }
-        else if (EmployeeDepartmentHistory.ShiftId == 0)
-        {
-            message = "Debe de Seleccionar un Horario";
-            return;
-        }
-        else if (!EmployeeDepartmentHistory.StartDate.HasValue)
-        {
-            message = "Debe de Seleccionar una Fecha de Inicio de Estadía del Empleado";
-            return;
-        }
-        else if (!EmployeeDepartmentHistory.EndDate.HasValue)
-        {
-            message = "Debe de Seleccionar una Fecha Final de Estadía del Empleado";
-            return;
-        }
-        else if (EmployeeDepartmentHistory.StartDate >= EmployeeDepartmentHistory.EndDate)
-        {
-            message = "Fecha de Inicio de Estadía no debe ser mayor o igual a la Fecha Final de Estadía";
-            return;
-        }
-        else if (EmployeeDepartmentHistory.EndDate <= EmployeeDepartmentHistory.StartDate)
-        {
-            message = "Fecha Final de Estadía no debe ser menor o igual a la Fecha de Inicio de Estadía";
-            return;
-        }
-        else if (Department.EmployeeDepartmentHistories.Any(e => e.BusinessEntityId == EmployeeDepartmentHistory.BusinessEntityId))
-        {
-            toastService.ShowWarning($"Empleado ya está en la lista.");
-            return;
-        }
-        var isShiftProblem = await departmentService.GetList(e => e.DepartmentId != EmployeeDepartmentHistory.DepartmentId && (e.EmployeeDepartmentHistories.Any(u => u.BusinessEntityId == EmployeeDepartmentHistory.BusinessEntityId && u.ShiftId == EmployeeDepartmentHistory.ShiftId)));
-        if (isShiftProblem.Any())
-        {
-            toastService.ShowWarning($"{EmployeesList.FirstOrDefault(p => p.BusinessEntityId == EmployeeDepartmentHistory.BusinessEntityId).BusinessEntity.FirstName} {EmployeesList.FirstOrDefault(p => p.BusinessEntityId == EmployeeDepartmentHistory.BusinessEntityId).BusinessEntity.LastName} ya está en el Departamento {isShiftProblem[0].Name} con el mismo Horario");
-            return;
-        }
-        Department.EmployeeDepartmentHistories.Add(
-            new EmployeeDepartmentHistory
-            {
-                BusinessEntityId = EmployeeDepartmentHistory.BusinessEntityId,
-                ShiftId = EmployeeDepartmentHistory.ShiftId,
-                StartDate = EmployeeDepartmentHistory.StartDate,
-                EndDate = EmployeeDepartmentHistory.EndDate,
-            }
-        );
-        toastService.ShowSuccess($"{EmployeesList.FirstOrDefault(p => p.BusinessEntityId == EmployeeDepartmentHistory.BusinessEntityId)?.BusinessEntity.FirstName} {EmployeesList.FirstOrDefault(p => p.BusinessEntityId == EmployeeDepartmentHistory.BusinessEntityId).BusinessEntity.LastName} se añadió correctamente");
-        EmployeeDepartmentHistory = new EmployeeDepartmentHistory();
-    }
+        mensajeError = string.Empty;
 
-    private void Eliminar(EmployeeDepartmentHistory employee)
-    {
-        Department.EmployeeDepartmentHistories.Remove(employee);
-        toastService.ShowSuccess("Empleado Eliminado con Éxito");
-        EmployeeDepartmentHistory = employee;
-    }
+        // Valido que los campos no vengan vacios (aunque los DataAnnotations deberian atraparlo, por si acaso)
+        if (string.IsNullOrWhiteSpace(Department.Name) || string.IsNullOrWhiteSpace(Department.GroupName))
+        {
+            mensajeError = "Debe completar todos los campos obligatorios.";
+            return;
+        }
 
-    private async Task Guardar()    
-    {
-        var isDepartmentDuplicated = await departmentService.GetList(d => (d.Name.Equals(Department.Name) || d.GroupName.Equals(Department.GroupName)) && d.DepartmentId != Department.DepartmentId);
+        // Busco si ya existe un departamento con ese nombre o en ese mismo grupo para evitar duplicados
+        var isDepartmentDuplicated = await departmentService.GetList(d =>
+            (d.Name.ToLower() == Department.Name.ToLower() || d.GroupName.ToLower() == Department.GroupName.ToLower())
+            && d.DepartmentId != Department.DepartmentId);
+            
         if (isDepartmentDuplicated.Any())
         {
-            toastService.ShowWarning($"El Departamento {Department.Name} ya existe");
+            mensajeError = $"Ya existe un departamento registrado con el nombre '{Department.Name}' o en el grupo '{Department.GroupName}'.";
             return;
         }
-        if (!Department.EmployeeDepartmentHistories.Any())
-        {
-            toastService.ShowWarning($"El Departamento {Department.Name} debe de poseer al menos un empleado");
-            return;
-        }
-        var creado = await departmentService.Guardar(Department);
+        
+        // Actualizo la fecha de modificacion antes de guardar
+        Department.ModifiedDate = DateTime.Now;
+
+        // Mando a ejecutar la accion en el servicio
+        bool creado = await departmentService.Guardar(Department);
+        
         if (creado)
         {
-            toastService.ShowSuccess($"Departamento {Department.Name} guardado correctamente.");
-            navigationManager.NavigateTo("Department/Index");
+            toastService.ShowSuccess($"El departamento '{Department.Name}' se ha guardado correctamente.");
+            navigationManager.NavigateTo("/Department/Index");
+        }
+        else
+        {
+            mensajeError = "Ha ocurrido un error inesperado al intentar guardar en la base de datos.";
         }
     }
 }

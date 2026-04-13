@@ -216,4 +216,32 @@ public class PersonService(IDbContextFactory<Contexto> DbFactory) : IService<Per
         return await contexto.SaveChangesAsync() > 0;
     }
 
+    public bool EsCedulaValida(string cedula)
+    {
+        //ALGORITMO FUNCIONAL DE VALIDACION DE CEDULA DOMINICANA.
+        if (string.IsNullOrWhiteSpace(cedula)) return false;
+
+        cedula = cedula.Replace("-", "").Replace(" ", "");
+
+        if (cedula.Length != 11 || !long.TryParse(cedula, out _)) return false;
+
+        int suma = 0;
+        int[] pesos = { 1, 2, 1, 2, 1, 2, 1, 2, 1, 2 };
+
+        for (int i = 0; i < 10; i++)
+        {
+            int digito = int.Parse(cedula[i].ToString()) * pesos[i];
+
+            if (digito > 9)
+                digito = (digito / 10) + (digito % 10);
+
+            suma += digito;
+        }
+
+        int verificadorCalculado = (10 - (suma % 10)) % 10;
+        int verificadorReal = int.Parse(cedula[10].ToString());
+
+        return verificadorCalculado == verificadorReal;
+    }
+
 }

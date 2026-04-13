@@ -1,0 +1,126 @@
+﻿@page "/Shift/Index"
+@attribute [Authorize(Roles = "Admin,HRManager")]
+
+@inject NavigationManager navigationManager
+@inject ShiftService shiftService
+@rendermode InteractiveServer
+
+<PageTitle>Registro de Tandas</PageTitle>
+
+<div class="container-fluid mt-4">
+    <div class="card shadow-lg">
+        <div class="card-header d-flex justify-content-between">
+            <h4>Registro de Tandas</h4>
+            <a class="btn btn-primary" href="/Shift/Create"><i class="bi bi-plus-square"></i> Crear</a>
+        </div>
+
+        <div class="card-body">
+            <div class="row mb-3 align-items-end">
+                <div class="col-md-3">
+                    <label class="form-label fw-bold">Desde</label>
+                    <input class="form-control" type="date" @bind="Desde" />
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label fw-bold">Hasta</label>
+                    <input class="form-control" type="date" @bind="Hasta" />
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label fw-bold">Filtrar por</label>
+                    <select class="form-select" @bind="Filtros">
+                        <option value="">Seleccione una opci&oacute;n</option>
+                        <option value="Id">Id</option>
+                        <option value="Nombre">Nombre</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label fw-bold">Buscar</label>
+                    <div class="input-group">
+                        <input class="form-control" type="text" placeholder="Buscar..." @bind="ValorFiltro" />
+                        <button class="btn btn-outline-primary" type="button" @onclick="Buscar">
+                            <i class="bi bi-search"></i>
+                        </button>
+                        <button class="btn btn-outline-secondary" type="button" title="Limpiar Filtros" @onclick="Restablecer">
+                            <i class="bi bi-arrow-counterclockwise"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="table-responsive">
+                <QuickGrid Items="ListaTandas" Class="table table-striped table-bordered table-hover">
+                    <PropertyColumn Property="@(e => e.ShiftId)" Title="ID" Sortable="true" />
+                    <PropertyColumn Property="@(e => e.Name)" Title="Nombre" Sortable="true" />
+                    <PropertyColumn Property="@(e => e.StartTime)" Format="HH:mm" Title="Entrada" Sortable="true" />
+                    <PropertyColumn Property="@(e => e.EndTime)" Format="HH:mm" Title="Salida" Sortable="true" />
+                    <PropertyColumn Property="@(e => e.ModifiedDate)" Format="dd/MM/yyyy" Title="Fecha Modificaci&oacute;n" Sortable="true" />
+
+                    <TemplateColumn Title="Acciones">
+                        <a class="btn btn-outline-primary btn-sm" href="/Shift/Edit/@context.ShiftId">
+                            <i class="bi bi-pencil-square"></i> Modificar
+                        </a>
+                    </TemplateColumn>
+                </QuickGrid>
+            </div>
+        </div>
+
+        <div class="card-footer text-end">
+            <strong>Conteo Registros: </strong> @ListaTandas.Count()
+        </div>
+    </div>
+</div>
+
+@code {
+    public IQueryable<Shift> ListaTandas { get; set; } = Enumerable.Empty<Shift>().AsQueryable();
+    public string Filtros { get; set; } = string.Empty;
+    public string ValorFiltro { get; set; } = string.Empty;
+    public DateTime? Desde { get; set; }
+    public DateTime? Hasta { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await Buscar();
+    }
+
+    public async Task Buscar()
+    {
+        List<Shift> resultado;
+
+        if (!string.IsNullOrWhiteSpace(ValorFiltro))
+        {
+            if (Filtros == "Id" && byte.TryParse(ValorFiltro, out byte id))
+            {
+                resultado = await shiftService.GetList(x => x.ShiftId == id);
+            }
+            else if (Filtros == "Nombre")
+            {
+                resultado = await shiftService.GetList(
+                    x => x.Name.ToLower().Contains(ValorFiltro.ToLower()));
+            }
+            else
+            {
+                resultado = await shiftService.GetList(x => true);
+            }
+        }
+        else
+        {
+            resultado = await shiftService.GetList(x => true);
+        }
+
+        if (Desde.HasValue)
+            resultado = resultado.Where(x => x.ModifiedDate.Date >= Desde.Value.Date).ToList();
+
+        if (Hasta.HasValue)
+            resultado = resultado.Where(x => x.ModifiedDate.Date <= Hasta.Value.Date).ToList();
+
+        ListaTandas = resultado.AsQueryable();
+    }
+
+    private async Task Restablecer()
+    {
+        Desde = null;
+        Hasta = null;
+        ValorFiltro = string.Empty;
+        Filtros = string.Empty;
+        await Buscar();
+    }
+}

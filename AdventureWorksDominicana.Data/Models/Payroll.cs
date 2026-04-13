@@ -9,15 +9,16 @@ public partial class Payroll
     [Key]
     public int PayrollId { get; set; }
 
-    [Required(ErrorMessage = "La descripción de la nómina es obligatoria.")]
-    [StringLength(100)]
+    [Required(ErrorMessage = "La descripción es necesaria para identificar la nómina.")]
+    [StringLength(100, ErrorMessage = "La descripción no puede exceder los 100 caracteres.")]
+    [Display(Name = "Descripción")]
     public string Description { get; set; } = null!; // Ejemplo: "1ra Quincena Enero 2024"
 
-    [Required]
+    [Required(ErrorMessage = "Debe definir una fecha de inicio.")]
     [Column(TypeName = "date")]
     public DateTime PeriodStartDate { get; set; }
 
-    [Required]
+    [Required(ErrorMessage = "Debe definir una fecha de fin.")]
     [Column(TypeName = "date")]
     public DateTime PeriodEndDate { get; set; }
 
@@ -25,7 +26,6 @@ public partial class Payroll
     public DateTime? PaymentDate { get; set; }
 
     [Required]
-    [StringLength(20)]
     public PayrollStatus Status { get; set; } = PayrollStatus.Borrador;
 
     [Column(TypeName = "datetime")]

@@ -1,0 +1,221 @@
+﻿@page "/Payroll/Details/{PayrollId:int}"
+@attribute [Authorize(Roles = "Admin,HRManager")]
+
+@using AdventureWorksDominicana.Data.Models
+@using AdventureWorksDominicana.Services
+
+@inject PayrollService payrollService
+@inject ToastService toastService
+@inject NavigationManager navigationManager
+@inject IJSRuntime JS
+@rendermode InteractiveServer
+
+<PageTitle>Detalle de N&oacute;mina</PageTitle>
+
+<div class="container mb-5">
+    <div class="card shadow-lg">
+        @* Header *@
+        <div class="card-header d-flex justify-content-between align-items-center bg-light">
+            <h5 class="card-title m-0">Detalle de N&oacute;mina #@PayrollId</h5>
+            <div class="btn-group">
+                @if (Nomina != null && Nomina.Status == PayrollStatus.Borrador)
+                {
+                    <button class="btn btn-warning bi bi-check-circle" @onclick="AprobarNomina"> Aprobar</button>
+                }
+                else if (Nomina != null && Nomina.Status == PayrollStatus.Aprobada)
+                {
+                    <button class="btn btn-info text-white bi bi-file-earmark-arrow-down" @onclick="DescargarTXT"> TXT Banco</button>
+                    <button class="btn btn-success bi bi-cash-stack" @onclick="PagarNomina"> Pagar</button>
+                }
+                else if (Nomina != null && Nomina.Status == PayrollStatus.Pagada)
+                {
+                    <button class="btn btn-info text-white bi bi-file-earmark-arrow-down" @onclick="DescargarTXT"> TXT Banco</button>
+                }
+                <a class="btn btn-secondary bi bi-arrow-left" href="/Payroll/Index"> Volver</a>
+            </div>
+        </div>
+
+        <div class="card-body">
+            @if (!string.IsNullOrWhiteSpace(mensajeError))
+            {
+                <div class="alert alert-danger" role="alert">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i> @mensajeError
+                </div>
+            }
+
+            @if (Nomina == null)
+            {
+                <div class="text-center p-5">
+                    <div class="spinner-border text-primary" role="status"></div>
+                    <p class="mt-3">Buscando informaci&oacute;n de la n&oacute;mina...</p>
+                </div>
+            }
+            else
+            {
+                @* Encabezado del reporte *@
+                <div class="row border-bottom pb-3 mb-4">
+                    <div class="col-md-6">
+                        <h3 class="fw-bold">AdventureWorks Dominicana</h3>
+                        <p class="text-muted mb-0">RNC: 1-01-00000-1</p>
+                    </div>
+                    <div class="col-md-6 text-md-end">
+                        <h4 class="text-secondary fw-bold">REPORTE DE PAGO</h4>
+                        <span class="badge @(Nomina.Status == PayrollStatus.Pagada ? "bg-success" : "bg-primary") px-3">
+                            @Nomina.Status.ToString().ToUpper()
+                        </span>
+                    </div>
+                </div>
+
+                @* Informacion del periodo *@
+                <div class="row mb-4">
+                    <div class="col-md-4 mb-2">
+                        <label class="d-block text-muted small fw-bold">DESCRIPCI&Oacute;N</label>
+                        <span class="fw-bold">@Nomina.Description</span>
+                    </div>
+                    <div class="col-md-3 mb-2">
+                        <label class="d-block text-muted small fw-bold">PER&Iacute;ODO</label>
+                        <span>@Nomina.PeriodStartDate.ToString("dd/MM/yyyy") - @Nomina.PeriodEndDate.ToString("dd/MM/yyyy")</span>
+                    </div>
+                    <div class="col-md-3 mb-2">
+                        <label class="d-block text-muted small fw-bold">FECHA CREACI&Oacute;N</label>
+                        <span>@Nomina.CreatedDate.ToString("dd/MM/yyyy")</span>
+                    </div>
+                    <div class="col-md-2 mb-2 text-md-end">
+                        <label class="d-block text-muted small fw-bold">FECHA DE PAGO</label>
+                        @if (Nomina.PaymentDate.HasValue)
+                        {
+                            <span class="text-success fw-bold">@Nomina.PaymentDate.Value.ToString("dd/MM/yyyy")</span>
+                        }
+                        else
+                        {
+                            <span class="text-muted fst-italic">Pendiente</span>
+                        }
+                    </div>
+                </div>
+
+                @* Tabla de detalles *@
+                <div class="table-responsive">
+                    <table class="table table-bordered table-striped align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Empleado</th>
+                                <th class="text-end">Sueldo Bruto</th>
+                                <th class="text-end text-danger">SFS</th>
+                                <th class="text-end text-danger">AFP</th>
+                                <th class="text-end text-danger">ISR</th>
+                                <th class="text-end fw-bold text-success">Neto</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var detalle in Nomina.PayrollDetails)
+                            {
+                                <tr>
+                                    <td>
+                                        <div class="fw-bold">@detalle.Employee?.BusinessEntity?.FirstName @detalle.Employee?.BusinessEntity?.LastName</div>
+                                        <small class="text-muted">ID: #@detalle.BusinessEntityId</small>
+                                    </td>
+                                    <td class="text-end">RD$ @detalle.GrossSalary.ToString("N2")</td>
+                                    <td class="text-end text-danger">(@detalle.SfsDeduction.ToString("N2"))</td>
+                                    <td class="text-end text-danger">(@detalle.AfpDeduction.ToString("N2"))</td>
+                                    <td class="text-end text-danger">(@detalle.IsrDeduction.ToString("N2"))</td>
+                                    <td class="text-end fw-bold text-success">RD$ @detalle.NetSalary.ToString("N2")</td>
+                                </tr>
+                            }
+                        </tbody>
+                        <tfoot class="table-secondary">
+                            <tr class="fw-bold">
+                                <td colspan="5" class="text-end">TOTAL GENERAL RD$</td>
+                                <td class="text-end text-success">@Nomina.PayrollDetails.Sum(d => d.NetSalary).ToString("N2")</td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public int PayrollId { get; set; }
+    
+    private Payroll? Nomina;
+    private string mensajeError = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Agrego la busqueda de la nomina al cargar
+        Nomina = await payrollService.Buscar(PayrollId);
+        
+        if (Nomina == null)
+        {
+            toastService.ShowError("La nómina solicitada no existe.");
+            navigationManager.NavigateTo("/Payroll/Index");
+        }
+    }
+
+    private async Task AprobarNomina()
+    {
+        if (Nomina == null) return;
+        
+        mensajeError = string.Empty;
+        // Cambio el estado a aprobada para habilitar el pago
+        Nomina.Status = PayrollStatus.Aprobada;
+        
+        var exito = await payrollService.Guardar(Nomina);
+        
+        if (exito) toastService.ShowSuccess("La nómina ha sido aprobada correctamente.");
+        else mensajeError = "No se pudo actualizar el estado de la nómina.";
+    }
+
+    private async Task PagarNomina()
+    {
+        try
+        {
+            if (Nomina == null) return;
+            
+            mensajeError = string.Empty;
+            // Establezco la fecha de pago y el estado final
+            Nomina.Status = PayrollStatus.Pagada;
+            Nomina.PaymentDate = DateTime.Now;
+            
+            var exito = await payrollService.Guardar(Nomina);
+            
+            if (exito) toastService.ShowSuccess("El pago ha sido procesado y registrado.");
+            else mensajeError = "Error al intentar registrar el pago en el sistema.";
+        }
+        catch (Exception ex)
+        {
+            mensajeError = "Error inesperado al pagar: " + ex.Message;
+        }
+    }
+
+    private async Task DescargarTXT()
+    {
+        try
+        {
+            mensajeError = string.Empty;
+            // Solicito el contenido formateado para el banco
+            string contenidoTxt = await payrollService.GenerarArchivoTxtBanreservas(PayrollId);
+            
+            if (string.IsNullOrEmpty(contenidoTxt))
+            {
+                toastService.ShowWarning("No existen datos suficientes para generar el archivo.");
+                return;
+            }
+
+            // Esto prepara el archivo para la descarga forzada en el cliente
+            string fileName = $"Nomina_Banreservas_{DateTime.Now:yyyyMMdd_HHmm}.txt";
+            byte[] fileBytes = System.Text.Encoding.UTF8.GetBytes(contenidoTxt);
+            string base64 = Convert.ToBase64String(fileBytes);
+
+            // Invocamos la funcion de JS para que el navegador descargue el string
+            await JS.InvokeVoidAsync("descargarArchivo", fileName, base64);
+            toastService.ShowSuccess("Archivo TXT generado exitosamente.");
+        }
+        catch (Exception ex)
+        {
+            mensajeError = "Error al generar el archivo bancario: " + ex.Message;
+        }
+    }
+}
