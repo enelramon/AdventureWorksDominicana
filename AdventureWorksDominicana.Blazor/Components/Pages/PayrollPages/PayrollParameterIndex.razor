@@ -1,139 +1,121 @@
 ﻿@page "/PayrollParameters/Index"
+@attribute [Authorize(Roles = "Admin,HRManager")]
+
 @using AdventureWorksDominicana.Data.Models
-@using AdventureWorksDominicana.Services
+@using Microsoft.AspNetCore.Components.QuickGrid
+
 @inject PayrollParameterService parameterService
 @inject ToastService toastService
 @rendermode InteractiveServer
-@attribute [Authorize(Roles = "Admin,HRManager")]
 
 <PageTitle>Par&aacute;metros de N&oacute;mina</PageTitle>
 
-<div class="container mt-4">
-    <div class="card shadow-lg border-0">
-        <div class="card-header bg-white border-bottom py-3 d-flex justify-content-between align-items-center">
-            <div>
-                <h4 class="mb-0">
-                    <i class="bi bi-gear-fill me-2"></i>Par&aacute;metros de N&oacute;mina
-                </h4>
-                <small class="text-muted">Configuraci&oacute;n de ley (TSS / DGII)</small>
-            </div>
-            <div class="d-flex align-items-center gap-3">
-                <button class="btn btn-primary shadow-sm" type="button" data-bs-toggle="collapse" data-bs-target="#formParametro" @onclick="NuevoParametro">
-                    <i class="bi bi-plus-lg me-1"></i> Nueva Configuración
-                </button>
-            </div>
+<div class="container mb-5">
+    <div class="card shadow-lg">
+        @* Header *@
+        <div class="card-header d-flex justify-content-between align-items-center bg-light">
+            <h5 class="card-title m-0">Par&aacute;metros de N&oacute;mina</h5>
+            <button class="btn btn-primary bi bi-plus-square" type="button" data-bs-toggle="collapse" data-bs-target="#formParametro" @onclick="NuevoParametro"> Nueva Configuraci&oacute;n</button>
         </div>
-        
-        <div class="card-body p-4">
-            
+
+        <div class="card-body bg-light">
+            @if (!string.IsNullOrWhiteSpace(mensajeError))
+            {
+                <div class="alert alert-danger" role="alert">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i> @mensajeError
+                </div>
+            }
+
+            @* Formulario de Registro/Edicion *@
             <div class="collapse mb-5" id="formParametro">
-                <div class="p-4 border border-primary border-opacity-25 rounded-3 bg-light shadow-sm">
-                    <div class="d-flex justify-content-between align-items-center mb-3">
-                        <h6 class="text-uppercase text-primary fw-bold mb-0">
-                            <i class="bi bi-pencil-square me-2"></i>@(Modelo.PayrollParameterId == 0 ? "Nueva Ley" : "Editar Parámetros")
-                        </h6>
-                        <button type="button" class="btn-close" data-bs-toggle="collapse" data-bs-target="#formParametro"></button>
-                    </div>
-                    
-                    <EditForm Model="Modelo" OnValidSubmit="Guardar">
+                <div class="p-4 border rounded bg-white shadow-sm">
+                    <h6 class="text-primary fw-bold mb-3">
+                        <i class="bi bi-pencil-square me-2"></i>@(Modelo.PayrollParameterId == 0 ? "Nueva Ley" : "Editar Parámetros")
+                    </h6>
+                    <hr />
+
+                    <EditForm Model="Modelo" FormName="formParametros" OnValidSubmit="Guardar">
                         <DataAnnotationsValidator />
-                        <div class="row g-3 align-items-start">
-                            
-                            <div class="col-md-3">
-                                <label class="form-label fw-bold small text-muted">SFS (%)</label>
-                                <div class="input-group">
-                                    <span class="input-group-text bg-white"><i class="bi bi-heart-pulse"></i></span>
-                                    <InputNumber class="form-control" @bind-Value="Modelo.SfsPct" Step="0.0001" />
-                                </div>
-                                <div class="text-danger small mt-1">
-                                    <ValidationMessage For="@(() => Modelo.SfsPct)" />
-                                </div>
+                        <div class="row">
+                            <div class="col-md-3 mb-3">
+                                <label class="form-label fw-bold">SFS (%)</label>
+                                <InputNumber class="form-control" @bind-Value="Modelo.SfsPct" Step="0.0001" />
+                                <ValidationMessage For="@(() => Modelo.SfsPct)" class="text-danger" />
                             </div>
 
-                            <div class="col-md-3">
-                                <label class="form-label fw-bold small text-muted">AFP (%)</label>
-                                <div class="input-group">
-                                    <span class="input-group-text bg-white"><i class="bi bi-piggy-bank"></i></span>
-                                    <InputNumber class="form-control" @bind-Value="Modelo.AfpPct" Step="0.0001" />
-                                </div>
-                                <div class="text-danger small mt-1">
-                                    <ValidationMessage For="@(() => Modelo.AfpPct)" />
-                                </div>
+                            <div class="col-md-3 mb-3">
+                                <label class="form-label fw-bold">AFP (%)</label>
+                                <InputNumber class="form-control" @bind-Value="Modelo.AfpPct" Step="0.0001" />
+                                <ValidationMessage For="@(() => Modelo.AfpPct)" class="text-danger" />
                             </div>
 
-                            <div class="col-md-4 d-flex align-items-center h-100 mt-4">
-                                <div class="form-check form-switch mt-2">
+                            <div class="col-md-3 mb-3">
+                                <label class="form-label fw-bold">Sueldo M&iacute;nimo</label>
+                                <InputNumber class="form-control" @bind-Value="Modelo.MinimumWage" />
+                                <ValidationMessage For="@(() => Modelo.MinimumWage)" class="text-danger" />
+                            </div>
+
+                            <div class="col-md-3 mb-3">
+                                <label class="form-label fw-bold">Exento ISR (Anual)</label>
+                                <InputNumber class="form-control" @bind-Value="Modelo.IsrAnnualExemption" />
+                                <ValidationMessage For="@(() => Modelo.IsrAnnualExemption)" class="text-danger" />
+                            </div>
+
+                            <div class="col-md-12 d-flex justify-content-between align-items-center mt-2">
+                                <div class="form-check form-switch">
                                     <InputCheckbox class="form-check-input" @bind-Value="Modelo.IsActive" id="activeSwitch" />
-                                    <label class="form-check-label fw-bold" for="activeSwitch">Ley Vigente</label>
+                                    <label class="form-check-label fw-bold" for="activeSwitch">Configuraci&oacute;n Vigente</label>
                                 </div>
-                            </div>
-
-                            <div class="col-md-3 mt-3">
-                                <label class="form-label fw-bold small text-muted">Sueldo M&Iacute;nimo</label>
-                                <div class="input-group">
-                                    <span class="input-group-text bg-white fw-bold">RD$</span>
-                                    <InputNumber class="form-control" @bind-Value="Modelo.MinimumWage" />
+                                <div class="btn-group">
+                                    <button type="button" class="btn btn-secondary bi bi-x-lg" data-bs-toggle="collapse" data-bs-target="#formParametro"> Cancelar</button>
+                                    <button type="submit" class="btn btn-primary bi bi-floppy"> Guardar</button>
                                 </div>
-                                <ValidationMessage For="@(() => Modelo.MinimumWage)" class="text-danger small" />
-                            </div>
-
-                            <div class="col-md-3 mt-3">
-                                <label class="form-label fw-bold small text-muted">Exento ISR (Anual)</label>
-                                <div class="input-group">
-                                    <span class="input-group-text bg-white fw-bold">RD$</span>
-                                    <InputNumber class="form-control" @bind-Value="Modelo.IsrAnnualExemption" />
-                                </div>
-                                <ValidationMessage For="@(() => Modelo.IsrAnnualExemption)" class="text-danger small" />
-                            </div>
-
-                            <div class="col-md-4 mt-3">
-                                <label class="form-label d-none d-md-block">&nbsp;</label>
-                                <button type="submit" class="btn btn-primary w-100 shadow-sm">
-                                    <i class="bi bi-floppy me-1"></i> Guardar
-                                </button>
                             </div>
                         </div>
                     </EditForm>
                 </div>
             </div>
 
-            <div class="table-responsive border rounded-3 shadow-sm bg-white">
-                <QuickGrid Items="ListaParametros" Class="table table-hover align-middle mb-0" Pagination="@pages">
+            <h6 class="text-primary fw-bold mb-3">Historial de Configuraciones</h6>
+            <hr />
+
+            <div class="table-responsive">
+                <QuickGrid TGridItem="PayrollParameter" Items="ListaParametros" Class="table table-hover table-striped align-middle mb-0" Pagination="@pages">
                     <PropertyColumn Property="@(p => p.PayrollParameterId)" Title="ID" Sortable="true" />
                     <PropertyColumn Property="@(p => p.SfsPct)" Title="SFS" Format="P2" Sortable="true" />
                     <PropertyColumn Property="@(p => p.AfpPct)" Title="AFP" Format="P2" Sortable="true" />
                     
-                    <TemplateColumn Title="Topes / Exento">
+                    <TemplateColumn Title="Tope / Exenci&oacute;n">
                         <div class="d-flex flex-column">
-                            <span class="fw-bold text-dark">RD$ @context.MinimumWage.ToString("N2")</span>
-                            <span class="text-muted small">Exento: @context.IsrAnnualExemption.ToString("N0")</span>
+                            <span class="fw-bold">RD$ @context.MinimumWage.ToString("N2")</span>
+                            <small class="text-muted">Anual: RD$ @context.IsrAnnualExemption.ToString("N2")</small>
                         </div>
                     </TemplateColumn>
 
                     <TemplateColumn Title="Estado">
-                        <span class="badge rounded-pill @(context.IsActive ? "bg-primary-subtle text-primary border border-primary-subtle" : "bg-light text-secondary border") px-3">
-                            <i class="bi @(context.IsActive ? "bi-check-circle-fill" : "bi-clock-history") me-1"></i>
-                            @(context.IsActive ? "Vigente" : "Histórico")
-                        </span>
+                        @if (context.IsActive)
+                        {
+                            <span class="badge bg-success">Vigente</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-secondary">Hist&oacute;rico</span>
+                        }
                     </TemplateColumn>
 
-                    <TemplateColumn Title="Acciones" Align="Align.Center">
-                        <button class="btn btn-link text-primary p-0" title="Editar" @onclick="() => Editar(context)" data-bs-toggle="collapse" data-bs-target="#formParametro">
-                            <i class="bi bi-pencil-square fs-5"></i>
-                        </button>
+                    <TemplateColumn Title="Acci&oacute;n" Align="Align.Center">
+                        <button class="btn btn-outline-primary btn-sm bi bi-pencil-square" title="Editar" @onclick="() => Editar(context)" data-bs-toggle="collapse" data-bs-target="#formParametro"></button>
                     </TemplateColumn>
                 </QuickGrid>
             </div>
 
-            <div class="d-flex justify-content-end mt-4">
+            <div class="d-flex justify-content-end mt-3">
                 <Paginator State="@pages" />
             </div>
         </div>
 
-        <div class="card-footer">
-            <a class="btn btn-secondary" href="/">
-                <i class="bi bi-arrow-left-short"></i> Volver
-            </a>
+        <div class="card-footer text-center">
+            <a href="/Payroll/Index" class="btn btn-secondary bi bi-arrow-left"> Volver a N&oacute;mina</a>
         </div>
     </div>
 </div>
@@ -142,40 +124,51 @@
     private IQueryable<PayrollParameter> ListaParametros { get; set; } = Enumerable.Empty<PayrollParameter>().AsQueryable();
     private PayrollParameter Modelo { get; set; } = new();
     private PaginationState pages = new PaginationState { ItemsPerPage = 5 };
+    private string mensajeError = string.Empty;
 
     protected override async Task OnInitializedAsync()
     {
+        // Cargo la lista inicial al entrar a la pagina
         await CargarLista();
     }
 
     private async Task CargarLista()
     {
+        // Traigo los parametros ordenados para que el vigente salga de primero
         var result = await parameterService.GetList(p => true);
         ListaParametros = result.OrderByDescending(p => p.IsActive).AsQueryable();
     }
 
     private void NuevoParametro()
     {
-        Modelo = new PayrollParameter { IsActive = true, SfsPct = 0.0304m, AfpPct = 0.0287m };
+        mensajeError = string.Empty;
+        // Agrego valores por defecto comunes segun la ley actual de TSS
+        Modelo = new PayrollParameter { IsActive = true, SfsPct = 0.0304m, AfpPct = 0.0287m, MinimumWage = 16262.50m };
     }
 
     private void Editar(PayrollParameter item)
     {
+        mensajeError = string.Empty;
+        // Cargo el modelo seleccionado para edicion
         Modelo = item;
     }
 
     private async Task Guardar()
     {
+        mensajeError = string.Empty;
+
+        // Esto hace la llamada al servicio para insertar o actualizar
         var exito = await parameterService.Guardar(Modelo);
+        
         if (exito)
         {
-            toastService.ShowSuccess("Parámetros actualizados correctamente.");
+            toastService.ShowSuccess("Configuración de nómina guardada correctamente.");
             await CargarLista();
             Modelo = new();
         }
         else
         {
-            toastService.ShowError("Error al guardar los parámetros.");
+            mensajeError = "No se pudo guardar la configuración. Verifique los datos ingresados.";
         }
     }
 }
