@@ -1,0 +1,126 @@
+﻿@page "/shipping-detail/{Id:int}"
+
+@rendermode InteractiveServer
+
+@using AdventureWorksDominicana.Data.Models
+@using AdventureWorksDominicana.Services
+
+@inject ShippingService shippingService
+@inject NavigationManager navigationManager
+
+<div class="container">
+
+    <button class="btn btn-outline-secondary mb-3" @onclick="Volver">
+        ← Volver
+    </button>
+
+    @if (order == null)
+    {
+        <p>Cargando...</p>
+    }
+    else
+    {
+        <div class="card shadow-lg p-4">
+
+            <div class="d-flex justify-content-between">
+                <h4>Orden #@order.SalesOrderId</h4>
+                <span class="badge bg-primary">@GetEstado(order.Status)</span>
+            </div>
+
+            <hr />
+
+            <div class="row">
+                <div class="col-md-6">
+                    <p><strong>Cliente:</strong> @GetCliente(order)</p>
+                    <p><strong>Fecha:</strong> @order.OrderDate</p>
+                </div>
+
+                <div class="col-md-6 text-end">
+                    <p><strong>Peso:</strong> @pesoTotal lbs</p>
+                    <p><strong>Envío:</strong> @order.Freight</p>
+                </div>
+            </div>
+
+            <div class="progress mb-4">
+                <div class="progress-bar" style="width:@GetProgreso(order.Status)%"></div>
+            </div>
+
+            <h5>Productos</h5>
+
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th>Producto</th>
+                        <th>Cantidad</th>
+                        <th>Precio</th>
+                        <th>Total</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    @foreach (var item in order.SalesOrderDetails)
+                    {
+                        <tr>
+                            <td>@item.SpecialOfferProduct.Product.Name</td>
+                            <td>@item.OrderQty</td>
+                            <td>@item.UnitPrice</td>
+                            <td>@(item.OrderQty * item.UnitPrice)</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+
+        </div>
+    }
+
+</div>
+
+@code {
+
+    [Parameter] public int Id { get; set; }
+
+    private SalesOrderHeader? order;
+    private decimal pesoTotal;
+
+    protected override async Task OnInitializedAsync()
+    {
+        order = await shippingService.Buscar(Id);
+
+        if (order != null)
+            pesoTotal = await shippingService.GetPesoTotal(Id);
+    }
+
+    private string GetCliente(SalesOrderHeader o)
+    {
+        if (o.Customer?.Person != null)
+            return $"{o.Customer.Person.FirstName} {o.Customer.Person.LastName}";
+
+        return o.Customer?.Store?.Name ?? "N/A";
+    }
+
+    private string GetEstado(byte status) => status switch
+    {
+        1 => "Pendiente",
+        2 => "Procesando",
+        3 => "En tránsito",
+        4 => "En camino",
+        5 => "Entregado",
+        6 => "Cancelado",
+        _ => "Desconocido"
+    };
+
+    private int GetProgreso(byte status) => status switch
+    {
+        1 => 10,
+        2 => 30,
+        3 => 60,
+        4 => 80,
+        5 => 100,
+        _ => 0
+    };
+
+    private void Volver()
+    {
+        navigationManager.NavigateTo("/shipping-orders");
+    }
+}

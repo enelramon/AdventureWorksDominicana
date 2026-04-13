@@ -1,0 +1,238 @@
+﻿@page "/shipping-orders"
+
+@rendermode InteractiveServer
+
+@using AdventureWorksDominicana.Data.Models
+@using AdventureWorksDominicana.Services
+
+@inject ShippingService shippingService
+@inject NavigationManager navigationManager
+
+<div class="container">
+
+    <h3 class="mb-3">Mis Envíos</h3>
+
+    <!-- BUSCADOR -->
+    <div class="mb-4">
+        <InputText class="form-control"
+                   placeholder="Buscar por orden o cliente..."
+                   @bind-Value="Busqueda"
+                   @oninput="async _ => await Cargar()" />
+    </div>
+
+    <!-- LISTA -->
+    @foreach (var order in ListaPaginada)
+    {
+        <div class="card mb-3 shadow-sm p-3">
+
+            <div class="d-flex justify-content-between">
+                <strong>#@( (paginaActual - 1) * pageSize + ListaPaginada.IndexOf(order) + 1 )</strong>
+                <span class="badge bg-primary">@GetEstado(order.Status)</span>
+            </div>
+
+            <hr />
+
+            <div class="row">
+                <div class="col-md-6">
+                    <div><strong>Cliente:</strong> @GetCliente(order)</div>
+                    <div><strong>Fecha:</strong> @order.OrderDate</div>
+                </div>
+
+                <div class="col-md-6 text-end">
+                    <div><strong>Peso:</strong> @GetPeso(order.SalesOrderId) lbs</div>
+                    <div><strong>Envío:</strong> @order.Freight</div>
+                </div>
+            </div>
+
+            <div class="mt-2 text-muted">
+                @GetPeso(order.SalesOrderId) x 2 = @order.Freight
+            </div>
+
+            <div class="progress mt-3" style="height: 8px;">
+                <div class="progress-bar" style="width:@GetProgreso(order.Status)%"></div>
+            </div>
+
+            <div class="mt-3 d-flex gap-2">
+
+                <button class="btn btn-outline-primary btn-sm"
+                        @onclick="() => VerDetalle(order.SalesOrderId)">
+                    Detalle
+                </button>
+
+                <button class="btn btn-outline-danger btn-sm"
+                        @onclick="() => AbrirConfirmacion(order.SalesOrderId)">
+                    Cancelar
+                </button>
+
+            </div>
+        </div>
+    }
+
+    <!-- PAGINACIÓN -->
+    <div class="d-flex justify-content-between mt-3">
+        <button class="btn btn-outline-primary" @onclick="Anterior">Anterior</button>
+        <span>Página @paginaActual de @TotalPaginas</span>
+        <button class="btn btn-outline-primary" @onclick="Siguiente">Siguiente</button>
+    </div>
+
+</div>
+
+<!-- MODAL CANCELAR -->
+@if (mostrarModal)
+{
+    <div class="modal fade show d-block" tabindex="-1"
+         style="background-color: rgba(0,0,0,0.5);">
+
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+
+                <div class="modal-header">
+                    <h5 class="modal-title">Confirmar Cancelación</h5>
+                </div>
+
+                <div class="modal-body">
+                    <p>¿Seguro que deseas cancelar este envío?</p>
+                </div>
+
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" @onclick="CerrarModal">
+                        No
+                    </button>
+
+                    <button class="btn btn-danger" @onclick="ConfirmarCancelacion">
+                        Sí, cancelar
+                    </button>
+                </div>
+
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+
+    public List<SalesOrderHeader> Lista = new();
+    public string Busqueda = "";
+
+    private Dictionary<int, decimal> pesos = new();
+
+    private int paginaActual = 1;
+    private int pageSize = 5;
+
+    private int? orderCancelarId;
+    private bool mostrarModal = false;
+
+    private List<SalesOrderHeader> ListaPaginada =>
+        Lista.Skip((paginaActual - 1) * pageSize)
+             .Take(pageSize)
+             .ToList();
+
+    private int TotalPaginas =>
+        (int)Math.Ceiling((double)Lista.Count / pageSize);
+
+    protected override async Task OnInitializedAsync()
+    {
+        await Cargar();
+    }
+
+    private async Task Cargar()
+    {
+        var data = await shippingService.GetList(x => true);
+
+        if (!string.IsNullOrWhiteSpace(Busqueda))
+        {
+            data = data.Where(x =>
+                x.SalesOrderId.ToString().Contains(Busqueda) ||
+                GetCliente(x).Contains(Busqueda, StringComparison.OrdinalIgnoreCase)
+            ).ToList();
+        }
+
+        Lista = data;
+
+        pesos.Clear();
+
+        foreach (var item in Lista)
+        {
+            pesos[item.SalesOrderId] =
+                await shippingService.GetPesoTotal(item.SalesOrderId);
+        }
+    }
+
+    // 🔹 MODAL
+    private void AbrirConfirmacion(int id)
+    {
+        orderCancelarId = id;
+        mostrarModal = true;
+    }
+
+    private void CerrarModal()
+    {
+        mostrarModal = false;
+        orderCancelarId = null;
+    }
+
+    private async Task ConfirmarCancelacion()
+    {
+        if (orderCancelarId != null)
+        {
+            await shippingService.CancelarEnvio(orderCancelarId.Value);
+            await Cargar();
+        }
+
+        CerrarModal();
+    }
+
+    // 🔹 PAGINACIÓN
+    private void Siguiente()
+    {
+        if (paginaActual < TotalPaginas)
+            paginaActual++;
+    }
+
+    private void Anterior()
+    {
+        if (paginaActual > 1)
+            paginaActual--;
+    }
+
+    // HELPERS
+    private decimal GetPeso(int id) =>
+        pesos.ContainsKey(id) ? pesos[id] : 0;
+
+    private string GetCliente(SalesOrderHeader order)
+    {
+        if (order.Customer?.Person != null)
+            return $"{order.Customer.Person.FirstName} {order.Customer.Person.LastName}";
+
+        if (order.Customer?.Store != null)
+            return order.Customer.Store.Name;
+
+        return "N/A";
+    }
+
+    private string GetEstado(byte status) => status switch
+    {
+        1 => "Pendiente",
+        2 => "Procesando",
+        3 => "En tránsito",
+        4 => "En camino",
+        5 => "Entregado",
+        6 => "Cancelado",
+        _ => "Desconocido"
+    };
+
+    private int GetProgreso(byte status) => status switch
+    {
+        1 => 10,
+        2 => 30,
+        3 => 60,
+        4 => 80,
+        5 => 100,
+        _ => 0
+    };
+
+    private void VerDetalle(int id)
+    {
+        navigationManager.NavigateTo($"/shipping-detail/{id}");
+    }
+}

@@ -12,7 +12,7 @@
 
 <div class="nav-scrollable" onclick="document.querySelector('.navbar-toggler').click()">
     <nav class="nav flex-column">
-        
+
         @* ========== HOME MODULE ========== *@
         <div class="nav-item px-3">
             <NavLink class="nav-link" href="/Home/Page" Match="NavLinkMatch.All">
@@ -69,6 +69,88 @@
                     </div>
                 </div>
 
+        @* ========== SHiPPING MODULE ========== *@
+        <div class="nav-item">
+            <NavLink class="nav-link" href="/shipping-orders">
+                <span class="bi bi-truck-nav-menu"></span> <small>Shipping</small>
+            </NavLink>
+        </div>
+
+        @* ========== PRODUCTS MODULE ========== *@
+        <div class="accordion px-3 nav-item" id="accordionProducts">
+            <div class="accordion-item bg-transparent border-0">
+                <div class="accordion-header">
+                    <button class="accordion-button collapsed bg-transparent px-3" type="button" data-bs-toggle="collapse" data-bs-target="#collapseProducts">
+                        <span class="bi bi-bicycle-nav-menu"></span> <small>Products</small>
+                    </button>
+                </div>
+                <div id="collapseProducts" class="accordion-collapse collapse" data-bs-parent="#accordionProducts">
+                    <div class="accordion-body p-0 ps-3">
+                        <div class="nav-item pt-2">
+                            <NavLink class="nav-link" href="/Product/Index">
+                                <span class="bi bi-box-seam-nav-menu"></span> <small>Products</small>
+                            </NavLink>
+                        </div>
+                        <div class="nav-item">
+                            <NavLink class="nav-link" href="/ProductCategory/Index">
+                                <span class="bi bi-folder-nav-menu"></span> <small>Categories</small>
+                            </NavLink>
+                        </div>
+                        <div class="nav-item">
+                            <NavLink class="nav-link" href="/ProductVendor/Index">
+                                <span class="bi bi-people-nav-menu"></span> <small>Product for vendor</small>
+                            </NavLink>
+                        </div>
+                        <div class="nav-item">
+                            <NavLink class="nav-link" href="/ProductDescription/Index">
+                                <span class="bi bi-file-text-nav-menu"></span> <small>Descriptions</small>
+                            </NavLink>
+                        </div>
+                                                <div class="nav-item">
+                            <NavLink class="nav-link" href="/SpecialOffer/Index">
+                                <span class="bi bi-percent-nav-menu"></span> <small>Special Offers</small>
+                            </NavLink>
+                        </div>
+                        <div class="nav-item">
+                            <NavLink class="nav-link" href="/UnitMeasure/Index">
+                                <span class="bi bi-rulers-nav-menu"></span> <small>Unit Measures</small>
+                            </NavLink>
+                        </div>
+                        <div class="nav-item">
+                            <NavLink class="nav-link" href="/SpecialOffer/Index">
+                                <span class="bi bi-percent-nav-menu"></span> <small>Special Offers</small>
+                            </NavLink>
+                        </div>
+                        <div class="nav-item">
+                            <NavLink class="nav-link" href="/UnitMeasure/Index">
+                                <span class="bi bi-rulers-nav-menu"></span> <small>Unit Measures</small>
+                            </NavLink>
+                        </div>
+                        <div class="nav-item">
+                            <NavLink class="nav-link" href="/Culture/Index">
+                                <span class="bi bi-translate-nav-menu"></span> <small>Cultures</small>
+                            </NavLink>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        @* ========== INVENTORY & WAREHOUSE MODULE ========== *@
+        <div class="accordion px-3 nav-item" id="accordionInventory">
+            <div class="accordion-item bg-transparent border-0">
+                <div class="accordion-header">
+                    <button class="accordion-button collapsed bg-transparent px-3" type="button" data-bs-toggle="collapse" data-bs-target="#collapseInventory">
+                        <span class="bi bi-boxes-nav-menu"></span> <small>Inventory</small>
+                    </button>
+                </div>
+                <div id="collapseInventory" class="accordion-collapse collapse" data-bs-parent="#accordionInventory">
+                    <div class="accordion-body p-0 ps-3">
+                        <div class="nav-item pt-2">
+                            <NavLink class="nav-link" href="/Location/Index">
+                                <span class="bi bi-pin-map-nav-menu"></span> <small>Locations</small>
+                            </NavLink>
+                          
                 @* ========== PRODUCTS MODULE ========== *@
                 <div class="accordion px-3 nav-item" id="accordionProducts">
                     <div class="accordion-item bg-transparent border-0">
@@ -125,6 +207,7 @@
                             <button class="accordion-button collapsed bg-transparent px-3" type="button" data-bs-toggle="collapse" data-bs-target="#collapseInventory">
                                 <span class="bi bi-boxes-nav-menu"></span> <small>Inventory</small>
                             </button>
+
                         </div>
                         <div id="collapseInventory" class="accordion-collapse collapse" data-bs-parent="#accordionInventory">
                             <div class="accordion-body p-0 ps-3">
@@ -293,6 +376,7 @@
                     </NavLink>
                 </div>
 
+
                 <div class="nav-item px-3">
                     <NavLink class="nav-link" href="/MyAccount">
                         <span class="bi bi-person-circle-nav-menu" aria-hidden="true"></span> <small>My Account</small>
@@ -337,8 +421,3 @@
         </AuthorizeView>
     </nav>
 </div>
-
-       
-
-
-        

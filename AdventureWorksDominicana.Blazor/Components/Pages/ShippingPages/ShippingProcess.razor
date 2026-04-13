@@ -1,0 +1,107 @@
+﻿@page "/shipping-process/{Id:int}"
+
+@rendermode InteractiveServer
+
+@using AdventureWorksDominicana.Data.Models
+@using AdventureWorksDominicana.Services
+
+@inject ShippingService shippingService
+@inject NavigationManager navigationManager
+
+<div class="container">
+
+    <div class="card shadow-lg">
+
+        <div class="card-header">
+            <h4>Procesar Envío</h4>
+        </div>
+
+        <div class="card-body">
+
+            @if (orden == null)
+            {
+                <p>Cargando...</p>
+            }
+            else
+            {
+                <div class="mb-3">
+                    <strong>Orden:</strong> @orden.SalesOrderId
+                </div>
+
+                <div class="mb-3">
+                    <strong>Cliente:</strong> @GetCliente()
+                </div>
+
+                <div class="mb-3">
+                    <strong>Peso Total:</strong> @pesoTotal lbs
+                </div>
+
+                <div class="mb-3">
+                    <strong>Envío Calculado:</strong> @(pesoTotal * 2)
+                </div>
+
+                <hr />
+
+                <table class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th>Producto</th>
+                            <th>Cantidad</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var d in orden.SalesOrderDetails)
+                        {
+                            <tr>
+                                <td>@d.SpecialOfferProduct.Product.Name</td>
+                                <td>@d.OrderQty</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+
+                <button class="btn btn-success" @onclick="Procesar">
+                    Confirmar Envío
+                </button>
+            }
+
+        </div>
+
+    </div>
+
+</div>
+
+@code {
+
+    [Parameter]
+    public int Id { get; set; }
+
+    private SalesOrderHeader? orden;
+    private decimal pesoTotal;
+
+    protected override async Task OnInitializedAsync()
+    {
+        orden = await shippingService.Buscar(Id);
+
+        if (orden != null)
+        {
+            pesoTotal = await shippingService.GetPesoTotal(Id);
+        }
+    }
+
+    private async Task Procesar()
+    {
+        await shippingService.ProcesarEnvio(Id);
+        navigationManager.NavigateTo("/shipping-orders");
+    }
+
+    private string GetCliente()
+    {
+        var person = orden?.Customer?.Person;
+
+        if (person != null)
+            return $"{person.FirstName} {person.LastName}";
+
+        return orden?.Customer?.Store?.Name ?? "N/A";
+    }
+}
