@@ -1,0 +1,78 @@
+﻿@page "/UnitMeasure/Index"
+
+@inject UnitMeasureService unitMeasureService;
+@rendermode InteractiveServer
+
+<div class="container">
+    <div class="card shadow-lg">
+        <div class="card-header d-flex justify-content-between">
+            <h4>Unidades de Medida</h4>
+            <a class="btn btn-primary bi bi-plus-square" href="/UnitMeasure/Create"> Crear</a>
+        </div>
+        <div class="card-body">
+            <div class="row pb-3">
+                <div class="col-md-4">
+                    <label>Filtro:</label>
+                    <select class="form-select" @bind="Filtro">
+                        <option value="Nombre">Nombre</option>
+                        <option value="Codigo">C&oacute;digo</option>
+                    </select>
+                </div>
+                <div class="col-md-8">
+                    <label>Buscar:</label>
+                    <div class="input-group">
+                        <input class="form-control" type="text" @bind-value="ValorFiltro" placeholder="Buscar unidad..." />
+                        <button class="btn btn-primary bi bi-search" type="button" @onclick="Filtrar"></button>
+                        <button class="btn btn-outline-primary bi bi-arrow-clockwise" type="button" @onclick="Restablecer"></button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="table-responsive">
+                <QuickGrid Class="table table-striped table-bordered table-hover" Pagination="@pages" Items="ListaUnidades.AsQueryable()" ItemKey="@(u => u.UnitMeasureCode)">
+                    <PropertyColumn Property="@(u => u.UnitMeasureCode)" Sortable="true" Title="C&oacute;digo"></PropertyColumn>
+                    <PropertyColumn Property="@(u => u.Name)" Sortable="true" Title="Nombre"></PropertyColumn>
+                    <PropertyColumn Property="@(u => u.ModifiedDate)" Sortable="true" Format="dd-MM-yyyy" Title="Ult. Modificaci&oacute;n"></PropertyColumn>
+                    
+                    <TemplateColumn Class="text-center" Context="item" Title="Acci&oacute;n">
+                        <a href="/UnitMeasure/Edit/@item.UnitMeasureCode" class="btn btn-outline-primary bi bi-pencil-square"> Modificar</a>
+                    </TemplateColumn>
+                </QuickGrid>
+            </div>
+            <Paginator State="@pages" />
+        </div>
+    </div>
+</div>
+
+@code {
+    public List<UnitMeasure> ListaUnidades { get; set; } = new List<UnitMeasure>();
+    public string Filtro { get; set; } = "Nombre";
+    public string ValorFiltro { get; set; } = "";
+    private PaginationState pages = new PaginationState { ItemsPerPage = 10 };
+
+    protected override async Task OnInitializedAsync()
+    {
+        ListaUnidades = await unitMeasureService.GetList(u => true);
+    }
+
+    public async Task Filtrar()
+    {
+        if (!string.IsNullOrEmpty(ValorFiltro))
+        {
+            if (Filtro == "Nombre")
+                ListaUnidades = await unitMeasureService.GetList(u => u.Name.Contains(ValorFiltro));
+            else
+                ListaUnidades = await unitMeasureService.GetList(u => u.UnitMeasureCode.Contains(ValorFiltro));
+        }
+        else
+        {
+            ListaUnidades = await unitMeasureService.GetList(u => true);
+        }
+    }
+
+    public async Task Restablecer()
+    {
+        ValorFiltro = "";
+        ListaUnidades = await unitMeasureService.GetList(u => true);
+    }
+}

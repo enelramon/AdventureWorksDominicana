@@ -1,0 +1,95 @@
+﻿@page "/SpecialOffer/Edit/{OfferId:int}"
+
+@inject SpecialOfferService specialOfferService;
+@inject ToastService toastService;
+@inject NavigationManager navigationManager;
+@rendermode InteractiveServer
+
+<EditForm Model="Offer" OnValidSubmit="Guardar">
+    <DataAnnotationsValidator />
+
+    <div class="container pb-5">
+        <div class="card shadow-lg">
+            <div class="card-header text-center">
+                <h4>Modificar Oferta Especial</h4>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-12 mb-3">
+                        <label><strong>Descripci&oacute;n</strong></label>
+                        <input class="form-control" @bind="Offer.Description" />
+                        <ValidationMessage For="(() => Offer.Description)" />
+                    </div>
+                    
+                    <div class="col-md-4 mb-3">
+                        <label><strong>% Descuento (Actual: @((Offer.DiscountPct * 100).ToString("N0"))%)</strong></label>
+                        <input class="form-control" type="number" step="0.01" @bind="Offer.DiscountPct" />
+                    </div>
+
+                    <div class="col-md-4 mb-3">
+                        <label><strong>Tipo</strong></label>
+                        <input class="form-control" @bind="Offer.Type" />
+                    </div>
+
+                    <div class="col-md-4 mb-3">
+                        <label><strong>Categor&iacute;a</strong></label>
+                        <input class="form-control" @bind="Offer.Category" />
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label><strong>Fecha Inicio</strong></label>
+                        <input class="form-control" type="date" @bind="Offer.StartDate" />
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label><strong>Fecha Fin</strong></label>
+                        <input class="form-control" type="date" @bind="Offer.EndDate" />
+                    </div>
+                </div>
+            </div>
+            <div class="card-footer text-center">
+                <a class="btn btn-secondary bi bi-arrow-left" href="/SpecialOffer/Index"> Volver</a>
+                <button class="btn btn-primary bi bi-floppy" type="submit"> Guardar</button>
+                <button class="btn btn-danger bi bi-trash" type="button" @onclick="Eliminar"> Eliminar</button>
+            </div>
+        </div>
+    </div>
+</EditForm>
+
+@code {
+    [Parameter] public int OfferId { get; set; }
+    public SpecialOffer Offer { get; set; } = new SpecialOffer();
+
+    protected override async Task OnInitializedAsync()
+    {
+        var encontrado = await specialOfferService.Buscar(OfferId);
+        if (encontrado != null) Offer = encontrado;
+        else navigationManager.NavigateTo("/SpecialOffer/Index");
+    }
+
+    public async Task Guardar()
+    {
+        if (await specialOfferService.Guardar(Offer))
+        {
+            toastService.ShowSuccess("Oferta actualizada.");
+            navigationManager.NavigateTo("/SpecialOffer/Index");
+        }
+        else
+        {
+            toastService.ShowError("Error al actualizar.");
+        }
+    }
+
+    public async Task Eliminar()
+    {
+        if (await specialOfferService.Eliminar(OfferId))
+        {
+            toastService.ShowSuccess("Oferta eliminada.");
+            navigationManager.NavigateTo("/SpecialOffer/Index");
+        }
+        else
+        {
+            toastService.ShowError("No se pudo eliminar (esta oferta tiene productos asociados).");
+        }
+    }
+}
