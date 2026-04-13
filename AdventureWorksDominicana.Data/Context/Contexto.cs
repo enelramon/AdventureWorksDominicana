@@ -219,7 +219,7 @@ public partial class Contexto : DbContext
         if (!optionsBuilder.IsConfigured)
         {
 
-           // optionsBuilder.UseSqlServer("workstation id=AdventureWorksDb.mssql.somee.com;packet size=4096;user id=AdenawellTorres_SQLLogin_1;pwd=tc54sf6glk;data source=AdventureWorksDb.mssql.somee.com;persist security info=False;initial catalog=AdventureWorksDb;TrustServerCertificate=True");
+            optionsBuilder.UseSqlServer("workstation id=AdventureWorksDb.mssql.somee.com;packet size=4096;user id=AdenawellTorres_SQLLogin_1;pwd=tc54sf6glk;data source=AdventureWorksDb.mssql.somee.com;persist security info=False;initial catalog=AdventureWorksDb;TrustServerCertificate=True");
         }
     }
     protected override void OnModelCreating(ModelBuilder modelBuilder)
