@@ -103,6 +103,7 @@ builder.Services.AddScoped<ProductVendorService>();
 builder.Services.AddScoped<PayrollService>();
 builder.Services.AddScoped<PayrollParameterService>();
 builder.Services.AddScoped<EmployeePayHistoryService>();
+builder.Services.AddScoped<EmployeeDepartmentService>();
 
 builder.Services.AddScoped<BusinessEntityAddressService>();
 builder.Services.AddScoped<PersonCreditCardService>();
