@@ -1,6 +1,5 @@
 ﻿@page "/ShipMethods"
 @attribute [Authorize(Roles = "Admin, PurchasingManager")]
-
 @using AdventureWorksDominicana.Data.Models
 @using AdventureWorksDominicana.Services
 @using Microsoft.AspNetCore.Components.QuickGrid
@@ -8,7 +7,8 @@
 
 @inject ShipMethodService shipMethodService
 
-<PageTitle>ShipMethods</PageTitle>
+<PageTitle>Ship Methods</PageTitle>
+
 <div class="container-fluid">
     <div class="card shadow-lg">
         <div class="card-header d-flex justify-content-between">
@@ -40,7 +40,7 @@
                 </div>
                 <div class="col-md-3">
                     <InputSelect class="form-select" @bind-Value="Filtros">
-                        <option disabled value="">Elige un filtro</option>
+                        <option value="">Elige un filtro</option>
                         <option value="IdCart">ID</option>
                         <option value="Nombre">Nombre</option>
                     </InputSelect>
@@ -55,14 +55,15 @@
                     </div>
                 </div>
             </div>
-            <div class="table table-striped table-bordered table-hover">
+
+            <div class="table-responsive">
                 <QuickGrid TGridItem="ShipMethod" Items="@ListaShipMethods" class="table table-striped table-hover table-bordered">
                     <PropertyColumn Property="e => e.ShipMethodId" Sortable="true" Title="Id" />
                     <PropertyColumn Property="e => e.Name" Sortable="true" Title="Nombre" />
-                    <PropertyColumn Property="e => e.ShipBase" Sortable="true"  Title="Costo base" />
+                    <PropertyColumn Property="e => e.ShipBase" Sortable="true" Title="Costo base" />
                     <PropertyColumn Property="e => e.ShipRate" Sortable="true" Title="Costo adicional" />
-                    <PropertyColumn Property="e => e.ModifiedDate" Sortable="true" Format="dd/MM/yyyy" Title="Fecha de modificacion" />
-                    <TemplateColumn Title="Accion">
+                    <PropertyColumn Property="e => e.ModifiedDate" Sortable="true" Format="dd/MM/yyyy" Title="Fecha de modificación" />
+                    <TemplateColumn Title="Acción">
                         <div class="d-flex justify-content-center align-items-center">
                             <a class="btn btn-outline-primary btn-sm" href="/ShipMethods/Edit/@context.ShipMethodId">
                                 <i class="bi bi-pencil-square"></i> Modificar
@@ -87,38 +88,41 @@
 
     protected override async Task OnInitializedAsync()
     {
-        await Buscar();
+        await CargarDatos();
+    }
+
+    private async Task CargarDatos()
+    {
+        var resultado = await shipMethodService.GetList(x => true);
+        ListaShipMethods = resultado.AsQueryable();
     }
 
     public async Task Buscar()
     {
-        List<ShipMethod> resultado;
+        // 1. Obtenemos la lista base
+        var resultado = await shipMethodService.GetList(x => true);
 
+        // 2. Filtro por texto (ID o Nombre)
         if (!string.IsNullOrWhiteSpace(ValorFiltro))
         {
-            if (Filtros == "Id" && int.TryParse(ValorFiltro, out int id))
+            if (Filtros == "IdCart" && int.TryParse(ValorFiltro, out int id))
             {
-                resultado = await shipMethodService.GetList(x => x.ShipMethodId == id);
+                resultado = resultado.Where(x => x.ShipMethodId == id).ToList();
             }
-            if (Filtros == "Nombre")
+            else if (Filtros == "Nombre")
             {
-                resultado = await shipMethodService.GetList(x => x.Name.ToLower().Trim().Contains(ValorFiltro.ToLower().Trim()));
-            }
-            else
-            {
-                resultado = await shipMethodService.GetList(x => true);
+                resultado = resultado.Where(x => x.Name.ToLower().Contains(ValorFiltro.ToLower().Trim())).ToList();
             }
         }
-        else
-        {
-            resultado = await shipMethodService.GetList(x => true);
-        }
+
+        // 3. Filtro por rango de fechas (Normalizando a solo fecha sin hora)
         if (Desde.HasValue)
-            resultado = resultado.Where(x => x.ModifiedDate >= Desde.Value).ToList();
+            resultado = resultado.Where(x => x.ModifiedDate.Date >= Desde.Value.Date).ToList();
 
         if (Hasta.HasValue)
-            resultado = resultado.Where(x => x.ModifiedDate <= Hasta.Value).ToList();
+            resultado = resultado.Where(x => x.ModifiedDate.Date <= Hasta.Value.Date).ToList();
 
+        // 4. Actualizar la vista
         ListaShipMethods = resultado.AsQueryable();
     }
 
@@ -128,6 +132,6 @@
         Hasta = null;
         ValorFiltro = string.Empty;
         Filtros = string.Empty;
-        await Buscar();
+        await CargarDatos();
     }
 }
