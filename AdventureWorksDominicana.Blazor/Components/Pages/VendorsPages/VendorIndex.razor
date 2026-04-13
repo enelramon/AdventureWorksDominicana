@@ -1,153 +1,144 @@
 ﻿@page "/Vendor/Index"
 @attribute [Authorize(Roles = "Admin, PurchasingManager")]
 
-@inject NavigationManager navigationManager
-@inject VendorService vendorService
+@using AdventureWorksDominicana.Data.Models
+@using AdventureWorksDominicana.Services
+@using Microsoft.AspNetCore.Components.QuickGrid
+
 @rendermode InteractiveServer
+@inject VendorService vendorService
 
-<PageTitle>Vendor</PageTitle>
+<PageTitle>Registro de Proveedores</PageTitle>
 
-<div class="container-fluid">
+<div class="container mt-4">
     <div class="card shadow-lg">
-        <div class="card-header d-flex justify-content-between align-content-center">
-            <h3 class="mb-0">Vendor</h3>
-            <a class="btn btn-primary" href="/Vendor/Create"><i class="bi bi-plus-square"></i> Crear</a>
+        
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h5 class="card-title mb-0">Registro de Proveedores</h5>
+            <a href="Vendor/Create" class="btn btn-primary d-flex align-items-center gap-2">
+                <i class="bi bi-plus-square"></i>
+                <span>Crear</span>
+            </a>
         </div>
-
+        
         <div class="card-body">
-            <div class="mb-3">
-
-                <div class="row">
-                    <div class="col-3">
-                        <label class="form-label">Filtro:</label>
-                    </div>
-                    <div class="col-3">
-                        <label class="form-label">Buscar:</label>
-                    </div>
-                    <div class="col-2">
-                        <label class="form-label">Desde</label>
-                    </div>
-                    <div class="col-3">
-                        <label class="form-label">Hasta</label>
-                    </div>
+            
+            <div class="row">
+                <div class="col-md-3">
+                    <label class="form-label fw-bold">Desde</label>
                 </div>
-
-                <div class="row">
-
-                    <div class="col-3">
-                        <InputSelect class="form-select" @bind-Value="Filtros">
-                            <option disabled value="">Filtrar...</option>
-                            <option value="Id">ID</option>
-                            <option value="Nombre">Nombre</option>
-                            <option value="Cuenta">Cuenta</option>
-                        </InputSelect>
-                    </div>
-
-                    <div class="col-3">
-                        <div class="input-group">
-                            <InputText class="form-control" @bind-Value="ValorFiltro" placeholder="Buscar..." />
-                            <button class="btn btn-primary" @onclick="Buscar">
-                                <i class="bi bi-search"></i>
-                            </button>
-                            <button type="button" class="btn btn-outline-primary bi bi-arrow-counterclockwise" @onclick="Restablecer"></button>
-                        </div>
-                    </div>
-                    <div class="col-2">
-                        <InputDate class="form-control" @bind-Value="Desde" />
-                    </div>
-                    <div class="col-2">
-                        <InputDate class="form-control" @bind-Value="Hasta" />
-                    </div>
+                <div class="col-md-3">
+                    <label class="form-label fw-bold">Hasta</label>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label fw-bold">Filtro:</label>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label fw-bold">Buscar:</label>
                 </div>
             </div>
 
+            <div class="row mb-4">
+                <div class="col-md-3">
+                    <input class="form-control" type="date" @bind="StartDate" />
+                </div>
+                <div class="col-md-3">
+                    <input class="form-control" type="date" @bind="EndDate" />
+                </div>
+                <div class="col-md-3">
+                    <select class="form-select" @bind="Filtro">
+                        <option value="">Seleccione una opcion</option>
+                        <option value="Id">ID de Proveedor</option>
+                        <option value="Nombre">Nombre</option>
+                        <option value="Cuenta">Número de Cuenta</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <div class="input-group">
+                        <input class="form-control" type="text" placeholder="Buscar..." @bind="ValorFiltro" />
+                        <button class="btn btn-primary" type="button" @onclick="Buscar" title="Buscar">
+                            <i class="bi bi-search"></i>
+                        </button>
+                        <button class="btn btn-outline-primary" type="button" @onclick="Restablecer" title="Limpiar Filtros">
+                            <i class="bi bi-arrow-clockwise"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
             <div class="table-responsive">
-                <QuickGrid Items="ListaVendors" Class="table table-striped table-bordered table-hover">
-
-                    <PropertyColumn Property="@(e => e.BusinessEntityId)" Sortable="true" Title="ID" />
-                    <PropertyColumn Property="@(e => e.Name)" Sortable="true" Title="Nombre" />
-                    <PropertyColumn Property="@(e => e.AccountNumber)" Sortable="true" Title="Cuenta" />
-                    <PropertyColumn Property="@(e => e.CreditRating)" Sortable="true" Title="Crédito" />
-
-                    <TemplateColumn Title="Estado">
+                <QuickGrid Items="VendorsList.AsQueryable()" Pagination="@pages" Class="table table-striped table-bordered table-hover">
+                    <PropertyColumn Property="@(v => v.BusinessEntityId)" Title="ID" Sortable="true" />
+                    <PropertyColumn Property="@(v => v.Name)" Title="Nombre" Sortable="true" />
+                    <PropertyColumn Property="@(v => v.AccountNumber)" Title="Cuenta" Sortable="true" />
+                    <PropertyColumn Property="@(v => v.CreditRating)" Title="Crédito" Sortable="true" />
+                    
+                    <TemplateColumn Title="Estado" Sortable="true">
                         @(context.ActiveFlag ? "Activo" : "Inactivo")
                     </TemplateColumn>
 
-                    <TemplateColumn Title="Preferido">
+                    <TemplateColumn Title="Preferido" Sortable="true">
                         @(context.PreferredVendorStatus ? "Sí" : "No")
                     </TemplateColumn>
 
-                    <PropertyColumn Property="@(e => e.ModifiedDate)" Format="dd/MM/yyyy" Title="Fecha de modificación" Sortable="true" />
-
-                    <TemplateColumn Class="text-center align-middle" Title="Acción">
-                        <a class="btn btn-outline-primary btn-" href="/Vendor/Edit/@context.BusinessEntityId">
-                            <i class="bi bi-pencil-square"></i> Modificar
-                        </a>
+                    <PropertyColumn Property="@(v => v.ModifiedDate)" Title="Fecha" Format="dd/MM/yyyy" Sortable="true" />
+                    
+                    <TemplateColumn Title="Opciones" Align="Align.Center">
+                        <div class="d-flex justify-content-center gap-2">
+                            <a href="Vendor/Edit/@context.BusinessEntityId" class="btn btn-sm btn-outline-primary d-flex align-items-center gap-2" title="Modificar">
+                                <i class="bi bi-pencil"></i>
+                                <span>Modificar</span>
+                            </a>
+                        </div>
                     </TemplateColumn>
-
                 </QuickGrid>
+                
+                <Paginator State="@pages" />
             </div>
         </div>
 
         <div class="card-footer text-end">
-            <strong>Conteo Registros: </strong> @ListaVendors.Count()
+            <strong>Conteo Registros: @VendorsList.Count</strong>
         </div>
+
     </div>
 </div>
 
 @code {
-    public IQueryable<Vendor> ListaVendors { get; set; } = Enumerable.Empty<Vendor>().AsQueryable();
-    public string Filtros { get; set; } = string.Empty;
-    public string ValorFiltro { get; set; } = string.Empty;
-    public DateTime? Desde { get; set; }
-    public DateTime? Hasta { get; set; }
+    private List<Vendor> VendorsList = new List<Vendor>();
+    private PaginationState pages = new PaginationState { ItemsPerPage = 5 };
+    private string Filtro = string.Empty;
+    private string ValorFiltro = string.Empty;
+    private DateTime? StartDate = null;
+    private DateTime? EndDate = null;
 
     protected override async Task OnInitializedAsync()
     {
         await Buscar();
     }
 
-    public async Task Buscar()
+    private async Task Buscar()
     {
-        List<Vendor> ListaResultante;
+        int.TryParse(ValorFiltro, out int idBuscado);
 
-        if (!string.IsNullOrWhiteSpace(ValorFiltro))
-        {
-            if (Filtros == "Id" && int.TryParse(ValorFiltro, out int id))
-            {
-                ListaResultante = await vendorService.GetList(x => x.BusinessEntityId == id);
-            }
-            else if (Filtros == "Nombre")
-            {
-                ListaResultante = await vendorService.GetList(
-                    x => x.Name.ToLower().Contains(ValorFiltro.ToLower()));
-            }
-            else if (Filtros == "Cuenta")
-            {
-                ListaResultante = await vendorService.GetList(
-                    x => x.AccountNumber.ToLower().Contains(ValorFiltro.ToLower()));
-            }
-            else
-            {
-                ListaResultante = await vendorService.GetList(x => true);
-            }
-        }
-        else
-        {
-            ListaResultante = await vendorService.GetList(x => true);
-        }
-        if (Desde.HasValue)
-            ListaResultante = ListaResultante.Where(x => x.ModifiedDate >= Desde.Value).ToList();
-        if (Hasta.HasValue)
-            ListaResultante = ListaResultante.Where(x => x.ModifiedDate <= Hasta.Value).ToList();
-        ListaVendors = ListaResultante.AsQueryable();
+        VendorsList = await vendorService.GetList(v =>
+            (!(StartDate.HasValue && EndDate.HasValue) ||
+            (v.ModifiedDate >= StartDate.Value.Date && v.ModifiedDate <= EndDate.Value.Date.AddDays(1).AddTicks(-1)))
+            &&
+            (string.IsNullOrWhiteSpace(ValorFiltro) || string.IsNullOrWhiteSpace(Filtro) ||
+                (Filtro == "Id" && v.BusinessEntityId == idBuscado) ||
+                (Filtro == "Nombre" && v.Name.Contains(ValorFiltro)) ||
+                (Filtro == "Cuenta" && v.AccountNumber.Contains(ValorFiltro))
+            )
+        );
     }
+
     private async Task Restablecer()
     {
-        Desde = null;
-        Hasta = null;
+        StartDate = null;
+        EndDate = null;
+        Filtro = string.Empty;
         ValorFiltro = string.Empty;
-        Filtros = string.Empty;
         await Buscar();
     }
 }

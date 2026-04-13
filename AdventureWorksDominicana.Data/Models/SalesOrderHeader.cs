@@ -91,34 +91,34 @@ public partial class SalesOrderHeader
     /// Territory in which the sale was made. Foreign key to SalesTerritory.SalesTerritoryID.
     /// </summary>
     [Column("TerritoryID")]
-    [Range(1, int.MaxValue, ErrorMessage = "Campo Obligatorio")]
+    [Range(1, int.MaxValue, ErrorMessage = "El territorio es obligatorio")]
     public int TerritoryId { get; set; }
 
     /// <summary>
     /// Customer billing address. Foreign key to Address.AddressID.
     /// </summary>
     [Column("BillToAddressID")]
-    [Range(1, int.MaxValue, ErrorMessage = "Campo Obligatorio")]
+    [Range(1, int.MaxValue, ErrorMessage = "La direccion de facturacion es obligatorio")]
     public int BillToAddressId { get; set; }
 
     /// <summary>
     /// Customer shipping address. Foreign key to Address.AddressID.
     [Column("ShipToAddressID")]
-    [Range(1, int.MaxValue, ErrorMessage = "Campo Obligatorio")]
+    [Range(1, int.MaxValue, ErrorMessage = "La direccion de envio es obligatorio")]
     public int ShipToAddressId { get; set; }
 
     /// <summary>
     /// Shipping method. Foreign key to ShipMethod.ShipMethodID.
     /// </summary>
     [Column("ShipMethodID")]
-    [Range(1, int.MaxValue, ErrorMessage = "Campo Obligatorio")]
+    [Range(1, int.MaxValue, ErrorMessage = "El metodo de envio es obligatorio")]
     public int ShipMethodId { get; set; }
 
     /// <summary>
     /// Credit card identification number. Foreign key to CreditCard.CreditCardID.
     /// </summary>
     [Column("CreditCardID")]
-    [Range(1, int.MaxValue, ErrorMessage = "Campo Obligatorio")]
+    [Range(1, int.MaxValue, ErrorMessage = "La tarjeta de credito es obligatorio")]
     public int CreditCardId { get; set; }
 
     /// <summary>

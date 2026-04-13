@@ -1,78 +1,129 @@
 ﻿@page "/UnitMeasure/Index"
+@attribute [Authorize(Roles = "Admin, ProductionManager")]
 
-@inject UnitMeasureService unitMeasureService;
+@using AdventureWorksDominicana.Data.Models
+@using AdventureWorksDominicana.Services
+@using Microsoft.AspNetCore.Components.QuickGrid
+
 @rendermode InteractiveServer
+@inject UnitMeasureService unitMeasureService
 
-<div class="container">
+<PageTitle>Unidades de Medida</PageTitle>
+
+<div class="container mt-4">
     <div class="card shadow-lg">
-        <div class="card-header d-flex justify-content-between">
-            <h4>Unidades de Medida</h4>
-            <a class="btn btn-primary bi bi-plus-square" href="/UnitMeasure/Create"> Crear</a>
+        
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h5 class="card-title mb-0">Unidades de Medida</h5>
+            <a href="UnitMeasure/Create" class="btn btn-primary d-flex align-items-center gap-2">
+                <i class="bi bi-plus-square"></i>
+                <span>Crear</span>
+            </a>
         </div>
+        
         <div class="card-body">
-            <div class="row pb-3">
-                <div class="col-md-4">
-                    <label>Filtro:</label>
+            
+            <div class="row">
+                <div class="col-md-3">
+                    <label class="form-label fw-bold">Desde</label>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label fw-bold">Hasta</label>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label fw-bold">Filtro:</label>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label fw-bold">Buscar:</label>
+                </div>
+            </div>
+
+            <div class="row mb-4">
+                <div class="col-md-3">
+                    <input class="form-control" type="date" @bind="StartDate" />
+                </div>
+                <div class="col-md-3">
+                    <input class="form-control" type="date" @bind="EndDate" />
+                </div>
+                <div class="col-md-3">
                     <select class="form-select" @bind="Filtro">
+                        <option value="">Seleccione una opcion</option>
+                        <option value="Codigo">Código</option>
                         <option value="Nombre">Nombre</option>
-                        <option value="Codigo">C&oacute;digo</option>
                     </select>
                 </div>
-                <div class="col-md-8">
-                    <label>Buscar:</label>
+                <div class="col-md-3">
                     <div class="input-group">
-                        <input class="form-control" type="text" @bind-value="ValorFiltro" placeholder="Buscar unidad..." />
-                        <button class="btn btn-primary bi bi-search" type="button" @onclick="Filtrar"></button>
-                        <button class="btn btn-outline-primary bi bi-arrow-clockwise" type="button" @onclick="Restablecer"></button>
+                        <input class="form-control" type="text" placeholder="Buscar..." @bind="ValorFiltro" />
+                        <button class="btn btn-primary" type="button" @onclick="Buscar" title="Buscar">
+                            <i class="bi bi-search"></i>
+                        </button>
+                        <button class="btn btn-outline-primary" type="button" @onclick="Restablecer" title="Limpiar Filtros">
+                            <i class="bi bi-arrow-clockwise"></i>
+                        </button>
                     </div>
                 </div>
             </div>
-
+            
             <div class="table-responsive">
-                <QuickGrid Class="table table-striped table-bordered table-hover" Pagination="@pages" Items="ListaUnidades.AsQueryable()" ItemKey="@(u => u.UnitMeasureCode)">
-                    <PropertyColumn Property="@(u => u.UnitMeasureCode)" Sortable="true" Title="C&oacute;digo"></PropertyColumn>
-                    <PropertyColumn Property="@(u => u.Name)" Sortable="true" Title="Nombre"></PropertyColumn>
-                    <PropertyColumn Property="@(u => u.ModifiedDate)" Sortable="true" Format="dd-MM-yyyy" Title="Ult. Modificaci&oacute;n"></PropertyColumn>
+                <QuickGrid Items="UnitsList.AsQueryable()" Pagination="@pages" Class="table table-striped table-bordered table-hover">
+                    <PropertyColumn Property="@(u => u.UnitMeasureCode)" Title="Código" Sortable="true" />
+                    <PropertyColumn Property="@(u => u.Name)" Title="Nombre" Sortable="true" />
+                    <PropertyColumn Property="@(u => u.ModifiedDate)" Title="Fecha" Format="dd/MM/yyyy" Sortable="true" />
                     
-                    <TemplateColumn Class="text-center" Context="item" Title="Acci&oacute;n">
-                        <a href="/UnitMeasure/Edit/@item.UnitMeasureCode" class="btn btn-outline-primary bi bi-pencil-square"> Modificar</a>
+                    <TemplateColumn Title="Opciones" Align="Align.Center">
+                        <div class="d-flex justify-content-center gap-2">
+                            <a href="UnitMeasure/Edit/@context.UnitMeasureCode" class="btn btn-sm btn-outline-primary d-flex align-items-center gap-2" title="Modificar">
+                                <i class="bi bi-pencil"></i>
+                                <span>Modificar</span>
+                            </a>
+                        </div>
                     </TemplateColumn>
                 </QuickGrid>
+                
+                <Paginator State="@pages" />
             </div>
-            <Paginator State="@pages" />
         </div>
+
+        <div class="card-footer text-end">
+            <strong>Conteo Registros: @UnitsList.Count</strong>
+        </div>
+
     </div>
 </div>
 
 @code {
-    public List<UnitMeasure> ListaUnidades { get; set; } = new List<UnitMeasure>();
-    public string Filtro { get; set; } = "Nombre";
-    public string ValorFiltro { get; set; } = "";
-    private PaginationState pages = new PaginationState { ItemsPerPage = 10 };
+    private List<UnitMeasure> UnitsList = new List<UnitMeasure>();
+    private PaginationState pages = new PaginationState { ItemsPerPage = 5 };
+    private string Filtro = string.Empty;
+    private string ValorFiltro = string.Empty;
+    private DateTime? StartDate = null;
+    private DateTime? EndDate = null;
 
     protected override async Task OnInitializedAsync()
     {
-        ListaUnidades = await unitMeasureService.GetList(u => true);
+        await Buscar();
     }
 
-    public async Task Filtrar()
+    private async Task Buscar()
     {
-        if (!string.IsNullOrEmpty(ValorFiltro))
-        {
-            if (Filtro == "Nombre")
-                ListaUnidades = await unitMeasureService.GetList(u => u.Name.Contains(ValorFiltro));
-            else
-                ListaUnidades = await unitMeasureService.GetList(u => u.UnitMeasureCode.Contains(ValorFiltro));
-        }
-        else
-        {
-            ListaUnidades = await unitMeasureService.GetList(u => true);
-        }
+        UnitsList = await unitMeasureService.GetList(u =>
+            (!(StartDate.HasValue && EndDate.HasValue) ||
+            (u.ModifiedDate >= StartDate.Value.Date && u.ModifiedDate <= EndDate.Value.Date.AddDays(1).AddTicks(-1)))
+            &&
+            (string.IsNullOrWhiteSpace(ValorFiltro) || string.IsNullOrWhiteSpace(Filtro) ||
+                (Filtro == "Codigo" && u.UnitMeasureCode.Contains(ValorFiltro)) ||
+                (Filtro == "Nombre" && u.Name.Contains(ValorFiltro))
+            )
+        );
     }
 
-    public async Task Restablecer()
+    private async Task Restablecer()
     {
-        ValorFiltro = "";
-        ListaUnidades = await unitMeasureService.GetList(u => true);
+        StartDate = null;
+        EndDate = null;
+        Filtro = string.Empty;
+        ValorFiltro = string.Empty;
+        await Buscar();
     }
 }

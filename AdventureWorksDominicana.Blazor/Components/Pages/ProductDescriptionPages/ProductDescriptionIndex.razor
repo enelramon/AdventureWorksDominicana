@@ -1,71 +1,132 @@
 ﻿@page "/ProductDescription/Index"
 @attribute [Authorize(Roles = "Admin, ProductionManager")]
 
+@using AdventureWorksDominicana.Data.Models
+@using AdventureWorksDominicana.Services
+@using Microsoft.AspNetCore.Components.QuickGrid
 
-@inject ProductDescriptionService productDescriptionService;
 @rendermode InteractiveServer
+@inject ProductDescriptionService productDescriptionService
 
-<div class="container">
+<PageTitle>Banco de Descripciones de Producto</PageTitle>
+
+<div class="container mt-4">
     <div class="card shadow-lg">
+        
         <div class="card-header d-flex justify-content-between align-items-center">
-            <h4 class="mb-0">Banco de Descripciones de Producto</h4>
-            <a class="btn btn-primary bi bi-plus-square" href="/ProductDescription/Create"> Nueva Descripci&oacute;n</a>
+            <h5 class="card-title mb-0">Banco de Descripciones de Producto</h5>
+            <a href="ProductDescription/Create" class="btn btn-primary d-flex align-items-center gap-2">
+                <i class="bi bi-plus-square"></i>
+                <span>Crear</span>
+            </a>
         </div>
+        
         <div class="card-body">
             
-            <div class="row pb-3">
-                <div class="col-6 col-md-4 offset-md-8">
-                    <div class="input-group">
-                        <input class="form-control" type="text" @bind-value="ValorFiltro" placeholder="Buscar palabras clave..." />
-                        <button class="btn btn-primary bi bi-search" type="button" @onclick="Filtrar"></button>
-                        <button class="btn btn-outline-primary bi bi-arrow-clockwise" type="button" @onclick="Restablecer"></button>
-                    </div>
+            <div class="row">
+                <div class="col-md-3">
+                    <label class="form-label fw-bold">Desde</label>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label fw-bold">Hasta</label>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label fw-bold">Filtro:</label>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label fw-bold">Buscar:</label>
                 </div>
             </div>
 
+            <div class="row mb-4">
+                <div class="col-md-3">
+                    <input class="form-control" type="date" @bind="StartDate" />
+                </div>
+                <div class="col-md-3">
+                    <input class="form-control" type="date" @bind="EndDate" />
+                </div>
+                <div class="col-md-3">
+                    <select class="form-select" @bind="Filtro">
+                        <option value="">Seleccione una opcion</option>
+                        <option value="Id">ID</option>
+                        <option value="Descripcion">Descripción</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <div class="input-group">
+                        <input class="form-control" type="text" placeholder="Buscar..." @bind="ValorFiltro" />
+                        <button class="btn btn-primary" type="button" @onclick="Buscar" title="Buscar">
+                            <i class="bi bi-search"></i>
+                        </button>
+                        <button class="btn btn-outline-primary" type="button" @onclick="Restablecer" title="Limpiar Filtros">
+                            <i class="bi bi-arrow-clockwise"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
             <div class="table-responsive">
-                <QuickGrid Class="table table-striped table-bordered table-hover" Pagination="@pages" Items="ListaDescripciones.AsQueryable()" ItemKey="@(d => d.ProductDescriptionId)">
-                    <PropertyColumn Property="@(d => d.ProductDescriptionId)" Sortable="true" Title="Id" />
-                    <PropertyColumn Property="@(d => d.Description)" Sortable="true" Title="Texto de Descripci&oacute;n" />
-                    <PropertyColumn Property="@(d => d.ModifiedDate)" Sortable="true" Format="dd/MM/yyyy" Title="Última Modificación" />
-                    
-                    <TemplateColumn Class="text-center" Context="options" Title="Acci&oacute;n">
-                        <a href="/ProductDescription/Edit/@options.ProductDescriptionId" class="btn btn-outline-primary bi bi-pencil-square"> Editar</a>
+                <QuickGrid Items="DescriptionsList.AsQueryable()" Pagination="@pages" Class="table table-striped table-bordered table-hover">
+                    <PropertyColumn Property="@(d => d.ProductDescriptionId)" Title="ID" Sortable="true" />
+                    <PropertyColumn Property="@(d => d.Description)" Title="Texto de Descripción" Sortable="true" />
+                    <PropertyColumn Property="@(d => d.ModifiedDate)" Title="Fecha" Format="dd/MM/yyyy" Sortable="true" />
+                    <TemplateColumn Title="Opciones" Align="Align.Center">
+                        <div class="d-flex justify-content-center gap-2">
+                            <a href="ProductDescription/Edit/@context.ProductDescriptionId" class="btn btn-sm btn-outline-primary d-flex align-items-center gap-2" title="Modificar">
+                                <i class="bi bi-pencil"></i>
+                                <span>Modificar</span>
+                            </a>
+                        </div>
                     </TemplateColumn>
                 </QuickGrid>
+                
+                <Paginator State="@pages" />
             </div>
-            <Paginator State="@pages" />
         </div>
+
+        <div class="card-footer text-end">
+            <strong>Conteo Registros: @DescriptionsList.Count</strong>
+        </div>
+
     </div>
 </div>
 
 @code {
-    public List<ProductDescription> ListaDescripciones { get; set; } = new List<ProductDescription>();
-    public string ValorFiltro { get; set; } = "";
-    private PaginationState pages = new PaginationState { ItemsPerPage = 10 };
+    private List<ProductDescription> DescriptionsList = new List<ProductDescription>();
+    private PaginationState pages = new PaginationState { ItemsPerPage = 5 };
+    private string Filtro = string.Empty;
+    private string ValorFiltro = string.Empty;
+    private DateTime? StartDate = null;
+    private DateTime? EndDate = null;
 
     protected override async Task OnInitializedAsync()
     {
-        ListaDescripciones = await productDescriptionService.GetList(d => d.ProductDescriptionId > 0);
-        ListaDescripciones = ListaDescripciones.OrderByDescending(d => d.ModifiedDate).ToList();
+        await Buscar();
     }
 
-    public async Task Filtrar()
+    private async Task Buscar()
     {
-        if (!string.IsNullOrWhiteSpace(ValorFiltro))
-        {
-            ListaDescripciones = await productDescriptionService.GetList(d => d.Description.ToLower().Contains(ValorFiltro.ToLower()));
-        }
-        else
-        {
-            ListaDescripciones = await productDescriptionService.GetList(d => d.ProductDescriptionId > 0);
-        }
-        ListaDescripciones = ListaDescripciones.OrderByDescending(d => d.ModifiedDate).ToList();
+        int.TryParse(ValorFiltro, out int idBuscado);
+
+        DescriptionsList = await productDescriptionService.GetList(d =>
+            (!(StartDate.HasValue && EndDate.HasValue) ||
+            (d.ModifiedDate >= StartDate.Value.Date && d.ModifiedDate <= EndDate.Value.Date.AddDays(1).AddTicks(-1)))
+            &&
+            (string.IsNullOrWhiteSpace(ValorFiltro) || string.IsNullOrWhiteSpace(Filtro) ||
+                (Filtro == "Id" && d.ProductDescriptionId == idBuscado) ||
+                (Filtro == "Descripcion" && d.Description.Contains(ValorFiltro))
+            )
+        );
+
+        DescriptionsList = DescriptionsList.OrderByDescending(d => d.ModifiedDate).ToList();
     }
 
-    public async Task Restablecer()
+    private async Task Restablecer()
     {
-        ValorFiltro = "";
-        await Filtrar();
+        StartDate = null;
+        EndDate = null;
+        Filtro = string.Empty;
+        ValorFiltro = string.Empty;
+        await Buscar();
     }
 }

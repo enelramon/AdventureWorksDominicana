@@ -1,91 +1,133 @@
 ﻿@page "/Department/Index"
 @attribute [Authorize(Roles = "Admin,HRManager")]
 
+@using AdventureWorksDominicana.Data.Models
+@using AdventureWorksDominicana.Services
+@using Microsoft.AspNetCore.Components.QuickGrid
+
 @rendermode InteractiveServer
 @inject DepartmentService departmentService
 
-<PageTitle>Department Index</PageTitle>
-<div class="container">
+<PageTitle>Registro de Departamentos</PageTitle>
+
+<div class="container mt-4">
     <div class="card shadow-lg">
-        @*Header*@
-        <div class="card-header d-flex justify-content-between">
-            <h4 class="card-title">Registro de Departamentos</h4>
-            <a href="Department/Create" class="btn btn-primary d-flex gap-2">
+        
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h5 class="card-title mb-0">Registro de Departamentos</h5>
+            <a href="Department/Create" class="btn btn-primary d-flex align-items-center gap-2">
                 <i class="bi bi-plus-square"></i>
                 <span>Crear</span>
             </a>
         </div>
         
         <div class="card-body">
-            @*Filters*@
+            
             <div class="row">
-                <div class="col-6">
-                    <label class="form-label">Desde</label>
-                    <InputDate class="form-control" @bind-Value="StartDate"/>
+                <div class="col-md-3">
+                    <label class="form-label fw-bold">Desde</label>
                 </div>
-                <div class="col-6">
-                    <label class="form-label">Hasta</label>
-                    <InputDate class="form-control" @bind-Value="EndDate"/>
+                <div class="col-md-3">
+                    <label class="form-label fw-bold">Hasta</label>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label fw-bold">Filtro:</label>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label fw-bold">Buscar:</label>
                 </div>
             </div>
-            <div class="row">
-                <div class="col-6">
-                    <label class="form-label">Seleccione una opci&oacute;n</label>
-                    <InputSelect class="form-select" @bind-Value="Filtro">
-                        <option value="">Seleccione una opci&oacute;n</option>
+
+            <div class="row mb-4">
+                <div class="col-md-3">
+                    <input class="form-control" type="date" @bind="StartDate" />
+                </div>
+                <div class="col-md-3">
+                    <input class="form-control" type="date" @bind="EndDate" />
+                </div>
+                <div class="col-md-3">
+                    <select class="form-select" @bind="Filtro">
+                        <option value="">Seleccione una opcion</option>
+                        <option value="DepartmentId">ID</option>
                         <option value="Name">Nombre</option>
                         <option value="GroupName">Nombre del Grupo</option>
-                    </InputSelect>
+                    </select>
                 </div>
-                <div class="col-6">
-                    <label class="form-label">Buscar</label>
+                <div class="col-md-3">
                     <div class="input-group">
-                        <InputText class="form-control" placeholder="Buscar..." @bind-Value="ValorFiltro"/>
-                        <i class="btn btn-outline-primary bi bi-search" @onclick="Buscar"></i>
+                        <input class="form-control" type="text" placeholder="Buscar..." @bind="ValorFiltro" />
+                        <button class="btn btn-primary" type="button" @onclick="Buscar" title="Buscar">
+                            <i class="bi bi-search"></i>
+                        </button>
+                        <button class="btn btn-outline-primary" type="button" @onclick="Restablecer" title="Limpiar Filtros">
+                            <i class="bi bi-arrow-clockwise"></i>
+                        </button>
                     </div>
                 </div>
             </div>
-            @*Table*@
-            <div class="table-responsive mt-3">
-                <QuickGrid Items="DepartmentsList.AsQueryable()" Pagination="@pages" Class="table table-bordered table-hover">
-                    <PropertyColumn Property="@(d => d.DepartmentId)" Title="DepartamentoId" Sortable="true" />
+            
+            <div class="table-responsive">
+                <QuickGrid Items="DepartmentsList.AsQueryable()" Pagination="@pages" Class="table table-striped table-bordered table-hover">
+                    <PropertyColumn Property="@(d => d.DepartmentId)" Title="ID" Sortable="true" />
                     <PropertyColumn Property="@(d => d.Name)" Title="Nombre" Sortable="true" />
                     <PropertyColumn Property="@(d => d.GroupName)" Title="Nombre del Grupo" Sortable="true" />
-                    <TemplateColumn Context="option" Title="Opci&oacute;n">
-                        <a href="Department/Edit/@option.DepartmentId" class="btn btn-outline-primary bi bi-pencil"></a>
+                    <PropertyColumn Property="@(d => d.ModifiedDate)" Title="Fecha" Format="dd/MM/yyyy" Sortable="true" />
+                    <TemplateColumn Title="Opciones" Align="Align.Center">
+                        <div class="d-flex justify-content-center gap-2">
+                            <a href="Department/Edit/@context.DepartmentId" class="btn btn-sm btn-outline-primary d-flex align-items-center gap-2" title="Modificar">
+                                <i class="bi bi-pencil"></i>
+                                <span>Modificar</span>
+                            </a>
+                        </div>
                     </TemplateColumn>
                 </QuickGrid>
-                @*Pagination*@
-                <Paginator State="@pages"/>
+                
+                <Paginator State="@pages" />
             </div>
         </div>
+
+        <div class="card-footer text-end">
+            <strong>Conteo Registros: @DepartmentsList.Count</strong>
+        </div>
+
     </div>
 </div>
+
 @code {
     private List<Department> DepartmentsList = new List<Department>();
-    private PaginationState pages = new PaginationState{ ItemsPerPage = 5 };
-    private string Filtro = string.Empty, ValorFiltro = string.Empty;
-    private DateTime? StartDate = DateTime.Today.Date, EndDate = DateTime.Today.Date.AddDays(1);
+    private PaginationState pages = new PaginationState { ItemsPerPage = 5 };
+    private string Filtro = string.Empty;
+    private string ValorFiltro = string.Empty;
+    private DateTime? StartDate = null;
+    private DateTime? EndDate = null;
+
     protected override async Task OnInitializedAsync()
     {
-        DepartmentsList = await departmentService.GetList(p => true);
+        await Buscar();
     }
+
     private async Task Buscar()
     {
-        Expression<Func<Department, bool>> criterio = d => true;
-        if (StartDate.HasValue && EndDate.HasValue)
-        {
-            var start = StartDate.Value.Date;
-            var end = EndDate.Value.Date.AddDays(1).AddTicks(-1);
-            criterio = criterio.And(d => d.ModifiedDate >= start && d.ModifiedDate <= end);
-        }
-        if (!string.IsNullOrWhiteSpace(Filtro) && !string.IsNullOrWhiteSpace(ValorFiltro))
-        {
-            if (Filtro == "Name")
-                criterio = criterio.And(d => d.Name.Contains(ValorFiltro));
-            else if (Filtro == "GroupName")
-                criterio = criterio.And(d => d.GroupName.Contains(ValorFiltro)); 
-        }
-        DepartmentsList = await departmentService.GetList(criterio);
+        int.TryParse(ValorFiltro, out int idBuscado);
+
+        DepartmentsList = await departmentService.GetList(d =>
+            (!(StartDate.HasValue && EndDate.HasValue) ||
+            (d.ModifiedDate >= StartDate.Value.Date && d.ModifiedDate <= EndDate.Value.Date.AddDays(1).AddTicks(-1)))
+            &&
+            (string.IsNullOrWhiteSpace(ValorFiltro) || string.IsNullOrWhiteSpace(Filtro) ||
+                (Filtro == "DepartmentId" && d.DepartmentId == idBuscado) ||
+                (Filtro == "Name" && d.Name.Contains(ValorFiltro)) ||
+                (Filtro == "GroupName" && d.GroupName.Contains(ValorFiltro))
+            )
+        );
+    }
+
+    private async Task Restablecer()
+    {
+        StartDate = null;
+        EndDate = null;
+        Filtro = string.Empty;
+        ValorFiltro = string.Empty;
+        await Buscar();
     }
 }

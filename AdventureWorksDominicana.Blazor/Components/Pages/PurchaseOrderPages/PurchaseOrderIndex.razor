@@ -1,0 +1,137 @@
+﻿@page "/PurchaseOrder/Index"
+@attribute [Authorize(Roles = "Admin, PurchasingManager")]
+
+@inject PurchaseOrderService purchaseOrderService
+@rendermode InteractiveServer
+<div class="container">
+    <div class="card shadow-lg">
+        <div class="card-header d-flex justify-content-between">
+            <h4>Órdenes de Compra</h4>
+            <a class="btn btn-primary bi bi-plus-square" href="/PurchaseOrder/Create"> Crear</a>
+        </div>
+        
+        <div class="card-body">
+            @* Encabezados de Filtros *@
+            <div class="row">
+                <div class="col-3">
+                    <label>Desde:</label>
+                </div>
+                <div class="col-3">
+                    <label>Hasta:</label>
+                </div>
+                <div class="col-3">
+                    <label>Filtro:</label>
+                </div>
+                <div class="col-3">
+                    <label>Buscar:</label>
+                </div>
+            </div>
+
+            @* Inputs de Filtros *@
+            <div class="row pb-3">
+                <div class="col-3">
+                    <input class="form-control" type="date" @bind-value="FechaDesde" />
+                </div>
+                <div class="col-3">
+                    <input class="form-control" type="date" @bind-value="FechaHasta" />
+                </div>
+                <div class="col-3">
+                    <select class="form-select" @bind="Filtro">
+                        <option value="" disabled selected hidden>Seleccione un filtro...</option>
+                        <option value="Proovedor">Proveedor</option>
+                        <option value="Estado">Estado</option>
+                    </select>
+                </div>
+                <div class="col-3">
+                    <div class="input-group">
+                        <input class="form-control" type="text" @bind-value="ValorFiltro" placeholder="Buscar..." />
+                        <button class="btn btn-primary bi bi-search" type="button" @onclick="Filtrar"></button>
+                        <button class="btn btn-outline-primary bi bi-arrow-clockwise" type="button" @onclick="Restablecer"></button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="table-responsive">
+                <QuickGrid Class="table table-striped table-bordered table-hover" Pagination="@pages" Items="ListaOrdenes.AsQueryable()" ItemKey="@(o => o.PurchaseOrderId)">
+                    <PropertyColumn Property="@(o => o.PurchaseOrderId)" Sortable="true" Title="Id" />
+                    <PropertyColumn Property="@(o => o.OrderDate)" Sortable="true" Format="dd-MM-yyyy" Title="Fecha" />
+                    <PropertyColumn Property="@(o => o.Vendor.Name)" Sortable="true" Title="Proveedor" />
+                    <PropertyColumn Property="@(o => o.TotalDue)" Sortable="true" Format="C2" Title="Total" />
+                    
+                    <TemplateColumn Title="Estado" Sortable="true" Class="text-center">
+                        <span>@GetStatusName(context.Status)</span>
+                    </TemplateColumn>
+
+                    <TemplateColumn Title="Acci&oacute;n" Class="text-center">
+                        <a href="/PurchaseOrder/Edit/@context.PurchaseOrderId" class="btn btn-outline-primary bi bi-pencil-square"> Modificar</a>
+                    </TemplateColumn>
+                </QuickGrid>
+            </div>
+            
+            <Paginator State="@pages" />
+        </div>
+    </div>
+</div>
+
+@code {
+    public List<PurchaseOrderHeader> ListaOrdenes { get; set; } = new();
+    public DateTime? FechaDesde { get; set; }
+    public DateTime? FechaHasta { get; set; }
+    public string Filtro { get; set; } = "";
+    public string ValorFiltro { get; set; } = "";
+    private PaginationState pages = new PaginationState { ItemsPerPage = 10 };
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CargarDatos();
+    }
+
+    private async Task CargarDatos()
+    {
+        ListaOrdenes = await purchaseOrderService.GetList(o => o.PurchaseOrderId > 0);
+        ListaOrdenes = ListaOrdenes.OrderByDescending(o => o.ModifiedDate).ToList();
+    }
+
+    public async Task Filtrar()
+    {
+        Expression<Func<PurchaseOrderHeader, bool>> criterio = o => o.PurchaseOrderId > 0;
+
+        if (FechaDesde.HasValue)
+            criterio = criterio.And(o => o.OrderDate >= FechaDesde.Value);
+        
+        if (FechaHasta.HasValue)
+        {
+            var hasta = FechaHasta.Value.Date.AddDays(1).AddTicks(-1);
+            criterio = criterio.And(o => o.OrderDate <= hasta);
+        }
+
+        if (Filtro != "" && ValorFiltro != "")
+        {
+            if (Filtro == "Proovedor")
+                criterio = criterio.And(o => o.Vendor.Name.Trim().ToLower().Contains(ValorFiltro.ToLower()));
+            else if (Filtro == "Estado" && byte.TryParse(ValorFiltro, out byte status))
+                criterio = criterio.And(o => o.Status == status);
+        }
+
+        ListaOrdenes = await purchaseOrderService.GetList(criterio);
+        ListaOrdenes = ListaOrdenes.OrderByDescending(o => o.ModifiedDate).ToList();
+    }
+
+    public async Task Restablecer()
+    {
+        FechaDesde = null;
+        FechaHasta = null;
+        Filtro = "";
+        ValorFiltro = "";
+        await CargarDatos();
+    }
+
+    private string GetStatusName(byte status) => status switch
+    {
+        1 => "Pendiente",
+        2 => "Aprobado",
+        3 => "Rechazado",
+        4 => "Completado",
+        5 => "Desconocido"
+    };
+}
