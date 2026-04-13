@@ -1,5 +1,5 @@
 ﻿@page "/Product/Inventory"
-@attribute [Authorize(Roles = "Admin, ProductionManager")]
+@attribute [Authorize(Roles = "Admin, ProductionManager, SalesManager")]
 
 @rendermode InteractiveServer
 @using AdventureWorksDominicana.Services
@@ -17,9 +17,13 @@
                 <h3 class="mb-0 text-dark fw-bold">Control de Almacén</h3>
                 <p class="text-muted small mb-0">Existencias físicas por ubicación</p>
             </div>
-            <a href="/Product/InventoryEntry" class="btn btn-primary rounded-pill px-4 shadow-sm">
-                <i class="bi bi-box-arrow-in-right me-1"></i> Dar Entrada a Productos
-            </a>
+            <AuthorizeView Roles="Admin, ProductionManager">
+                <Authorized>
+                    <a href="/Product/InventoryEntry" class="btn btn-primary rounded-pill px-4 shadow-sm">
+                        <i class="bi bi-box-arrow-in-right me-1"></i> Dar Entrada a Productos
+                    </a>
+                </Authorized>
+            </AuthorizeView>
         </div>
 
         <div class="card-body px-4">
@@ -62,21 +66,26 @@
                         }
                     </TemplateColumn>
 
-                    <TemplateColumn Title="Ajuste Rápido" Align="Align.Center">
-                        <div class="btn-group shadow-sm rounded-pill bg-light border p-1">
-                            <button class="btn btn-sm btn-white border-0 rounded-circle me-1"
-                                    @onclick="() => Ajustar(context, -1)"
-                                    disabled="@(context.Quantity <= 0)"
-                                    title="Restar 1">
-                                <i class="bi bi-dash-lg text-danger"></i>
-                            </button>
-                            <button class="btn btn-sm btn-white border-0 rounded-circle"
-                                    @onclick="() => Ajustar(context, 1)"
-                                    title="Sumar 1">
-                                <i class="bi bi-plus-lg text-success"></i>
-                            </button>
-                        </div>
-                    </TemplateColumn>
+                    <AuthorizeView Roles="Admin, ProductionManager">
+                        <Authorized Context="Auth">
+                            <TemplateColumn Title="Ajuste Rápido" Align="Align.Center">
+                                <div class="btn-group shadow-sm rounded-pill bg-light border p-1">
+                                    <button class="btn btn-sm btn-white border-0 rounded-circle me-1"
+                                            @onclick="() => Ajustar(context, -1)"
+                                            disabled="@(context.Quantity <= 0)"
+                                            title="Restar 1">
+                                        <i class="bi bi-dash-lg text-danger"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-white border-0 rounded-circle"
+                                            @onclick="() => Ajustar(context, 1)"
+                                            title="Sumar 1">
+                                        <i class="bi bi-plus-lg text-success"></i>
+                                    </button>
+                                </div>
+                            </TemplateColumn>
+                        </Authorized>
+                    </AuthorizeView>
+                    
                 </QuickGrid>
             </div>
 

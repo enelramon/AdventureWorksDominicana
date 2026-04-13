@@ -1,0 +1,101 @@
+﻿@page "/Shift/Create"
+@attribute [Authorize(Roles = "Admin,HRManager")]
+
+@inject NavigationManager navigationManager
+@inject ToastService toastService
+@inject ShiftService shiftService
+@rendermode InteractiveServer
+
+<PageTitle>Nueva Tanda</PageTitle>
+
+<div class="container mt-4">
+    <div class="card shadow-lg border-0">
+        <div class="card-header bg-white border-bottom py-3">
+            <h4 class="mb-0 text-primary fw-bold">
+                <i class="bi bi-plus-circle-fill me-2"></i>Nueva Tanda
+            </h4>
+            <small class="text-muted">Definición de turnos laborales</small>
+        </div>
+
+        <EditForm Model="tanda" OnValidSubmit="Guardar">
+            <DataAnnotationsValidator />
+            
+            <div class="card-body p-4">
+                <div class="row g-3">
+                    <div class="col-md-12 mb-3">
+                        <label class="form-label fw-bold small text-muted text-uppercase">Nombre de la Tanda</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-white"><i class="bi bi-card-text"></i></span>
+                            <InputText class="form-control" @bind-Value="tanda.Name" placeholder="Ej: Matutina, Nocturna..." />
+                        </div>
+                        <ValidationMessage For="() => tanda.Name" class="text-danger small mt-1" />
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label fw-bold small text-muted text-uppercase">Hora de Entrada</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-white"><i class="bi bi-box-arrow-in-right"></i></span>
+                            <input type="time" class="form-control" value="@StartTimeString" @onchange="@(e => StartTimeString = e.Value?.ToString())" />
+                        </div>
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label fw-bold small text-muted text-uppercase">Hora de Salida</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-white"><i class="bi bi-box-arrow-right"></i></span>
+                            <input type="time" class="form-control" value="@EndTimeString" @onchange="@(e => EndTimeString = e.Value?.ToString())" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card-footer bg-light p-3 d-flex justify-content-between">
+                <a class="btn btn-secondary shadow-sm fw-bold" href="/Shift/Index">
+                    <i class="bi bi-arrow-left me-1"></i> Volver
+                </a>
+                <button type="submit" class="btn btn-primary shadow-sm fw-bold">
+                    <i class="bi bi-floppy me-1"></i> Guardar Tanda
+                </button>
+            </div>
+        </EditForm>
+    </div>
+</div>
+
+@code {
+    private Shift tanda { get; set; } = new Shift();
+
+    // Variables STRING para la UI (No rebotan)
+    private string StartTimeString { get; set; } = "08:00";
+    private string EndTimeString { get; set; } = "17:00";
+
+    private async Task Guardar()
+    {
+        try
+        {
+
+            // Al guardar, convertimos los strings al formato TimeOnly de la base de datos
+            if (TimeOnly.TryParse(StartTimeString, out var start))
+                tanda.StartTime = start;
+
+            if (TimeOnly.TryParse(EndTimeString, out var end))
+                tanda.EndTime = end;
+
+            tanda.ModifiedDate = DateTime.Now;
+
+            var exito = await shiftService.Guardar(tanda);
+            if (exito)
+            {
+                toastService.ShowSuccess("Tanda creada exitosamente.");
+                navigationManager.NavigateTo("/Shift/Index");
+            }
+            else
+            {
+                toastService.ShowError("No se pudo guardar la tanda.");
+            }
+        }
+        catch (Exception ex)
+        {
+            toastService.ShowError(ex.Message);
+        }
+    }
+}

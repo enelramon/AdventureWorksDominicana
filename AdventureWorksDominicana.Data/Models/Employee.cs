@@ -47,46 +47,60 @@ public partial class Employee
     /// <summary>
     /// Work title such as Buyer or Sales Representative.
     /// </summary>
+    [Required(ErrorMessage = "El puesto de trabajo es obligatorio.")]
+    [StringLength(50, ErrorMessage = "El puesto de trabajo no puede exceder los 50 caracteres.")]
     public string JobTitle { get; set; } = null!;
 
     /// <summary>
     /// Date of birth.
     /// </summary>
+    [Required(ErrorMessage = "La fecha de nacimiento es obligatoria.")]
     public DateOnly BirthDate { get; set; }
 
     /// <summary>
     /// M = Married, S = Single
     /// </summary>
+    [Required(ErrorMessage = "El estado civil es obligatorio.")]
+    [StringLength(1, ErrorMessage = "El estado civil debe tener exactamente 1 carácter (M o S).")]
     public string MaritalStatus { get; set; } = null!;
 
     /// <summary>
     /// M = Male, F = Female
     /// </summary>
+    [Required(ErrorMessage = "El género es obligatorio.")]
+    [StringLength(1, ErrorMessage = "El género debe tener exactamente 1 carácter (M o F).")]
     public string Gender { get; set; } = null!;
 
     /// <summary>
     /// Employee hired on this date.
     /// </summary>
+    [Required(ErrorMessage = "La fecha de contratación es obligatoria.")]
     public DateOnly HireDate { get; set; }
 
     /// <summary>
     /// Job classification. 0 = Hourly, not exempt from collective bargaining. 1 = Salaried, exempt from collective bargaining.
     /// </summary>
+    [Required(ErrorMessage = "Debe especificar si el empleado es asalariado.")]
     public bool SalariedFlag { get; set; }
 
     /// <summary>
     /// Number of available vacation hours.
     /// </summary>
+    [Required(ErrorMessage = "Las horas de vacaciones son obligatorias.")]
+    [Range(0, 32767, ErrorMessage = "Las horas de vacaciones no pueden ser un valor negativo.")]
     public short VacationHours { get; set; }
 
     /// <summary>
     /// Number of available sick leave hours.
     /// </summary>
+    [Required(ErrorMessage = "Las horas de enfermedad son obligatorias.")]
+    [Range(0, 32767, ErrorMessage = "Las horas de enfermedad no pueden ser un valor negativo.")]
     public short SickLeaveHours { get; set; }
 
     /// <summary>
     /// 0 = Inactive, 1 = Active
     /// </summary>
+    [Required(ErrorMessage = "Debe especificar si el empleado está activo.")]
     public bool CurrentFlag { get; set; }
 
     /// <summary>
@@ -94,6 +108,13 @@ public partial class Employee
     /// </summary>
     [Column("rowguid")]
     public Guid Rowguid { get; set; }
+
+    /// <summary>
+    /// Bank account number for payroll deposits.
+    /// </summary>
+    [StringLength(20, MinimumLength = 10, ErrorMessage = "La cuenta bancaria debe tener entre 10 y 20 dígitos.")]
+    [Display(Name = "Cuenta Bancaria (Nómina)")]
+    public string? BankAccountNumber { get; set; }
 
     /// <summary>
     /// Date and time the record was last updated.

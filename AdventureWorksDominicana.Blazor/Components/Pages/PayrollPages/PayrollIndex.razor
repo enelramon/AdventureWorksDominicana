@@ -1,0 +1,135 @@
+﻿@page "/Payroll/Index"
+
+@using AdventureWorksDominicana.Data.Models
+@using AdventureWorksDominicana.Services
+@using Microsoft.AspNetCore.Components.QuickGrid
+
+@inject NavigationManager navigationManager
+@inject PayrollService payrollService
+@rendermode InteractiveServer
+
+<PageTitle>Registro de N&oacute;minas</PageTitle>
+
+<div class="container-fluid mt-4">
+    <div class="card shadow-lg">
+        <div class="card-header d-flex justify-content-between">
+            <h4>Registro de N&oacute;minas</h4>
+            <a class="btn btn-primary" href="/Payroll/Create"><i class="bi bi-plus-square"></i> Crear</a>
+        </div>
+
+        <div class="card-body">
+            <div class="row mb-3 align-items-end">
+                <div class="col-md-3">
+                    <label class="form-label fw-bold">Desde:</label>
+                    <input class="form-control" type="date" @bind="Desde" />
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label fw-bold">Hasta:</label>
+                    <input class="form-control" type="date" @bind="Hasta" />
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label fw-bold">Filtrar por:</label>
+                    <select class="form-select" @bind="Filtros">
+                        <option value="">Seleccione una opci&oacute;n</option>
+                        <option value="Id">Id</option>
+                        <option value="Descripcion">Descripci&oacute;n</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label fw-bold">Buscar:</label>
+                    <div class="input-group">
+                        <input class="form-control" type="text" placeholder="Buscar..." @bind="ValorFiltro" />
+                        <button class="btn btn-outline-primary" type="button" @onclick="Buscar">
+                            <i class="bi bi-search"></i>
+                        </button>
+                        <button class="btn btn-outline-secondary" type="button" title="Limpiar Filtros" @onclick="Restablecer">
+                            <i class="bi bi-arrow-counterclockwise"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="table-responsive">
+                <QuickGrid Items="ListaPayrolls" Class="table table-striped table-bordered table-hover" Pagination="@pages">
+                    <PropertyColumn Property="@(e => e.PayrollId)" Title="ID" Sortable="true" />
+                    <PropertyColumn Property="@(e => e.Description)" Title="Descripción" Sortable="true" />
+                    <PropertyColumn Property="@(e => e.PeriodStartDate)" Format="dd/MM/yyyy" Title="Inicio" Sortable="true" />
+                    <PropertyColumn Property="@(e => e.PeriodEndDate)" Format="dd/MM/yyyy" Title="Fin" Sortable="true" />
+                    <PropertyColumn Property="@(e => e.Status)" Title="Estado" Sortable="true" />
+
+                    <TemplateColumn Title="Acciones">
+                        <a class="btn btn-outline-info btn-sm" href="/Payroll/Details/@context.PayrollId">
+                            <i class="bi bi-eye"></i> Ver Detalle
+                        </a>
+                    </TemplateColumn>
+                </QuickGrid>
+            </div>
+            
+            <div class="d-flex justify-content-end mt-3">
+                <Paginator State="@pages" />
+            </div>
+        </div>
+
+        <div class="card-footer text-start">
+            <strong>Conteo Registros: </strong> @ListaPayrolls.Count()
+        </div>
+    </div>
+</div>
+
+@code {
+    public IQueryable<Payroll> ListaPayrolls { get; set; } = Enumerable.Empty<Payroll>().AsQueryable();
+    public string Filtros { get; set; } = string.Empty;
+    public string ValorFiltro { get; set; } = string.Empty;
+    public DateTime? Desde { get; set; }
+    public DateTime? Hasta { get; set; }
+    
+    private PaginationState pages = new PaginationState { ItemsPerPage = 10 };
+
+    protected override async Task OnInitializedAsync()
+    {
+        await Buscar();
+    }
+
+    public async Task Buscar()
+    {
+        List<Payroll> resultado;
+
+        if (!string.IsNullOrWhiteSpace(ValorFiltro))
+        {
+            if (Filtros == "Id" && int.TryParse(ValorFiltro, out int id))
+            {
+                resultado = await payrollService.GetList(x => x.PayrollId == id);
+            }
+            else if (Filtros == "Descripcion")
+            {
+                resultado = await payrollService.GetList(
+                    x => x.Description.ToLower().Contains(ValorFiltro.ToLower()));
+            }
+            else
+            {
+                resultado = await payrollService.GetList(x => true);
+            }
+        }
+        else
+        {
+            resultado = await payrollService.GetList(x => true);
+        }
+
+        if (Desde.HasValue)
+            resultado = resultado.Where(x => x.PeriodStartDate >= Desde.Value.Date).ToList();
+
+        if (Hasta.HasValue)
+            resultado = resultado.Where(x => x.PeriodEndDate <= Hasta.Value.Date).ToList();
+
+        ListaPayrolls = resultado.AsQueryable();
+    }
+
+    private async Task Restablecer()
+    {
+        Desde = null;
+        Hasta = null;
+        ValorFiltro = string.Empty;
+        Filtros = string.Empty;
+        await Buscar();
+    }
+}

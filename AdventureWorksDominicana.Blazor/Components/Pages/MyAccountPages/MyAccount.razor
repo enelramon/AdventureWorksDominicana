@@ -57,105 +57,110 @@
 
                         <div class="form-check form-switch">
                             <input class="form-check-input" type="checkbox" id="promoSwitch" @bind="Modelo.WantsPromotions">
-                                <label class="form-check-label" for="promoSwitch">
-                                    Deseo recibir correos promocionales y ofertas
-                                </label>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="col-lg-7">
-                    <!-- CORREOS ELECTRÓNICOS -->
-                    <div class="account-card mb-4">
-                        <div class="card-body">
-                            <div class="account-header-with-button">
-                                <h5 class="account-section-title mb-0">
-                                    <i class="bi bi-envelope"></i> Correos Electrónicos
-                                </h5>
-                                <button type="button" class="btn-account-outline" @onclick="AgregarCorreo">
-                                    <i class="bi bi-plus-lg"></i> Agregar Correo
-                                </button>
-                            </div>
-
-                            <div class="mb-4">
-                                <label class="account-form-label">Correo de Acceso (Principal)</label>
-                                <input type="text" class="account-form-control bg-light" value="@UserEmail" readonly />
-                            </div>
-
-                            <hr class="account-divider" />
-
-                            @foreach (var email in Modelo.Emails)
-                            {
-                                <div class="account-item-row">
-                                    <div class="account-item-field">
-                                        <input type="email" class="account-form-control" @bind="email.EmailAddress1" placeholder="ejemplo@correo.com" />
-                                        <ValidationMessage For="@(() => email.EmailAddress1)" class="text-danger small" />
-                                    </div>
-                                    <div class="account-item-actions">
-                                        <button type="button" class="btn-account-danger" @onclick="() => EliminarCorreo(email)">
-                                            <i class="bi bi-trash"></i> Eliminar
-                                        </button>
-                                    </div>
-                                </div>
-                            }
-                            @if (!Modelo.Emails.Any())
-                            {
-                                <div class="account-empty-state">
-                                    <i class="bi bi-envelope"></i>
-                                    <p>No tienes correos alternativos registrados.</p>
-                                </div>
-                            }
-                        </div>
-                    </div>
-
-                    <!-- TELÉFONOS -->
-                    <div class="account-card mb-4">
-                        <div class="card-body">
-                            <div class="account-header-with-button">
-                                <h5 class="account-section-title mb-0">
-                                    <i class="bi bi-telephone"></i> Números de Teléfono
-                                </h5>
-                                <button type="button" class="btn-account-outline" @onclick="AgregarTelefono">
-                                    <i class="bi bi-plus-lg"></i> Agregar Teléfono
-                                </button>
-                            </div>
-
-                            @foreach (var phone in Modelo.Phones)
-                            {
-                                <div class="account-item-row">
-                                    <div class="account-item-field">
-                                        <input type="text" class="account-form-control" @bind="phone.PhoneNumber" placeholder="Ej: 809-555-5555" />
-                                        <ValidationMessage For="@(() => phone.PhoneNumber)" class="text-danger small" />
-                                    </div>
-                                    <div class="account-item-field">
-                                        <select class="account-form-control" @bind="phone.PhoneNumberTypeId">
-                                            @foreach (var tipo in ListaTiposTelefono)
-                                            {
-                                                <option value="@tipo.PhoneNumberTypeId">@tipo.Name</option>
-                                            }
-                                        </select>
-                                    </div>
-                                    <div class="account-item-actions">
-                                        <button type="button" class="btn-account-danger" @onclick="() => EliminarTelefono(phone)">
-                                            <i class="bi bi-trash"></i> Eliminar
-                                        </button>
-                                    </div>
-                                </div>
-                            }
-                            @if (!Modelo.Phones.Any())
-                            {
-                                <div class="account-empty-state">
-                                    <i class="bi bi-telephone"></i>
-                                    <p>No hay teléfonos registrados.</p>
-                                </div>
-                            }
+                            <label class="form-check-label" for="promoSwitch">
+                                Deseo recibir correos promocionales y ofertas
+                            </label>
                         </div>
                     </div>
                 </div>
             </div>
+
+            <div class="col-lg-7">
+                <!-- CORREOS ELECTRÓNICOS -->
+                <div class="account-card mb-4">
+                    <div class="card-body">
+                        <div class="account-header-with-button">
+                            <h5 class="account-section-title mb-0">
+                                <i class="bi bi-envelope"></i> Correos Electrónicos
+                            </h5>
+                            <button type="button" class="btn-account-outline" @onclick="AgregarCorreo">
+                                <i class="bi bi-plus-lg"></i> Agregar Correo
+                            </button>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="account-form-label">Correo de Acceso (Principal)</label>
+                            <input type="text" class="account-form-control bg-light" value="@UserEmail" readonly />
+                        </div>
+
+                        <hr class="account-divider" />
+
+                        @foreach (var email in Modelo.Emails)
+                        {
+                            <div class="account-item-row">
+                                <div class="account-item-field">
+                                    <input type="email" class="account-form-control" @bind="email.EmailAddress1" placeholder="ejemplo@correo.com" />
+                                    <ValidationMessage For="@(() => email.EmailAddress1)" class="text-danger small" />
+                                </div>
+                                <div class="account-item-actions">
+                                    <button type="button" class="btn-account-danger" @onclick="() => EliminarCorreo(email)">
+                                        <i class="bi bi-trash"></i> Eliminar
+                                    </button>
+                                </div>
+                            </div>
+                        }
+                        @if (!Modelo.Emails.Any())
+                        {
+                            <div class="account-empty-state">
+                                <i class="bi bi-envelope"></i>
+                                <p>No tienes correos alternativos registrados.</p>
+                            </div>
+                        }
+                    </div>
+                </div>
+
+                <!-- TELÉFONOS -->
+                <div class="account-card mb-4">
+                    <div class="card-body">
+                        <div class="account-header-with-button">
+                            <h5 class="account-section-title mb-0">
+                                <i class="bi bi-telephone"></i> Números de Teléfono
+                            </h5>
+                            <button type="button" class="btn-account-outline" @onclick="AgregarTelefono">
+                                <i class="bi bi-plus-lg"></i> Agregar Teléfono
+                            </button>
+                        </div>
+
+                        @foreach (var phone in Modelo.Phones)
+                        {
+                            <div class="account-item-row">
+                                <div class="account-item-field">
+                                    <input type="text" class="account-form-control"
+                                           value="@phone.PhoneNumber"
+                                           @oninput="@(e => FormatearTelefono(e, phone))"
+                                           placeholder="Ej: 809-555-5555"
+                                           onkeypress="return event.charCode >= 48 && event.charCode <= 57"
+                                           maxlength="12" />
+                                    <ValidationMessage For="@(() => phone.PhoneNumber)" class="text-danger small" />
+                                </div>
+                                <div class="account-item-field">
+                                    <select class="account-form-control" @bind="phone.PhoneNumberTypeId">
+                                        @foreach (var tipo in ListaTiposTelefono)
+                                        {
+                                            <option value="@tipo.PhoneNumberTypeId">@tipo.Name</option>
+                                        }
+                                    </select>
+                                </div>
+                                <div class="account-item-actions">
+                                    <button type="button" class="btn-account-danger" @onclick="() => EliminarTelefono(phone)">
+                                        <i class="bi bi-trash"></i> Eliminar
+                                    </button>
+                                </div>
+                            </div>
+                        }
+                        @if (!Modelo.Phones.Any())
+                        {
+                            <div class="account-empty-state">
+                                <i class="bi bi-telephone"></i>
+                                <p>No hay teléfonos registrados.</p>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
         </div>
-    </EditForm>
+    </div>
+</EditForm>
 
 @code {
     private ClaimsPrincipal? User { get; set; }
@@ -180,6 +185,27 @@
 
         public List<EmailAddress> Emails { get; set; } = new();
         public List<PersonPhone> Phones { get; set; } = new();
+    }
+
+    private void FormatearTelefono(ChangeEventArgs e, PersonPhone phone)
+    {
+        var value = e.Value?.ToString() ?? "";
+
+        var soloNumeros = new string(value.Where(char.IsDigit).Take(10).ToArray());
+        if (soloNumeros.Length <= 3)
+        {
+            phone.PhoneNumber = soloNumeros;
+        }
+        else if (soloNumeros.Length <= 6)
+        {
+            phone.PhoneNumber = $"{soloNumeros.Substring(0, 3)}-{soloNumeros.Substring(3)}";
+        }
+        else
+        {
+            phone.PhoneNumber = $"{soloNumeros.Substring(0, 3)}-{soloNumeros.Substring(3, 3)}-{soloNumeros.Substring(6)}";
+        }
+
+        datosSinGuardar = true;
     }
 
     protected override async Task OnInitializedAsync()

@@ -69,7 +69,11 @@ else
                 <div class="card-footer text-center">
                     <a class="btn btn-secondary bi bi-arrow-left" href="/Customer/Index"> Volver</a>
                     <button class="btn btn-primary bi bi-floppy" type="submit"> Guardar</button>
-                    <button class="btn btn-danger bi bi-trash" type="button" @onclick="Eliminar"> Eliminar</button>
+                    <AuthorizeView Roles="Admin">
+                        <Authorized Context="OtraCosa">
+                           <button class="btn btn-danger bi bi-trash" type="button" @onclick="Eliminar"> Eliminar</button>
+                        </Authorized>
+                    </AuthorizeView>
                 </div>
             </div>
         </div>

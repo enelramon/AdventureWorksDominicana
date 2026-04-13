@@ -1,5 +1,5 @@
 ﻿@page "/Location/Edit/{LocationId:int}"
-@attribute [Authorize(Roles = "Admin")]
+@attribute [Authorize(Roles = "Admin, ProductionManager")]
 
 @inject NavigationManager navigationManager
 @inject ToastService toastService
@@ -26,12 +26,6 @@ else
                     <h4 class="mb-0">Editar Ubicación</h4>
                 </div>
                 <div class="card-body">
-                    
-                    <div class="mb-3">
-                        <label class="form-label fw-bold">ID de Ubicación</label>
-                        <InputNumber class="form-control" @bind-Value="location.LocationId" readonly />
-                        <ValidationMessage For="() => location.LocationId" />
-                    </div>
 
                     <div class="mb-3">
                         <label class="form-label fw-bold">Nombre</label>
@@ -98,7 +92,7 @@ else
 
 @code {
     [Parameter]
-    public short LocationId { get; set; }
+    public int LocationId { get; set; }
 
     private Location? location;
     private string mensaje = string.Empty;
@@ -106,7 +100,10 @@ else
 
     protected override async Task OnParametersSetAsync()
     {
-        location = await locationService.Buscar(LocationId);
+        // Convertir int a short
+        short id = Convert.ToInt16(LocationId);
+        location = await locationService.Buscar(id);
+    
         if (location == null)
         {
             mensaje = "Ubicación no encontrada";
@@ -118,8 +115,8 @@ else
         if (location == null) return;
         mensaje = string.Empty;
 
-        var isDuplicated = await locationService.GetList(l => 
-            l.Name.ToLower() == location.Name.ToLower() && 
+        var isDuplicated = await locationService.GetList(l =>
+            l.Name.ToLower() == location.Name.ToLower() &&
             l.LocationId != location.LocationId
         );
 

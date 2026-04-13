@@ -2,6 +2,7 @@
 @attribute [Authorize(Roles = "Admin, ProductionManager, SalesManager")]
 
 @inject ProductService productService;
+@inject AuthenticationStateProvider AuthStateProvider
 @rendermode InteractiveServer
 
 <div class="product-container">
@@ -13,9 +14,13 @@
             <span>Gestión y consulta de catálogo</span>
         </div>
 
-        <a class="btn btn-primary" href="/Product/Create">
-            <i class="bi bi-plus-square"></i> Crear
-        </a>
+        <AuthorizeView Roles="Admin, ProductionManager">
+            <Authorized>
+                <a class="btn btn-primary" href="/Product/Create">
+                    <i class="bi bi-plus-square"></i> Crear
+                </a>
+            </Authorized>
+        </AuthorizeView>
     </div>
 
     <!-- FILTROS -->
@@ -83,11 +88,14 @@
                 }
             </TemplateColumn>
 
-            <TemplateColumn Class="text-center" Context="p" Title="Acciones">
-                <a href="/Product/Edit/@p.ProductId" class="btn btn-sm btn-outline-primary">
-                    <span class="bi bi-pencil"></span> Modificar
-                </a>
-            </TemplateColumn>
+            @if (canEdit)
+            {
+                <TemplateColumn Class="text-center" Context="p" Title="Acciones">
+                    <a href="/Product/Edit/@p.ProductId" class="btn btn-sm btn-outline-primary">
+                        <span class="bi bi-pencil"></span> Modificar
+                    </a>
+                </TemplateColumn>
+            }
 
         </QuickGrid>
 
@@ -103,9 +111,15 @@
     public string Filtro { get; set; } = "";
     public string ValorFiltro { get; set; } = "";
     private PaginationState pages = new PaginationState { ItemsPerPage = 10 };
+    private bool canEdit = false;
 
     protected override async Task OnInitializedAsync()
     {
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+
+        canEdit = user.IsInRole("Admin") || user.IsInRole("ProductionManager");
+
         ListaProducts = await productService.GetListIndex(p => p.ProductId > 0);
         ListaProducts = ListaProducts.OrderByDescending(p => p.ModifiedDate).ToList();
     }

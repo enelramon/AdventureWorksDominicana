@@ -31,5 +31,15 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-datalabels/2.2.0/chartjs-plugin-datalabels.min.js" integrity="sha512-JPcRR8yFa8mmCsfrw4TNte1ZvF1e3+1SdGMslZvmrzDYxS69J7J49vkFL8u6u8PlPJK+H3voElBtUCzaXj+6ig==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
     <script src="_content/Blazor.Bootstrap/blazor.bootstrap.js"></script>
+    <script>
+        window.descargarArchivo = (fileName, base64String) => {
+        const link = document.createElement('a');
+        link.download = fileName;
+        link.href = "data:text/plain;base64," + base64String;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        };
+    </script>
 </body>
 </html>

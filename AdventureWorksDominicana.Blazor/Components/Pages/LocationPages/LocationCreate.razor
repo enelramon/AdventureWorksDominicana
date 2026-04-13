@@ -1,5 +1,5 @@
 ﻿@page "/Location/Create"
-@attribute [Authorize(Roles = "Admin")]
+@attribute [Authorize(Roles = "Admin, ProductionManager")]
 
 @inject NavigationManager navigationManager
 @inject ToastService toastService

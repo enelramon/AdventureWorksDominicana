@@ -1,5 +1,5 @@
 ﻿@page "/SalesTerritory/Index"
-@attribute [Authorize(Roles = "Admin")]
+@attribute [Authorize(Roles = "Admin, SalesManager")]
 
 @inject SalesTerritoryService salesTerritoryService;
 @rendermode InteractiveServer
@@ -8,7 +8,9 @@
     <div class="card shadow-lg">
         <div class="card-header d-flex justify-content-between">
             <h3>Sales Territories</h3>
-            <a class="btn btn-primary bi bi-plus-square" href="/SalesTerritory/Create"> Crear</a>
+            <AuthorizeView Roles="Admin">
+                <a class="btn btn-primary bi bi-plus-square" href="/SalesTerritory/Create"> Crear</a>
+            </AuthorizeView>
         </div>
         <div class="card-body">
             @* Encabezados *@
@@ -62,9 +64,11 @@
                     <PropertyColumn Property="@(s => s.SalesLastYear)" Sortable="true" Format="F2" Title="Ventas LY"></PropertyColumn>
                     <PropertyColumn Property="@(s => s.CostYtd)" Sortable="true" Format="F2" Title="Costos"></PropertyColumn>
                     <PropertyColumn Property="@(s => s.CostLastYear)" Sortable="true" Format="F2" Title="Costos LY"></PropertyColumn>
-                    <TemplateColumn Class="text-center" Context="options" Title="Acci&oacute;n">
-                        <a href="/SalesTerritory/Edit/@options.TerritoryId" class="btn btn-outline-primary bi bi-pencil-square"> Modificar</a>
-                    </TemplateColumn>
+                    <AuthorizeView Roles="Admin">
+                        <TemplateColumn Class="text-center" Context="options" Title="Acci&oacute;n">
+                            <a href="/SalesTerritory/Edit/@options.TerritoryId" class="btn btn-outline-primary bi bi-pencil-square"> Modificar</a>
+                        </TemplateColumn>
+                    </AuthorizeView>
                 </QuickGrid>
             </div>
             @*Pagination*@

@@ -1,56 +1,100 @@
 ﻿@page "/SpecialOffer/Edit/{OfferId:int}"
-
-@inject SpecialOfferService specialOfferService;
-@inject ToastService toastService;
-@inject NavigationManager navigationManager;
+@attribute [Authorize(Roles = "Admin, ProductionManager")]
+@using AdventureWorksDominicana.Data.Models
+@using AdventureWorksDominicana.Services
+@inject SpecialOfferService specialOfferService
+@inject ToastService toastService
+@inject NavigationManager navigationManager
 @rendermode InteractiveServer
+
+<PageTitle>Modificar Oferta Especial</PageTitle>
 
 <EditForm Model="Offer" OnValidSubmit="Guardar">
     <DataAnnotationsValidator />
 
-    <div class="container pb-5">
+    <div class="container mt-4">
         <div class="card shadow-lg">
-            <div class="card-header text-center">
-                <h4>Modificar Oferta Especial</h4>
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="card-title mb-0">Modificar Oferta Especial</h5>
             </div>
+
             <div class="card-body">
-                <div class="row">
-                    <div class="col-md-12 mb-3">
-                        <label><strong>Descripci&oacute;n</strong></label>
-                        <input class="form-control" @bind="Offer.Description" />
+                <div class="row g-3">
+                    <div class="col-md-12">
+                        <label class="form-label fw-bold">Descripción del Descuento</label>
+                        <InputText class="form-control" @bind-Value="Offer.Description" />
                         <ValidationMessage For="(() => Offer.Description)" />
                     </div>
-                    
-                    <div class="col-md-4 mb-3">
-                        <label><strong>% Descuento (Actual: @((Offer.DiscountPct * 100).ToString("N0"))%)</strong></label>
-                        <input class="form-control" type="number" step="0.01" @bind="Offer.DiscountPct" />
+
+                    <div class="col-md-4">
+                        <label class="form-label fw-bold">% Descuento (Decimal)</label>
+                        <InputNumber class="form-control" step="0.01" @bind-Value="Offer.DiscountPct" />
+                        <ValidationMessage For="(() => Offer.DiscountPct)" />
                     </div>
 
-                    <div class="col-md-4 mb-3">
-                        <label><strong>Tipo</strong></label>
-                        <input class="form-control" @bind="Offer.Type" />
+                    <div class="col-md-4">
+                        <label class="form-label fw-bold">Tipo de Oferta</label>
+                        <InputSelect class="form-select" @bind-Value="Offer.Type">
+                            <option value="">Seleccione...</option>
+                            <option value="Sin Descuento">Sin Descuento</option>
+                            <option value="Descuento por Volumen">Descuento por Volumen</option>
+                            <option value="Oferta de Temporada">Oferta de Temporada</option>
+                            <option value="Producto Descontinuado">Producto Descontinuado</option>
+                            <option value="Exceso de Inventario">Exceso de Inventario</option>
+                            <option value="Nuevo Producto">Nuevo Producto</option>
+                        </InputSelect>
+                        <ValidationMessage For="(() => Offer.Type)" />
                     </div>
 
-                    <div class="col-md-4 mb-3">
-                        <label><strong>Categor&iacute;a</strong></label>
-                        <input class="form-control" @bind="Offer.Category" />
+                    <div class="col-md-4">
+                        <label class="form-label fw-bold">Categoría</label>
+                        <InputSelect class="form-select" @bind-Value="Offer.Category">
+                            <option value="">Seleccione...</option>
+                            <option value="Customer">Customer</option>
+                            <option value="Pre Seller">Pre Seller</option>
+                        </InputSelect>
+                        <ValidationMessage For="(() => Offer.Category)" />
                     </div>
 
-                    <div class="col-md-6 mb-3">
-                        <label><strong>Fecha Inicio</strong></label>
-                        <input class="form-control" type="date" @bind="Offer.StartDate" />
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">Fecha Inicio</label>
+                        <InputDate class="form-control" @bind-Value="Offer.StartDate" />
+                        <ValidationMessage For="(() => Offer.StartDate)" />
                     </div>
 
-                    <div class="col-md-6 mb-3">
-                        <label><strong>Fecha Fin</strong></label>
-                        <input class="form-control" type="date" @bind="Offer.EndDate" />
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">Fecha Fin</label>
+                        <InputDate class="form-control" @bind-Value="Offer.EndDate" />
+                        <ValidationMessage For="(() => Offer.EndDate)" />
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">Cantidad Mínima</label>
+                        <InputNumber class="form-control" @bind-Value="Offer.MinQty" />
+                        <ValidationMessage For="(() => Offer.MinQty)" />
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">Cantidad Máxima</label>
+                        <InputNumber class="form-control" @bind-Value="Offer.MaxQty" />
+                        <ValidationMessage For="(() => Offer.MaxQty)" />
                     </div>
                 </div>
             </div>
-            <div class="card-footer text-center">
-                <a class="btn btn-secondary bi bi-arrow-left" href="/SpecialOffer/Index"> Volver</a>
-                <button class="btn btn-primary bi bi-floppy" type="submit"> Guardar</button>
-                <button class="btn btn-danger bi bi-trash" type="button" @onclick="Eliminar"> Eliminar</button>
+
+            <div class="card-footer d-flex justify-content-center gap-2">
+                <a class="btn btn-secondary d-flex align-items-center gap-2" href="/SpecialOffer/Index">
+                    <i class="bi bi-arrow-left"></i>
+                    <span>Volver</span>
+                </a>
+                <button class="btn btn-primary d-flex align-items-center gap-2" type="submit">
+                    <i class="bi bi-floppy"></i>
+                    <span>Guardar Cambios</span>
+                </button>
+                <button class="btn btn-danger d-flex align-items-center gap-2" type="button" @onclick="Eliminar">
+                    <i class="bi bi-trash"></i>
+                    <span>Eliminar</span>
+                </button>
             </div>
         </div>
     </div>
@@ -59,24 +103,34 @@
 @code {
     [Parameter] public int OfferId { get; set; }
     public SpecialOffer Offer { get; set; } = new SpecialOffer();
+    private bool ConfirmarEliminacion = false;
 
     protected override async Task OnInitializedAsync()
     {
-        var encontrado = await specialOfferService.Buscar(OfferId);
-        if (encontrado != null) Offer = encontrado;
-        else navigationManager.NavigateTo("/SpecialOffer/Index");
+        var encontrada = await specialOfferService.Buscar(OfferId);
+        if (encontrada != null)
+        {
+            Offer = encontrada;
+        }
+        else
+        {
+            toastService.ShowError("La oferta no fue encontrada.");
+            navigationManager.NavigateTo("/SpecialOffer/Index");
+        }
     }
 
     public async Task Guardar()
     {
+        if (Offer.EndDate < Offer.StartDate)
+        {
+            toastService.ShowError("La fecha de fin no puede ser anterior a la fecha de inicio.");
+            return;
+        }
+
         if (await specialOfferService.Guardar(Offer))
         {
-            toastService.ShowSuccess("Oferta actualizada.");
+            toastService.ShowSuccess("Oferta guardada.");
             navigationManager.NavigateTo("/SpecialOffer/Index");
-        }
-        else
-        {
-            toastService.ShowError("Error al actualizar.");
         }
     }
 
@@ -84,12 +138,12 @@
     {
         if (await specialOfferService.Eliminar(OfferId))
         {
-            toastService.ShowSuccess("Oferta eliminada.");
+            toastService.ShowSuccess("Oferta eliminada correctamente.");
             navigationManager.NavigateTo("/SpecialOffer/Index");
         }
         else
         {
-            toastService.ShowError("No se pudo eliminar (esta oferta tiene productos asociados).");
+            toastService.ShowError("No se pudo eliminar. Es posible que tenga productos asociados.");
         }
     }
 }

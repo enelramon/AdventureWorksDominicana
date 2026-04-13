@@ -1,0 +1,206 @@
+﻿@page "/Employee/DepartmentHistory/{EmployeeId:int}"
+@attribute [Authorize(Roles = "Admin,HRManager")]
+
+@using AdventureWorksDominicana.Data.Models
+@using Microsoft.AspNetCore.Components.QuickGrid
+
+@inject EmployeeService employeeService
+@inject EmployeeDepartmentService departmentHistoryService
+@inject DepartmentService departmentService
+@inject ShiftService shiftService
+@inject ToastService toastService
+@rendermode InteractiveServer
+
+<PageTitle>Historial de Departamentos</PageTitle>
+
+<div class="container mb-5">
+    <div class="card shadow-lg">
+        <div class="card-header text-center bg-light">
+            <h4>Historial de Departamentos</h4>
+        </div>
+        
+        <div class="card-body bg-light">
+            
+ 
+
+            <h5 class="mt-2">Datos del Empleado</h5>
+            <hr />
+            <div class="row">
+                <div class="col-md-12 mb-4">
+                    <label class="form-label"><strong>Empleado:</strong></label>
+                    <input class="form-control" value="@NombreEmpleado" disabled />
+                </div>
+            </div>
+
+            <h5 class="mt-2">Registrar Nuevo Traslado</h5>
+            <hr />
+            
+            <EditForm Model="NuevoTrasladoDummy" FormName="asignarDepartamento" OnValidSubmit="GuardarTransferencia">
+                <DataAnnotationsValidator />
+                
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label"><strong>Fecha de Efectividad:</strong></label>
+                        <InputDate class="form-control" @bind-Value="FechaEfectiva" />
+                    </div>
+
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label"><strong>Nuevo Departamento:</strong></label>
+                        <select class="form-select" @bind="NuevoDeptoId" required>
+                            <option value="0" selected hidden disabled>Seleccione...</option>
+                            @foreach (var depto in ListaDepartamentosMaestro)
+                            {
+                                <option value="@depto.DepartmentId">@depto.Name</option>
+                            }
+                        </select>
+                    </div>
+
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label"><strong>Nueva Tanda:</strong></label>
+                        <select class="form-select" @bind="NuevoTurnoId" required>
+                            <option value="0" selected hidden disabled>Seleccione...</option>
+                            @foreach (var turno in ListaTurnosMaestro)
+                            {
+                                <option value="@turno.ShiftId">@turno.Name</option>
+                            }
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="text-end mb-4 mt-2">
+                    <button type="submit" class="btn btn-primary bi bi-arrow-left-right"> Registrar Traslado</button>
+                </div>
+
+                @if (!string.IsNullOrWhiteSpace(mensajeError))
+                {
+                    <div class="alert alert-danger" role="alert">
+                        <i class="bi bi-exclamation-triangle-fill me-2"></i> @mensajeError
+                    </div>
+                }
+            </EditForm>
+
+            <h5 class="mt-4">Historial Registrado</h5>
+            <hr />
+            
+            <div class="table-responsive">
+                <QuickGrid TGridItem="EmployeeDepartmentHistory" Items="ListaHistorial" Class="table table-hover table-striped align-middle mb-0" Pagination="@pages">
+                    
+                    <TemplateColumn Title="Departamento" SortBy="@(GridSort<EmployeeDepartmentHistory>.ByAscending(p => p.Department.Name))">
+                        <span>@context.Department?.Name</span>
+                    </TemplateColumn>
+                    
+                    <PropertyColumn Property="@(p => p.Shift.Name)" Title="Tanda" Sortable="true" />
+                    
+                    <PropertyColumn Property="@(p => p.StartDate)" Title="Fecha Inicio" Format="dd/MM/yyyy" Sortable="true" />
+                    
+                    <TemplateColumn Title="Fecha Fin">
+                        @if (context.EndDate.HasValue)
+                        {
+                            <span>@context.EndDate.Value.ToString("dd/MM/yyyy")</span>
+                        }
+                        else
+                        {
+                            <span class="fst-italic text-secondary">Actualidad</span>
+                        }
+                    </TemplateColumn>
+
+                    <TemplateColumn Title="Estado" Align="Align.Center">
+                        @if (context.EndDate == null)
+                        {
+                            <span>Activo</span>
+                        }
+                        else
+                        {
+                            <span class="text-secondary">Cerrado</span>
+                        }
+                    </TemplateColumn>
+                </QuickGrid>
+            </div>
+            
+            <div class="d-flex justify-content-end mt-3">
+                <Paginator State="@pages" />
+            </div>
+        </div>
+
+        <div class="card-footer text-center">
+            <a class="btn btn-secondary bi bi-pencil" href="/Employee/Edit/@EmployeeId"> Ir a Edici&oacute;n</a>
+            <a href="/Employee/Index" class="btn btn-primary">
+                <i class="bi bi-folder"></i>
+                <span>Ir a Listado Empleados</span>
+            </a>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public int EmployeeId { get; set; }
+
+    private string NombreEmpleado = "";
+    private string mensajeError = string.Empty;
+    private IQueryable<EmployeeDepartmentHistory> ListaHistorial { get; set; } = Enumerable.Empty<EmployeeDepartmentHistory>().AsQueryable();
+    private PaginationState pages = new PaginationState { ItemsPerPage = 5 };
+
+    // Listas Maestras para los Selects
+    private List<Department> ListaDepartamentosMaestro = new();
+    private List<Shift> ListaTurnosMaestro = new();
+
+    // Variables del Formulario
+    private DateTime FechaEfectiva { get; set; } = DateTime.Today;
+    private short NuevoDeptoId = 0;
+    private byte NuevoTurnoId = 0;
+    
+    // Objeto vacio para que el EditForm no de problemas con el Model
+    private object NuevoTrasladoDummy = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        var emp = await employeeService.Buscar(EmployeeId);
+        if (emp != null)
+        {
+            NombreEmpleado = $"{emp.BusinessEntity.FirstName} {emp.BusinessEntity.LastName}";
+            await CargarHistorial();
+        }
+        
+        // Carga los catalogos para llenar los dropdowns
+        ListaDepartamentosMaestro = await departmentService.GetList(d => true);
+        ListaTurnosMaestro = await shiftService.GetList(s => true);
+    }
+
+    private async Task CargarHistorial()
+    {
+        var result = await departmentHistoryService.GetList(p => p.BusinessEntityId == EmployeeId);
+        ListaHistorial = result.AsQueryable();
+    }
+
+    private async Task GuardarTransferencia()
+    {
+        mensajeError = string.Empty;
+
+        // Valida que no intenten guardar sin seleccionar los dropdowns
+        if (NuevoDeptoId == 0 || NuevoTurnoId == 0)
+        {
+            mensajeError = "Debe seleccionar un departamento y una tanda válidos.";
+            return;
+        }
+
+        // Mando a ejecutar el traslado en el servicio
+        var exito = await departmentHistoryService.TransferirEmpleado(EmployeeId, NuevoDeptoId, NuevoTurnoId, DateOnly.FromDateTime(FechaEfectiva));
+        
+        // Verifico si el servicio logro hacer el cierre y apertura de ciclos
+        if (exito)
+        {
+            toastService.ShowSuccess("Traslado registrado correctamente. El ciclo anterior fue cerrado.");
+            await CargarHistorial();
+            
+            // Limpio el formulario
+            NuevoDeptoId = 0;
+            NuevoTurnoId = 0;
+            FechaEfectiva = DateTime.Today;
+        }
+        else
+        {
+            mensajeError = "No se pudo registrar el traslado. Verifique que no esté intentando asignar el mismo departamento y tanda en los que ya se encuentra activo.";
+        }
+    }
+}

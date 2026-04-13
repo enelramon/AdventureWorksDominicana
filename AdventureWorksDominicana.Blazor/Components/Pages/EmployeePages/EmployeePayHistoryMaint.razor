@@ -1,0 +1,212 @@
+﻿@page "/Employee/PayHistory/{EmployeeId:int}"
+@attribute [Authorize(Roles = "Admin,HRManager")]
+
+@using AdventureWorksDominicana.Data.Models
+@using Microsoft.AspNetCore.Components.QuickGrid
+
+@rendermode InteractiveServer
+@inject EmployeeService employeeService
+@inject EmployeePayHistoryService payHistoryService
+@inject ToastService toastService
+
+<PageTitle>Historial de Pagos</PageTitle>
+
+<div class="container mb-5">
+    <div class="card shadow-lg">
+        <div class="card-header d-flex justify-content-start">
+            <h5 class="card-title">Historial de Pagos</h5>
+        </div>
+        
+        <div class="card-body">
+            @if (!string.IsNullOrWhiteSpace(mensajeError))
+            {
+                <div class="alert alert-danger" role="alert">
+                    @mensajeError
+                </div>
+            }
+
+            <div class="row mb-3">
+                <div class="col-md-12 mt-2">
+                    <label class="form-label fw-bold">Empleado</label>
+                    <input class="form-control" value="@NombreEmpleado" disabled />
+                </div>
+            </div>
+
+            <hr />
+            <h6 class="text-primary fw-bold mt-3">Nueva Asignaci&oacute;n de Sueldo</h6>
+            
+            <EditForm Model="NuevoSueldo" OnValidSubmit="GuardarSueldo">
+                <DataAnnotationsValidator />
+                
+                <div class="row">
+                    <div class="col-md-4 mt-2">
+                        <label class="form-label fw-bold">Fecha de Vigencia</label>
+                        <InputDate class="form-control" @bind-Value="NuevoSueldo.RateChangeDate" />
+                        <ValidationMessage For="() => NuevoSueldo.RateChangeDate" />
+                    </div>
+
+                    <div class="col-md-4 mt-2">
+                        <label class="form-label fw-bold">Monto (RD$ / hora)</label>
+                        <InputNumber class="form-control" step="0.01" min="@(6.5m * TasaCambio)" max="@(200m * TasaCambio)" @bind-Value="MontoIngresadoDOP" placeholder="0.00" required />
+                    </div>
+
+                    <div class="col-md-4 mt-2">
+                        <label class="form-label fw-bold">Frecuencia de Pago</label>
+                        <select class="form-select" @bind="NuevoSueldo.PayFrequency">
+                            <option value="1">Mensual</option>
+                            <option value="2">Quincenal</option>
+                        </select>
+                        <ValidationMessage For="() => NuevoSueldo.PayFrequency" />
+                    </div>
+                </div>
+                
+                <div class="d-flex justify-content-end mb-4 mt-3">
+                    <button type="submit" class="btn btn-primary bi bi-floppy"> Guardar Sueldo</button>
+                </div>
+            </EditForm>
+
+            <hr />
+            <h6 class="text-primary fw-bold mt-3 mb-3">Historial Registrado</h6>
+            
+            <div class="table-responsive">
+                <QuickGrid TGridItem="EmployeePayHistory" Items="ListaPagos" Class="table table-hover table-striped table-bordered align-middle mb-0" Pagination="@pages">
+                    
+                    <PropertyColumn Property="@(p => p.RateChangeDate)" Title="Vigencia" Format="dd/MM/yyyy" Sortable="true" />
+                    
+                    <TemplateColumn Title="Sueldo por Hora (RD$)">
+                        <span>RD$ @((context.Rate * TasaCambio).ToString("N2"))</span>
+                    </TemplateColumn>
+
+                    <TemplateColumn Title="Frecuencia">
+                        @if (context.PayFrequency == 1)
+                        {
+                            <span>Mensual</span>
+                        }
+                        else
+                        {
+                            <span>Quincenal</span>
+                        }
+                    </TemplateColumn>
+
+                    <TemplateColumn Title="Acci&oacute;n" Align="Align.Center">
+                        <button type="button" class="btn btn-danger btn-sm bi bi-trash" @onclick="() => EliminarSueldo(context)"></button>
+                    </TemplateColumn>
+                </QuickGrid>
+            </div>
+            
+            <div class="mt-3">
+                <Paginator State="@pages" />
+            </div>
+        </div>
+
+        <div class="card-footer d-flex justify-content-center gap-2">
+            <a href="/Employee/Edit/@EmployeeId" class="btn btn-secondary d-flex gap-1">
+                <i class="bi bi-pencil"></i>
+                <span>Ir a Edici&oacute;n</span>
+            </a>
+            <a href="/Employee/Index" class="btn btn-primary d-flex gap-1">
+                <i class="bi bi-folder"></i>
+                <span>Ir a Listado Empleados</span>
+            </a>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public int EmployeeId { get; set; }
+    
+    private string NombreEmpleado = "";
+    private string mensajeError = string.Empty;
+    private IQueryable<EmployeePayHistory> ListaPagos { get; set; } = Enumerable.Empty<EmployeePayHistory>().AsQueryable();
+    private EmployeePayHistory NuevoSueldo { get; set; } = new();
+    private PaginationState pages = new PaginationState { ItemsPerPage = 5 };
+
+    private const decimal TasaCambio = 60.50m;
+    private decimal MontoIngresadoDOP { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Busco al empleado en la base de datos
+        var emp = await employeeService.Buscar(EmployeeId);
+        if (emp != null)
+        {
+            NombreEmpleado = $"{emp.BusinessEntity.FirstName} {emp.BusinessEntity.LastName}";
+            await CargarHistorial();
+        }
+        
+        // Inicializo el objeto para el formulario
+        NuevoSueldo = new EmployeePayHistory
+        {
+            BusinessEntityId = EmployeeId,
+            RateChangeDate = DateTime.Today,
+            PayFrequency = 1
+        };
+        
+        // Calculo el sueldo inicial a mostrar usando la tasa de cambio
+        MontoIngresadoDOP = 6.5m * TasaCambio;
+    }
+
+    private async Task CargarHistorial()
+    {
+        // Busco los sueldos y los ordeno del mas nuevo al mas viejo
+        var result = await payHistoryService.GetList(p => p.BusinessEntityId == EmployeeId);
+        ListaPagos = result.OrderByDescending(p => p.RateChangeDate).AsQueryable();
+    }
+
+    private async Task GuardarSueldo()
+    {
+        mensajeError = string.Empty;
+
+        // Valido el monto ingresado contra los limites usando la tasa
+        if (MontoIngresadoDOP < (6.5m * TasaCambio) || MontoIngresadoDOP > (200m * TasaCambio))
+        {
+            mensajeError = $"El sueldo por hora debe estar entre RD$ {6.5m * TasaCambio:N2} y RD$ {200m * TasaCambio:N2}.";
+            return;
+        }
+
+        // Convierto a dolares para insertarlo en la base de datos
+        decimal montoConvertidoUSD = MontoIngresadoDOP / TasaCambio;
+
+        NuevoSueldo.Rate = montoConvertidoUSD;
+        NuevoSueldo.ModifiedDate = DateTime.Now;
+
+        // Ejecuto el guardado
+        var exito = await payHistoryService.Guardar(NuevoSueldo);
+        
+        if (exito)
+        {
+            toastService.ShowSuccess("Sueldo asignado correctamente.");
+            await CargarHistorial();
+        
+            // Restablezco los valores del formulario
+            NuevoSueldo = new EmployeePayHistory
+            {
+                BusinessEntityId = EmployeeId,
+                RateChangeDate = DateTime.Today,
+                PayFrequency = 1
+            };
+            MontoIngresadoDOP = 6.5m * TasaCambio;
+        }
+        else
+        {
+            mensajeError = "Error al guardar el sueldo. Verifique que no exista ya un registro para esa fecha.";
+        }
+    }
+
+    private async Task EliminarSueldo(EmployeePayHistory sueldo)
+    {
+        // Ejecuto la eliminacion usando la llave compuesta
+        bool elimino = await payHistoryService.Eliminar(sueldo.BusinessEntityId, sueldo.RateChangeDate);
+        
+        if (elimino)
+        {
+            toastService.ShowSuccess("Registro eliminado.");
+            await CargarHistorial();
+        }
+        else
+        {
+            mensajeError = "No se pudo eliminar el registro seleccionado.";
+        }
+    }
+}

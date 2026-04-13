@@ -1,5 +1,5 @@
 ﻿@page "/Location/Index"
-@attribute [Authorize(Roles = "Admin")]
+@attribute [Authorize(Roles = "Admin, ProductionManager")]
 
 @rendermode InteractiveServer
 @inject LocationService locationService
@@ -71,7 +71,7 @@
                     <TemplateColumn Title="Opciones">
                         <div class="d-flex gap-2">
                             <a href="Location/Edit/@context.LocationId" class="btn btn-sm btn-outline-primary" title="Modificar">
-                                <i class="bi bi-pencil"></i>
+                                <i class="bi bi-pencil"> Modificar</i>
                             </a>
                         </div>
                     </TemplateColumn>

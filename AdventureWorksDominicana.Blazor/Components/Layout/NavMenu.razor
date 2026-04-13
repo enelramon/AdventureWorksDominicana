@@ -281,6 +281,21 @@
                                         <span class="bi bi-person-add-nav-menu"></span> <small>Person</small>
                                     </NavLink>
                                 </div>
+                                <div class="nav-item">
+                                    <NavLink class="nav-link" href="/Shift/Index">
+                                        <span class="bi bi-clock-nav-menu"></span> <small>Shifts</small>
+                                    </NavLink>
+                                </div>
+                                <div class="nav-item">
+                                    <NavLink class="nav-link" href="/Payroll/Index">
+                                        <span class="bi bi-cash-stack-nav-menu"></span> <small>Payroll</small>
+                                    </NavLink>
+                                </div>
+                                <div class="nav-item">
+                                    <NavLink class="nav-link" href="/PayrollParameters/Index">
+                                        <span class="bi bi-gear-fill-nav-menu"></span> <small>Payroll Settings</small>
+                                    </NavLink>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -351,16 +366,12 @@
                         </div>
                     </div>
                 </div>
-
-                <div class="nav-item px-3">
-                    <NavLink class="nav-link" href="/MyAccount">
-                        <span class="bi bi-person-circle-nav-menu" aria-hidden="true"></span> <small>My Account</small>
-                    </NavLink>
-                </div>
             </Authorized>
         </AuthorizeView>
 
+
         @* ---------- Vista de Customer ---------- *@
+
 
         <AuthorizeView Roles="Customer">
             <Authorized>
@@ -375,23 +386,251 @@
                         <span class="bi bi-credit-card-nav-menu" aria-hidden="true"></span> <small>Payments Methods</small>
                     </NavLink>
                 </div>
+            </Authorized>
+        </AuthorizeView>
 
 
+        @* ---------- Vista de SalesManager ---------- *@
+
+
+        <AuthorizeView Roles="SalesManager">
+            <Authorized>
+                @* ========== SALES MODULE ========== *@
                 <div class="nav-item px-3">
-                    <NavLink class="nav-link" href="/MyAccount">
-                        <span class="bi bi-person-circle-nav-menu" aria-hidden="true"></span> <small>My Account</small>
+                    <NavLink class="nav-link" href="/Sales">
+                        <span class="bi bi-cart-fill-nav-menu"></span> <small>Sales</small>
+                    </NavLink>
+                </div>
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="/SalesTerritory/Index">
+                        <span class="bi bi-map-fill-nav-menu"></span> <small>Sales Territories</small>
+                    </NavLink>
+                </div>
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="/TransactionHistory/Index">
+                        <span class="bi bi-clock-history-nav-menu"></span> <small>Transactions Histories</small>
+                    </NavLink>
+                </div>
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="/Product/Index">
+                        <span class="bi bi-box-seam-nav-menu"></span> <small>Products</small>
+                    </NavLink>
+                </div>
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="/Product/Inventory">
+                        <span class="bi bi-inboxes-fill-nav-menu"></span> <small class="ms-2">Inventory</small>
+                    </NavLink>
+                </div>
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="/Customer/Index">
+                        <span class="bi bi-people-nav-menu" aria-hidden="true"></span> <small>Customers</small>
                     </NavLink>
                 </div>
             </Authorized>
         </AuthorizeView>
 
-        @* ---------- Vista de (inserte rol) ---------- *@
 
-        <AuthorizeView Roles="inserte rol">
+        @* ---------- Vista de ProductionManager ---------- *@
+
+
+        <AuthorizeView Roles="ProductionManager">
             <Authorized>
+
+                @* ========== PRODUCTS MODULE ========== *@
+                <div class="accordion px-3 nav-item" id="accordionProductsPM">
+                    <div class="accordion-item bg-transparent border-0">
+                        <div class="accordion-header">
+                            <button class="accordion-button collapsed bg-transparent px-3" type="button"
+                                    data-bs-toggle="collapse" data-bs-target="#collapseProductsPM">
+                                <span class="bi bi-bicycle-nav-menu"></span> <small>Products</small>
+                            </button>
+                        </div>
+                        <div id="collapseProductsPM" class="accordion-collapse collapse">
+                            <div class="accordion-body p-0 ps-3">
+
+                                <div class="nav-item pt-2">
+                                    <NavLink class="nav-link" href="/Product/Index">
+                                        <span class="bi bi-box-seam-nav-menu"></span> <small>Products</small>
+                                    </NavLink>
+                                </div>
+
+                                <div class="nav-item">
+                                    <NavLink class="nav-link" href="/ProductCategory/Index">
+                                        <span class="bi bi-folder-nav-menu"></span> <small>Categories</small>
+                                    </NavLink>
+                                </div>
+
+                                <div class="nav-item">
+                                    <NavLink class="nav-link" href="/ProductDescription/Index">
+                                        <span class="bi bi-file-text-nav-menu"></span> <small>Descriptions</small>
+                                    </NavLink>
+                                </div>
+
+                                <div class="nav-item">
+                                    <NavLink class="nav-link" href="/SpecialOffer/Index">
+                                        <span class="bi bi-percent-nav-menu"></span> <small>Special Offers</small>
+                                    </NavLink>
+                                </div>
+
+                                <div class="nav-item">
+                                    <NavLink class="nav-link" href="/ProductVendor/Index">
+                                        <span class="bi bi-people-nav-menu"></span> <small>Product Vendor</small>
+                                    </NavLink>
+                                </div>
+
+                                <div class="nav-item">
+                                    <NavLink class="nav-link" href="/UnitMeasure/Index">
+                                        <span class="bi bi-rulers-nav-menu"></span> <small>Unit Measures</small>
+                                    </NavLink>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                @* ========== INVENTORY MODULE ========== *@
+                <div class="accordion px-3 nav-item" id="accordionInventoryPM">
+                    <div class="accordion-item bg-transparent border-0">
+                        <div class="accordion-header">
+                            <button class="accordion-button collapsed bg-transparent px-3" type="button"
+                                    data-bs-toggle="collapse" data-bs-target="#collapseInventoryPM">
+                                <span class="bi bi-boxes-nav-menu"></span> <small>Inventory</small>
+                            </button>
+                        </div>
+                        <div id="collapseInventoryPM" class="accordion-collapse collapse">
+                            <div class="accordion-body p-0 ps-3">
+
+                                <div class="nav-item pt-2">
+                                    <NavLink class="nav-link" href="/Product/Inventory">
+                                        <span class="bi bi-inboxes-fill-nav-menu"></span> <small>Inventory</small>
+                                    </NavLink>
+                                </div>
+
+                                <div class="nav-item">
+                                    <NavLink class="nav-link" href="/Location/Index">
+                                        <span class="bi bi-pin-map-nav-menu"></span> <small>Locations</small>
+                                    </NavLink>
+                                </div>
+
+                                <div class="nav-item">
+                                    <NavLink class="nav-link" href="/Store/Index">
+                                        <span class="bi bi-shop-fill-nav-menu"></span> <small>Store</small>
+                                    </NavLink>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
             </Authorized>
         </AuthorizeView>
+
+
+        @* ---------- Vista de HRManager ---------- *@
+
+
+        <AuthorizeView Roles="HRManager">
+            <Authorized>
+                @* ========== HUMAN RESOURCES MODULE ========== *@
+                <div class="accordion px-3 nav-item" id="accordionHR">
+                    <div class="accordion-item bg-transparent border-0">
+                        <div class="accordion-header">
+                            <button class="accordion-button collapsed bg-transparent px-3" type="button" data-bs-toggle="collapse" data-bs-target="#collapseHR">
+                                <span class="bi bi-people-fill-nav-menu"></span> <small>Human Resources</small>
+                            </button>
+                        </div>
+                        <div id="collapseHR" class="accordion-collapse collapse" data-bs-parent="#accordionHR">
+                            <div class="accordion-body p-0 ps-3">
+                                <div class="nav-item pt-2">
+                                    <NavLink class="nav-link" href="/Employee/Index">
+                                        <span class="bi bi-person-badge-nav-menu"></span> <small>Employees</small>
+                                    </NavLink>
+                                </div>
+                                <div class="nav-item">
+                                    <NavLink class="nav-link" href="/Department/Index">
+                                        <span class="bi bi-building-nav-menu"></span> <small>Departments</small>
+                                    </NavLink>
+                                </div>
+                                <div class="nav-item">
+                                    <NavLink class="nav-link" href="/Person/Index">
+                                        <span class="bi bi-person-add-nav-menu"></span> <small>Person</small>
+                                    </NavLink>
+                                </div>
+                                <div class="nav-item">
+                                    <NavLink class="nav-link" href="/Shift/Index">
+                                        <span class="bi bi-clock-nav-menu"></span> <small>Shifts</small>
+                                    </NavLink>
+                                </div>
+                                <div class="nav-item">
+                                    <NavLink class="nav-link" href="/Payroll/Index">
+                                        <span class="bi bi-cash-stack-nav-menu"></span> <small>Payroll</small>
+                                    </NavLink>
+                                </div>
+                                <div class="nav-item">
+                                    <NavLink class="nav-link" href="/PayrollParameters/Index">
+                                        <span class="bi bi-gear-fill-nav-menu"></span> <small>Payroll Settings</small>
+                                    </NavLink>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </Authorized>
+        </AuthorizeView>
+
+
+        @* ---------- Vista de PurchasingManager ---------- *@
+
+
+        <AuthorizeView Roles="PurchasingManager">
+            <Authorized>
+                @* ========== PURCHASING MODULE ========== *@
+                <div class="accordion px-3 nav-item" id="accordionPurchasingPM">
+                    <div class="accordion-item bg-transparent border-0">
+                        <div class="accordion-header">
+                            <button class="accordion-button collapsed bg-transparent px-3"
+                                    type="button"
+                                    data-bs-toggle="collapse"
+                                    data-bs-target="#collapsePurchasingPM">
+                                <span class="bi bi-truck-nav-menu"></span> <small>Purchasing</small>
+                            </button>
+                        </div>
+
+                        <div id="collapsePurchasingPM" class="accordion-collapse collapse">
+                            <div class="accordion-body p-0 ps-3">
+
+                                <div class="nav-item pt-2">
+                                    <NavLink class="nav-link" href="/Vendor/Index">
+                                        <span class="bi bi-shop-nav-menu"></span> <small>Vendors</small>
+                                    </NavLink>
+                                </div>
+
+                                <div class="nav-item">
+                                    <NavLink class="nav-link" href="/ShipMethods">
+                                        <span class="bi bi-send-plus-nav-menu"></span> <small>Ship Methods</small>
+                                    </NavLink>
+                                </div>
+
+                                <div class="nav-item">
+                                    <NavLink class="nav-link" href="/PurchaseOrder/Index">
+                                        <span class="bi bi-clipboard-plus-nav-menu"></span> <small>Purchase Orders</small>
+                                    </NavLink>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </Authorized>
+        </AuthorizeView>
+
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="/MyAccount">
+                <span class="bi bi-person-circle-nav-menu" aria-hidden="true"></span> <small>My Account</small>
+            </NavLink>
+        </div>
 
         <AuthorizeView>
             <Authorized>

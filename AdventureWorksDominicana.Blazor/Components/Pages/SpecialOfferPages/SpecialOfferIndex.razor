@@ -50,6 +50,7 @@
                         <option value="">Seleccione una opcion</option>
                         <option value="Descripcion">Descripción</option>
                         <option value="Tipo">Tipo de Oferta</option>
+                        <option value="Categoria">Categoría</option>
                     </select>
                 </div>
                 <div class="col-md-3">
@@ -69,11 +70,15 @@
                 <QuickGrid Items="OffersList.AsQueryable()" Pagination="@pages" Class="table table-striped table-bordered table-hover">
                     <PropertyColumn Property="@(s => s.Description)" Title="Descripción" Sortable="true" />
                     <PropertyColumn Property="@(s => s.Type)" Title="Tipo" Sortable="true" />
+                    <PropertyColumn Property="@(s => s.Category)" Title="Categoría" Sortable="true" />
+                    
                     <TemplateColumn Title="Descuento" Sortable="true">
                         @((context.DiscountPct * 100).ToString("N0")) %
                     </TemplateColumn>
+                    
                     <PropertyColumn Property="@(s => s.StartDate)" Title="Inicio" Format="dd/MM/yyyy" Sortable="true" />
                     <PropertyColumn Property="@(s => s.EndDate)" Title="Fin" Format="dd/MM/yyyy" Sortable="true" />
+                    
                     <TemplateColumn Title="Estado" Align="Align.Center">
                         @if (context.EndDate >= DateTime.Now && context.StartDate <= DateTime.Now)
                         {
@@ -81,9 +86,10 @@
                         }
                         else
                         {
-                            <span class="badge bg-secondary">Expirada/Próxima</span>
+                            <span class="badge bg-secondary">Inactiva</span>
                         }
                     </TemplateColumn>
+
                     <TemplateColumn Title="Opciones" Align="Align.Center">
                         <div class="d-flex justify-content-center gap-2">
                             <a href="SpecialOffer/Edit/@context.SpecialOfferId" class="btn btn-sm btn-outline-primary d-flex align-items-center gap-2" title="Modificar">
@@ -99,7 +105,7 @@
         </div>
 
         <div class="card-footer text-end">
-            <strong>Conteo Registros: @OffersList.Count</strong>
+            <strong>Total Registros: @OffersList.Count</strong>
         </div>
 
     </div>
@@ -126,7 +132,8 @@
             &&
             (string.IsNullOrWhiteSpace(ValorFiltro) || string.IsNullOrWhiteSpace(Filtro) ||
                 (Filtro == "Descripcion" && s.Description.Contains(ValorFiltro)) ||
-                (Filtro == "Tipo" && s.Type.Contains(ValorFiltro))
+                (Filtro == "Tipo" && s.Type.Contains(ValorFiltro)) ||
+                (Filtro == "Categoria" && s.Category.Contains(ValorFiltro))
             )
         );
     }
