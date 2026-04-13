@@ -64,6 +64,6 @@ public class StateProvinceService(IDbContextFactory<Contexto> DbFactory) : IServ
     public async Task<List<StateProvince>> GetList(Expression<Func<StateProvince, bool>> criterio)
     {
         await using var contexto = await DbFactory.CreateDbContextAsync();
-        return await contexto.StateProvinces.Where(criterio).ToListAsync();
+        return await contexto.StateProvinces.Where(criterio).Include(s => s.SalesTaxRates).ToListAsync();
     }
 }

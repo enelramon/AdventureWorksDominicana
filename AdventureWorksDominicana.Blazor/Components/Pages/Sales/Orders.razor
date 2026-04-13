@@ -52,7 +52,7 @@
                         <div>
                             <span class="order-id">Orden #@s.SalesOrderId</span>
                             <div class="order-date">
-                                @(s.ShipDate?.ToString("dd MMM yyyy") ?? "Sin fecha")
+                                @(s.ShipDate?.AddDays(-2).ToString("dd MMM yyyy") ?? "Sin fecha")
                             </div>
                         </div>
 

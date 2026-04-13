@@ -104,6 +104,10 @@ builder.Services.AddScoped<PayrollService>();
 builder.Services.AddScoped<PayrollParameterService>();
 builder.Services.AddScoped<EmployeePayHistoryService>();
 builder.Services.AddScoped<EmployeeDepartmentService>();
+builder.Services.AddScoped<SpecialOfferService>();
+builder.Services.AddScoped<UnitMeasureService>();
+
+
 
 builder.Services.AddScoped<BusinessEntityAddressService>();
 builder.Services.AddScoped<PersonCreditCardService>();

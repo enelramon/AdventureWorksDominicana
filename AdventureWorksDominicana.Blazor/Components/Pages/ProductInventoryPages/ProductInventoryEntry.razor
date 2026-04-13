@@ -16,112 +16,112 @@
 <PageTitle>Entrada de Inventario</PageTitle>
 
 <EditForm Model="nuevaEntrada" FormName="FormularioEntrada" OnValidSubmit="Guardar">
-    <DataAnnotationsValidator />
+	<DataAnnotationsValidator />
 
-    <div class="container mt-4" style="max-width: 700px;">
-        <div class="card shadow-lg border-0 rounded-4 overflow-hidden">
-            <div class="card-header bg-white pt-4 px-4 border-0 text-center">
-                <h3 class="fw-bold">Registrar Entrada</h3>
-            </div>
+	<div class="container mt-4" style="max-width: 700px;">
+		<div class="card shadow-lg border-0 rounded-4 overflow-hidden">
+			<div class="card-header bg-white pt-4 px-4 border-0 text-center">
+				<h3 class="fw-bold">Registrar Entrada</h3>
+			</div>
 
-            <div class="card-body px-5">
-                <div class="mb-3">
-                    <label class="form-label fw-bold">Producto</label>
-                    <InputSelect class="form-select shadow-none" @bind-Value="nuevaEntrada.ProductId" @bind-Value:after="ConsultarStockActual">
-                        <option value="0"> Seleccionar Producto </option>
-                        @foreach (var p in ListaProductos)
-                        {
-                            <option value="@p.ProductId">[@p.ProductNumber] @p.Name</option>
-                        }
-                    </InputSelect>
-                </div>
+			<div class="card-body px-5">
+				<div class="mb-3">
+					<label class="form-label fw-bold">Producto</label>
+					<InputSelect class="form-select shadow-none" @bind-Value="nuevaEntrada.ProductId" @bind-Value:after="ConsultarStockActual">
+						<option value="0"> Seleccionar Producto </option>
+						@foreach (var p in ListaProductos)
+						{
+							<option value="@p.ProductId">[@p.ProductNumber] @p.Name</option>
+						}
+					</InputSelect>
+				</div>
 
-                <div class="mb-3">
-                    <label class="form-label fw-bold">Almacén de Destino</label>
-                    <InputSelect class="form-select shadow-none" @bind-Value="nuevaEntrada.LocationId" @bind-Value:after="ConsultarStockActual">
-                        <option value="0">-- Seleccionar Almacén --</option>
-                        @foreach (var l in ListaUbicaciones)
-                        {
-                            <option value="@l.LocationId">@l.Name</option>
-                        }
-                    </InputSelect>
-                </div>
+				<div class="mb-3">
+					<label class="form-label fw-bold">Almacén de Destino</label>
+					<InputSelect class="form-select shadow-none" @bind-Value="nuevaEntrada.LocationId" @bind-Value:after="ConsultarStockActual">
+						<option value="0">-- Seleccionar Almacén --</option>
+						@foreach (var l in ListaUbicaciones)
+						{
+							<option value="@l.LocationId">@l.Name</option>
+						}
+					</InputSelect>
+				</div>
 
-                <div class="mb-3">
-                    <div class="d-flex justify-content-between align-items-center mb-1">
-                        <label class="form-label fw-bold mb-0">Cantidad Entrante</label>
-                        @if (nuevaEntrada.ProductId > 0 && nuevaEntrada.LocationId > 0)
-                        {
-                            <span class="badge @(stockActual > 0 ? "bg-info text-dark" : "bg-warning text-dark")">Actual en bodega: @stockActual</span>
-                        }
-                    </div>
-                    <InputNumber class="form-control fw-bold text-success shadow-none" @bind-Value="nuevaEntrada.Quantity" />
-                </div>
+				<div class="mb-3">
+					<div class="d-flex justify-content-between align-items-center mb-1">
+						<label class="form-label fw-bold mb-0">Cantidad Entrante</label>
+						@if (nuevaEntrada.ProductId > 0 && nuevaEntrada.LocationId > 0)
+						{
+							<span class="badge @(stockActual > 0 ? "bg-info text-dark" : "bg-warning text-dark")">Actual en bodega: @stockActual</span>
+						}
+					</div>
+					<InputNumber class="form-control fw-bold text-success shadow-none" @bind-Value="nuevaEntrada.Quantity" />
+				</div>
 
-                <div class="row">
-                    <div class="col-6 mb-3">
-                        <label class="form-label fw-bold small text-muted">Estante</label>
-                        <InputSelect class="form-select bg-light shadow-none" @bind-Value="nuevaEntrada.Shelf">
-                            <option value="A">Estante A</option>
-                            <option value="B">Estante B</option>
-                            <option value="C">Estante C</option>
-                            <option value="N/A">N/A</option>
-                        </InputSelect>
-                    </div>
-                    <div class="col-6 mb-3">
-                        <label class="form-label fw-bold small text-muted">Cajón</label>
-                        <InputSelect class="form-select bg-light shadow-none" @bind-Value="nuevaEntrada.Bin">
-                            @for (byte i = 1; i <= 20; i++)
-                            {
-                                <option value="@i">Cajón @i</option>
-                            }
-                        </InputSelect>
-                    </div>
-                </div>
-            </div>
+				<div class="row">
+					<div class="col-6 mb-3">
+						<label class="form-label fw-bold small text-muted">Estante</label>
+						<InputSelect class="form-select bg-light shadow-none" @bind-Value="nuevaEntrada.Shelf">
+							<option value="A">Estante A</option>
+							<option value="B">Estante B</option>
+							<option value="C">Estante C</option>
+							<option value="N/A">N/A</option>
+						</InputSelect>
+					</div>
+					<div class="col-6 mb-3">
+						<label class="form-label fw-bold small text-muted">Cajón</label>
+						<InputSelect class="form-select bg-light shadow-none" @bind-Value="nuevaEntrada.Bin">
+							@for (byte i = 1; i <= 20; i++)
+							{
+								<option value="@i">Cajón @i</option>
+							}
+						</InputSelect>
+					</div>
+				</div>
+			</div>
 
-            <div class="card-footer bg-white border-0 text-center pb-4 pt-0">
-                <hr class="mx-4" />
-                <a class="btn btn-light rounded-pill px-4 me-2 border" href="/Product/Inventory">Cancelar</a>
-                <button class="btn btn-primary rounded-pill px-5 shadow" type="submit">Confirmar Registro</button>
-            </div>
-        </div>
-    </div>
+			<div class="card-footer bg-white border-0 text-center pb-4 pt-0">
+				<hr class="mx-4" />
+				<a class="btn btn-light rounded-pill px-4 me-2 border" href="/Product/Inventory">Cancelar</a>
+				<button class="btn btn-primary rounded-pill px-5 shadow" type="submit">Confirmar Registro</button>
+			</div>
+		</div>
+	</div>
 </EditForm>
 
 @code {
-    public InventoryModel nuevaEntrada { get; set; } = new() { Quantity = 1, Shelf = "A", Bin = 1 };
-    public List<Product> ListaProductos { get; set; } = new();
-    public List<Location> ListaUbicaciones { get; set; } = new();
-    private short stockActual = 0;
+	public InventoryModel nuevaEntrada { get; set; } = new() { Quantity = 1, Shelf = "A", Bin = 1 };
+	public List<Product> ListaProductos { get; set; } = new();
+	public List<Location> ListaUbicaciones { get; set; } = new();
+	private short stockActual = 0;
 
-    protected override async Task OnInitializedAsync()
-    {
-        ListaProductos = await productService.GetList(x => true);
-        ListaUbicaciones = await locationService.GetList(x => true);
-    }
+	protected override async Task OnInitializedAsync()
+	{
+		ListaProductos = await productService.GetList(p => !p.ProductInventories.Any());
+		ListaUbicaciones = await locationService.GetList(x => true);
+	}
 
-    private async Task ConsultarStockActual()
-    {
-        if (nuevaEntrada.ProductId > 0 && nuevaEntrada.LocationId > 0)
-        {
-            var item = await InventoryService.Buscar(nuevaEntrada.ProductId, (short)nuevaEntrada.LocationId);
-            if (item != null)
-            {
-                stockActual = item.Quantity;
-                nuevaEntrada.Shelf = item.Shelf;
-                nuevaEntrada.Bin = item.Bin;
-            }
-            else stockActual = 0;
-        }
-    }
+	private async Task ConsultarStockActual()
+	{
+		if (nuevaEntrada.ProductId > 0 && nuevaEntrada.LocationId > 0)
+		{
+			var item = await InventoryService.Buscar(nuevaEntrada.ProductId, (short)nuevaEntrada.LocationId);
+			if (item != null)
+			{
+				stockActual = item.Quantity;
+				nuevaEntrada.Shelf = item.Shelf;
+				nuevaEntrada.Bin = item.Bin;
+			}
+			else stockActual = 0;
+		}
+	}
 
-    public async Task Guardar()
-    {
-        if (await InventoryService.Guardar(nuevaEntrada))
-        {
-            toastService.ShowSuccess("Entrada registrada.");
-            navigationManager.NavigateTo("/Product/Inventory");
-        }
-    }
+	public async Task Guardar()
+	{
+		if (await InventoryService.Guardar(nuevaEntrada))
+		{
+			toastService.ShowSuccess("Entrada registrada.");
+			navigationManager.NavigateTo("/Product/Inventory");
+		}
+	}
 }

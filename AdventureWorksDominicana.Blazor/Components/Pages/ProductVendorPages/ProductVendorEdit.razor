@@ -1,0 +1,194 @@
+﻿@page "/ProductVendor/Edit/{ProductId:int}/{BusinessEntityId:int}"
+@attribute [Authorize(Roles = "Admin, ProductionManager")]
+
+@using AdventureWorksDominicana.Data.Models
+@using AdventureWorksDominicana.Services
+@inject ProductVendorService productVendorService
+@inject NavigationManager navigationManager
+@inject ToastService toastService
+
+@rendermode InteractiveServer
+
+<PageTitle>Editar Proveedor de Producto</PageTitle>
+
+<EditForm Model="productVendor" OnValidSubmit="Modificar">
+    <DataAnnotationsValidator />
+
+    <div class="container mt-4">
+        <div class="card shadow-lg">
+            <div class="card-header text-center">
+                <h3>Editar Proveedor de Producto</h3>
+            </div>
+            <div class="card-body">
+                
+                <div class="row">
+                    @* CAMBIO AQUÍ: Mostramos los nombres en dropdowns bloqueados *@
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label"><strong>Producto</strong></label>
+                        <InputSelect class="form-select" @bind-Value="productVendor.ProductId" disabled>
+                            <option value="0">-- Seleccione Producto --</option>
+                            @foreach (var prod in listaProductos)
+                            {
+                                <option value="@prod.ProductId">@prod.Name</option>
+                            }
+                        </InputSelect>
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label"><strong>Proveedor</strong></label>
+                        <InputSelect class="form-select" @bind-Value="productVendor.BusinessEntityId" disabled>
+                            <option value="0">-- Seleccione Proveedor --</option>
+                            @foreach (var vendor in listaProveedores)
+                            {
+                                <option value="@vendor.BusinessEntityId">@vendor.Name</option>
+                            }
+                        </InputSelect>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label"><strong>Precio Estándar</strong></label>
+                        <InputNumber class="form-control" @bind-Value="productVendor.StandardPrice" step="0.01" />
+                        <ValidationMessage For="() => productVendor.StandardPrice" />
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label"><strong>Unidad de Medida</strong></label>
+                        <InputSelect class="form-select" @bind-Value="productVendor.UnitMeasureCode">
+                            <option value="">-- Seleccione Unidad --</option>
+                            @foreach (var unidad in listaUnidades)
+                            {
+                                <option value="@unidad.UnitMeasureCode">@unidad.Name (@unidad.UnitMeasureCode)</option>
+                            }
+                        </InputSelect>
+                        <ValidationMessage For="() => productVendor.UnitMeasureCode" />
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label"><strong>Tiempo Promedio de Entrega</strong></label>
+                        <InputNumber class="form-control" @bind-Value="productVendor.AverageLeadTime" />
+                        <ValidationMessage For="() => productVendor.AverageLeadTime" />
+                    </div>
+
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label"><strong>Costo Último Recibo</strong></label>
+                        <InputNumber class="form-control" @bind-Value="productVendor.LastReceiptCost" step="0.01" />
+                        <ValidationMessage For="() => productVendor.LastReceiptCost" />
+                    </div>
+
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label"><strong>Fecha Último Recibo</strong></label>
+                        <InputDate class="form-control" @bind-Value="productVendor.LastReceiptDate" />
+                        <ValidationMessage For="() => productVendor.LastReceiptDate" />
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label"><strong>Cantidad Mínima de Orden</strong></label>
+                        <InputNumber class="form-control" @bind-Value="productVendor.MinOrderQty" />
+                        <ValidationMessage For="() => productVendor.MinOrderQty" />
+                    </div>
+
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label"><strong>Cantidad Máxima de Orden</strong></label>
+                        <InputNumber class="form-control" @bind-Value="productVendor.MaxOrderQty" />
+                        <ValidationMessage For="() => productVendor.MaxOrderQty" />
+                    </div>
+
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label"><strong>Cantidad en Orden</strong></label>
+                        <InputNumber class="form-control" @bind-Value="productVendor.OnOrderQty" />
+                        <ValidationMessage For="() => productVendor.OnOrderQty" />
+                    </div>
+                </div>
+
+            </div>
+            <div class="card-footer text-center">
+                <a class="btn btn-secondary bi bi-arrow-left" href="/ProductVendor/Index"> Volver</a>
+                <button class="btn btn-primary bi bi-floppy" type="submit"> Guardar</button>
+                <button class="btn btn-danger bi bi-trash" type="button" @onclick="Eliminar"> Eliminar</button>
+            </div>
+        </div>
+    </div>
+</EditForm>
+
+@code {
+    [Parameter]
+    public int ProductId { get; set; }
+    
+    [Parameter]
+    public int BusinessEntityId { get; set; }
+    
+    public ProductVendor productVendor { get; set; } = new ProductVendor();
+    
+    // Añadimos las listas igual que en el Create
+    private List<UnitMeasure> listaUnidades = new();
+    private List<Product> listaProductos = new();
+    private List<Vendor> listaProveedores = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            // Cargamos las listas para poder mostrar los nombres
+            listaUnidades = await productVendorService.GetUnidadesDeMedidaAsync();
+            listaProductos = await productVendorService.GetProductosAsync();
+            listaProveedores = await productVendorService.GetProveedoresAsync();
+
+            var pv = await productVendorService.BuscarAsync(ProductId, BusinessEntityId);
+            
+            if (pv != null)
+            {
+                productVendor = pv;
+            }
+            else
+            {
+                toastService.ShowError("No se encontró el registro.");
+                navigationManager.NavigateTo("/ProductVendor/Index");
+            }
+        }
+        catch (Exception ex)
+        {
+            toastService.ShowError($"Error al cargar datos: {ex.Message}");
+        }
+    }
+
+    public async Task Modificar()
+    {
+        if (string.IsNullOrWhiteSpace(productVendor.UnitMeasureCode))
+        {
+            toastService.ShowError("La unidad de medida es obligatoria.");
+            return;
+        }
+
+        try
+        {
+            await productVendorService.EditAsync(productVendor);
+            toastService.ShowSuccess("El registro fue modificado exitosamente.");
+            navigationManager.NavigateTo("/ProductVendor/Index");
+        }
+        catch (Exception ex)
+        {
+            toastService.ShowError($"Ha ocurrido un error: {ex.Message}");
+        }
+    }
+
+    public async Task Eliminar()
+    {
+        bool eliminado = await productVendorService.DeleteAsync(ProductId, BusinessEntityId);
+
+        if (eliminado)
+        {
+            toastService.ShowSuccess("El registro fue eliminado exitosamente.");
+            navigationManager.NavigateTo("/ProductVendor/Index");
+        }
+        else
+        {
+            toastService.ShowError("Ha ocurrido un error al intentar eliminar el registro.");
+        }
+    }
+}

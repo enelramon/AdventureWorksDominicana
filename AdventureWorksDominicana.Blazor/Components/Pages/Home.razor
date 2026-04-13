@@ -1,7 +1,262 @@
 ﻿@page "/Home/Page"
+@attribute [Authorize(Roles = "Customer, Admin")]
+@rendermode InteractiveServer
 
-<PageTitle>Home</PageTitle>
+@inject ProductService productService
+@inject ProductCategoryService productCategoryService
+@inject ShoppingCartItemService shoppingCartItemService
+@inject ToastService toastService
+@inject NavigationManager navigationManager
+@inject AuthenticationStateProvider authenticationStateProvider
 
-<h1>Hello, world!</h1>
+<PageTitle>AdventureWorks - Tienda de Bicicletas</PageTitle>
 
-Welcome to your new app.
+<div class="home-container">
+    
+    <!-- ==================== HERO BANNER ==================== -->
+    <div class="hero-banner">
+        <div class="hero-content">
+            <h1>Pedalea hacia la aventura</h1>
+            <p>Descubre nuestra colección de bicicletas de montaña, ruta y urbana con hasta <strong>30% de descuento</strong></p>
+            <div class="hero-buttons">
+                <a href="/Sales" class="btn-hero-primary">Comprar ahora →</a>
+                <a href="/Sales" class="btn-hero-secondary">Ver ofertas</a>
+            </div>
+        </div>
+        <div class="hero-stats">
+            <div class="stat">
+                <span class="stat-number">+10,000</span>
+                <span class="stat-label">Clientes felices</span>
+            </div>
+            <div class="stat">
+                <span class="stat-number">+500</span>
+                <span class="stat-label">Productos</span>
+            </div>
+            <div class="stat">
+                <span class="stat-number">24/7</span>
+                <span class="stat-label">Soporte</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== CATEGORÍAS DESTACADAS ==================== -->
+    <section class="categories-section">
+        <h2>Categorías destacadas</h2>
+        <div class="categories-grid">
+            <a href="/Sales?category=Mountain" class="category-card">
+                <i class="bi bi-tree"></i>
+                <span>Montaña</span>
+            </a>
+            <a href="/Sales?category=Road" class="category-card">
+                <i class="bi bi-signpost-2"></i>
+                <span>Ruta</span>
+            </a>
+            <a href="/Sales?category=Touring" class="category-card">
+                <i class="bi bi-compass"></i>
+                <span>Touring</span>
+            </a>
+            <a href="/Sales?category=Standard" class="category-card">
+                <i class="bi bi-bicycle"></i>
+                <span>Estándar</span>
+            </a>
+            <a href="/Sales?category=Accessories" class="category-card">
+                <i class="bi bi-gear"></i>
+                <span>Accesorios</span>
+            </a>
+            <a href="/Sales?category=Clothing" class="category-card">
+                <i class="bi bi-person"></i>
+                <span>Indumentaria</span>
+            </a>
+        </div>
+    </section>
+
+    <!-- ==================== PRODUCTOS DESTACADOS ==================== -->
+    <section class="featured-section">
+        <div class="section-header">
+            <h2>Productos destacados</h2>
+            <a href="/Sales" class="view-all-link">Ver todos →</a>
+        </div>
+        
+        <div class="products-grid">
+            @foreach (var product in FeaturedProducts)
+            {
+                <div class="product-card">
+                    <div class="product-img">
+                        @{
+                            var nexoFoto = product.ProductProductPhotos?.FirstOrDefault(f => f.Primary == true);
+                            string imgUrl = "https://www.svgrepo.com/show/486796/product-management.svg";
+                            if (nexoFoto != null && nexoFoto.ProductPhoto?.ThumbNailPhoto != null)
+                            {
+                                var base64 = Convert.ToBase64String(nexoFoto.ProductPhoto.ThumbNailPhoto);
+                                imgUrl = $"data:image/jpeg;base64,{base64}";
+                            }
+                        }
+                        <img src="@imgUrl" alt="@product.Name" />
+                        @if (product.ListPrice > 1000)
+                        {
+                            <span class="product-badge">Popular</span>
+                        }
+                    </div>
+                    <div class="product-info">
+                        <h4>@product.Name</h4>
+                        <div class="product-category">
+                            @(product.ProductSubcategory?.ProductCategory?.Name ?? "General")
+                        </div>
+                        <div class="product-price">
+                            RD$ @product.ListPrice.ToString("N2")
+                        </div>
+                        <button class="btn-add" @onclick="() => AddToCart(product.ProductId)">
+                            <i class="bi bi-cart-plus"></i> Agregar
+                        </button>
+                    </div>
+                </div>
+            }
+        </div>
+    </section>
+
+    <!-- ==================== OFERTAS / PROMOCIONES ==================== -->
+    <section class="offers-section">
+        <div class="offer-card">
+            <div class="offer-icon">
+                <i class="bi bi-truck"></i>
+            </div>
+            <h3>Envío gratis</h3>
+            <p>En compras superiores a <strong>RD$5,000</strong></p>
+        </div>
+        <div class="offer-card">
+            <div class="offer-icon">
+                <i class="bi bi-shield-check"></i>
+            </div>
+            <h3>Garantía extendida</h3>
+            <p>2 años en todos nuestros productos</p>
+        </div>
+        <div class="offer-card">
+            <div class="offer-icon">
+                <i class="bi bi-credit-card"></i>
+            </div>
+            <h3>Pago seguro</h3>
+            <p>Transacciones 100% protegidas</p>
+        </div>
+        <div class="offer-card">
+            <div class="offer-icon">
+                <i class="bi bi-headset"></i>
+            </div>
+            <h3>Soporte 24/7</h3>
+            <p>Atención al cliente siempre disponible</p>
+        </div>
+    </section>
+
+    <!-- ==================== BANNER PROMOCIONAL ==================== -->
+    <div class="promo-banner">
+        <div class="promo-content">
+            <h3>¡Oferta especial de temporada!</h3>
+            <p>Lleva tu bicicleta favorita con <strong>hasta 40% de descuento</strong> y recibe accesorios gratis</p>
+            <a href="/Sales" class="btn-promo">Aprovechar oferta →</a>
+        </div>
+    </div>
+
+    <!-- ==================== TESTIMONIOS ==================== -->
+    <section class="testimonials-section">
+        <h2>Lo que dicen nuestros clientes</h2>
+        <div class="testimonials-grid">
+            <div class="testimonial-card">
+                <div class="rating">★★★★★</div>
+                <p>"Excelente calidad, la bicicleta llegó en perfectas condiciones y antes de lo esperado. Muy recomendados."</p>
+                <div class="customer">
+                    <strong>Juan Pérez</strong>
+                    <span>Comprador verificado</span>
+                </div>
+            </div>
+            <div class="testimonial-card">
+                <div class="rating">★★★★★</div>
+                <p>"El servicio al cliente es increíble. Me ayudaron a elegir la bicicleta perfecta para mis necesidades."</p>
+                <div class="customer">
+                    <strong>María Gómez</strong>
+                    <span>Compradora verificada</span>
+                </div>
+            </div>
+            <div class="testimonial-card">
+                <div class="rating">★★★★☆</div>
+                <p>"Buenos productos, relación calidad-precio excelente. Volveré a comprar sin duda."</p>
+                <div class="customer">
+                    <strong>Carlos Rodríguez</strong>
+                    <span>Comprador verificado</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==================== NEWSLETTER ==================== -->
+    <div class="newsletter-section">
+        <div class="newsletter-content">
+            <h3>Suscríbete a nuestro newsletter</h3>
+            <p>Recibe ofertas exclusivas y novedades directamente en tu correo</p>
+            <div class="newsletter-form">
+                <input type="email" class="form-control" placeholder="Tu correo electrónico" @bind="newsletterEmail" />
+                <button class="btn-newsletter" @onclick="SubscribeNewsletter">Suscribirme</button>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+@code {
+    private List<Product> FeaturedProducts { get; set; } = new();
+    private string newsletterEmail = string.Empty;
+    private ClaimsPrincipal? User { get; set; }
+    private string? UserEmail { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Obtener usuario logueado
+        var authState = await authenticationStateProvider.GetAuthenticationStateAsync();
+        User = authState.User;
+        if (User.Identity?.IsAuthenticated == true)
+        {
+            UserEmail = User.FindFirst(ClaimTypes.Email)?.Value;
+        }
+
+        FeaturedProducts = await productService.GetTopFeaturedProducts(8);
+    }
+
+    private async Task AddToCart(int productId)
+    {
+        if (string.IsNullOrEmpty(UserEmail))
+        {
+            toastService.ShowWarning("Debes iniciar sesión para agregar productos al carrito");
+            navigationManager.NavigateTo("/Account/Login");
+            return;
+        }
+
+        try
+        {
+            var cartItem = new ShoppingCartItem
+            {
+                ShoppingCartId = UserEmail,
+                Quantity = 1,
+                ProductId = productId,
+                DateCreated = DateTime.Now,
+                ModifiedDate = DateTime.Now
+            };
+            await shoppingCartItemService.Guardar(cartItem);
+            toastService.ShowSuccess("Producto añadido al carrito");
+        }
+        catch (Exception ex)
+        {
+            toastService.ShowError("Error al añadir producto");
+            Console.WriteLine(ex.Message);
+        }
+    }
+
+    private async Task SubscribeNewsletter()
+    {
+        if (string.IsNullOrEmpty(newsletterEmail))
+        {
+            toastService.ShowWarning("Ingresa un correo válido");
+            return;
+        }
+        // Lógica para suscribir a newsletter
+        toastService.ShowSuccess("¡Suscripción exitosa! Recibirás nuestras ofertas");
+        newsletterEmail = string.Empty;
+    }
+}

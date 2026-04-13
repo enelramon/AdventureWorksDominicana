@@ -1,0 +1,171 @@
+﻿@page "/ProductVendor/Create"
+@attribute [Authorize(Roles = "Admin, ProductionManager")]
+
+@using AdventureWorksDominicana.Data.Models
+@using AdventureWorksDominicana.Services
+@inject ProductVendorService productVendorService
+@inject NavigationManager navigationManager
+@inject ToastService toastService
+
+@rendermode InteractiveServer
+
+<PageTitle>Nuevo Proveedor de Producto</PageTitle>
+
+<EditForm Model="productVendor" OnValidSubmit="Guardar">
+    <DataAnnotationsValidator />
+
+    <div class="container mt-4">
+        <div class="card shadow-lg">
+            <div class="card-header text-center">
+                <h3>Nuevo Proveedor de Producto</h3>
+            </div>
+            <div class="card-body">
+                
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label"><strong>Producto</strong></label>
+                        <InputSelect class="form-select" @bind-Value="productVendor.ProductId">
+                            <option value="0">-- Seleccione Producto --</option>
+                            @foreach (var prod in listaProductos)
+                            {
+                                <option value="@prod.ProductId">@prod.Name</option>
+                            }
+                        </InputSelect>
+                        <ValidationMessage For="() => productVendor.ProductId" />
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label"><strong>Proveedor</strong></label>
+                        <InputSelect class="form-select" @bind-Value="productVendor.BusinessEntityId">
+                            <option value="0">-- Seleccione Proveedor --</option>
+                            @foreach (var vendor in listaProveedores)
+                            {
+                                <option value="@vendor.BusinessEntityId">@vendor.Name</option>
+                            }
+                        </InputSelect>
+                        <ValidationMessage For="() => productVendor.BusinessEntityId" />
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label"><strong>Precio Estándar</strong></label>
+                        <InputNumber class="form-control" @bind-Value="productVendor.StandardPrice" step="0.01" />
+                        <ValidationMessage For="() => productVendor.StandardPrice" />
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label"><strong>Unidad de Medida</strong></label>
+                        <InputSelect class="form-select" @bind-Value="productVendor.UnitMeasureCode">
+                            <option value="">-- Seleccione Unidad --</option>
+                            @foreach (var unidad in listaUnidades)
+                            {
+                                <option value="@unidad.UnitMeasureCode">@unidad.Name (@unidad.UnitMeasureCode)</option>
+                            }
+                        </InputSelect>
+                        <ValidationMessage For="() => productVendor.UnitMeasureCode" />
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label"><strong>Tiempo Promedio de Entrega</strong></label>
+                        <InputNumber class="form-control" @bind-Value="productVendor.AverageLeadTime" />
+                        <ValidationMessage For="() => productVendor.AverageLeadTime" />
+                    </div>
+
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label"><strong>Costo Último Recibo</strong></label>
+                        <InputNumber class="form-control" @bind-Value="productVendor.LastReceiptCost" step="0.01" />
+                        <ValidationMessage For="() => productVendor.LastReceiptCost" />
+                    </div>
+
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label"><strong>Fecha Último Recibo</strong></label>
+                        <InputDate class="form-control" @bind-Value="productVendor.LastReceiptDate" />
+                        <ValidationMessage For="() => productVendor.LastReceiptDate" />
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label"><strong>Cantidad Mínima de Orden</strong></label>
+                        <InputNumber class="form-control" @bind-Value="productVendor.MinOrderQty" />
+                        <ValidationMessage For="() => productVendor.MinOrderQty" />
+                    </div>
+
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label"><strong>Cantidad Máxima de Orden</strong></label>
+                        <InputNumber class="form-control" @bind-Value="productVendor.MaxOrderQty" />
+                        <ValidationMessage For="() => productVendor.MaxOrderQty" />
+                    </div>
+
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label"><strong>Cantidad en Orden</strong></label>
+                        <InputNumber class="form-control" @bind-Value="productVendor.OnOrderQty" />
+                        <ValidationMessage For="() => productVendor.OnOrderQty" />
+                    </div>
+                </div>
+
+            </div>
+            <div class="card-footer text-center">
+                <a class="btn btn-secondary bi bi-arrow-left" href="/ProductVendor/Index"> Volver</a>
+                <button class="btn btn-primary bi bi-floppy" type="submit"> Guardar</button>
+            </div>
+        </div>
+    </div>
+</EditForm>
+
+@code {
+    public ProductVendor productVendor { get; set; } = new ProductVendor { LastReceiptDate = DateTime.Now };
+    
+    private List<UnitMeasure> listaUnidades = new();
+    private List<Product> listaProductos = new();
+    private List<Vendor> listaProveedores = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            listaUnidades = await productVendorService.GetUnidadesDeMedidaAsync();
+            listaProductos = await productVendorService.GetProductosAsync();
+            listaProveedores = await productVendorService.GetProveedoresAsync();
+        }
+        catch (Exception ex)
+        {
+            toastService.ShowError($"Error al cargar datos: {ex.Message}");
+        }
+    }
+
+    public async Task Guardar()
+    {
+        if (productVendor.ProductId == 0)
+        {
+            toastService.ShowError("Debe seleccionar un producto.");
+            return;
+        }
+        
+        if (productVendor.BusinessEntityId == 0)
+        {
+            toastService.ShowError("Debe seleccionar un proveedor.");
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(productVendor.UnitMeasureCode))
+        {
+            toastService.ShowError("La unidad de medida es obligatoria.");
+            return;
+        }
+
+        try
+        {
+            await productVendorService.CreateAsync(productVendor);
+            toastService.ShowSuccess("El registro fue guardado exitosamente.");
+            navigationManager.NavigateTo("/ProductVendor/Index");
+        }
+        catch (Exception ex)
+        {
+            toastService.ShowError($"Ha ocurrido un error: {ex.Message}");
+        }
+    }
+}

@@ -8,7 +8,7 @@
 @rendermode InteractiveServer
 @inject PersonService personService
 
-<PageTitle>Indice de Personas</PageTitle>
+<PageTitle>Registro de Personas</PageTitle>
 
 <div class="container mt-4">
     <div class="card shadow-lg">
@@ -17,7 +17,7 @@
             <h5 class="card-title mb-0">Registro de Personas</h5>
             <a href="Person/Create" class="btn btn-primary d-flex align-items-center gap-2">
                 <i class="bi bi-plus-square"></i>
-                <span>Crear Nueva</span>
+                <span>Crear</span>
             </a>
         </div>
         
@@ -98,12 +98,12 @@
     private PaginationState pages = new PaginationState { ItemsPerPage = 5 };
     private string Filtro = string.Empty;
     private string ValorFiltro = string.Empty;
-    private DateTime? StartDate = DateTime.Today.Date;
-    private DateTime? EndDate = DateTime.Today.Date.AddDays(1);
+    private DateTime? StartDate = null;
+    private DateTime? EndDate = null;
 
     protected override async Task OnInitializedAsync()
     {
-        PersonsList = await personService.GetList(p => true);
+        await Buscar();
     }
 
     private async Task Buscar()
@@ -111,7 +111,7 @@
         int.TryParse(ValorFiltro, out int idBuscado);
 
         PersonsList = await personService.GetList(p =>
-            (!StartDate.HasValue || !EndDate.HasValue ||
+            (!(StartDate.HasValue && EndDate.HasValue) ||
             (p.ModifiedDate >= StartDate.Value.Date && p.ModifiedDate <= EndDate.Value.Date.AddDays(1).AddTicks(-1)))
             &&
             (string.IsNullOrWhiteSpace(ValorFiltro) || string.IsNullOrWhiteSpace(Filtro) ||
@@ -126,8 +126,8 @@
 
     private async Task Restablecer()
     {
-        StartDate = DateTime.Today.Date;
-        EndDate = DateTime.Today.Date.AddDays(1);
+        StartDate = null;
+        EndDate = null;
         Filtro = string.Empty;
         ValorFiltro = string.Empty;
         await Buscar();
