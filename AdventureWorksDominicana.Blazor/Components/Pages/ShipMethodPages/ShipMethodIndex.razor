@@ -12,7 +12,7 @@
 <div class="container-fluid">
     <div class="card shadow-lg">
         <div class="card-header d-flex justify-content-between">
-            <h4>Ship Methods</h4>
+            <h4>M&eacute;todos de env&iacute;o</h4>
             <a class="btn btn-primary" href="/ShipMethods/Create"><i class="bi bi-plus-square"></i> Crear</a>
         </div>
         <div class="card-body">
@@ -41,7 +41,6 @@
                 <div class="col-md-3">
                     <InputSelect class="form-select" @bind-Value="Filtros">
                         <option value="">Elige un filtro</option>
-                        <option value="IdCart">ID</option>
                         <option value="Nombre">Nombre</option>
                     </InputSelect>
                 </div>
@@ -102,14 +101,10 @@
         // 1. Obtenemos la lista base
         var resultado = await shipMethodService.GetList(x => true);
 
-        // 2. Filtro por texto (ID o Nombre)
+        // 2. Filtro por texto (Nombre)
         if (!string.IsNullOrWhiteSpace(ValorFiltro))
         {
-            if (Filtros == "IdCart" && int.TryParse(ValorFiltro, out int id))
-            {
-                resultado = resultado.Where(x => x.ShipMethodId == id).ToList();
-            }
-            else if (Filtros == "Nombre")
+            if (Filtros == "Nombre")
             {
                 resultado = resultado.Where(x => x.Name.ToLower().Contains(ValorFiltro.ToLower().Trim())).ToList();
             }

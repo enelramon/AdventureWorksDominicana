@@ -1,8 +1,6 @@
 ﻿@page "/ShoppingCart"
 @attribute [Authorize(Roles = "Admin, Customer, SalesManager")]
-
 @rendermode InteractiveServer
-
 @inject ShoppingCartItemService shoppingCartItemService
 @inject NavigationManager navigationManager
 @inject CustomerService customerService
@@ -31,46 +29,38 @@
             {
                 @foreach (var s in ShoppingCartItemList)
                 {
+                    @if (s == null) return;
                     <div class="cart-item">
 
                         <div class="cart-item-img">
                             @{
-                                // EXPLICACIÓN 1: Extraemos el brazo relacionador que marca la imagen como "True" (Primaria)
-                                var nexoFoto = s.Product.ProductProductPhotos.FirstOrDefault(f => f.Primary == true);
-                                
-                                // EXPLICACIÓN 2: Esto es un Fallback. Si el producto recién creado no se le subió foto, mostramos el gris
+                                var nexoFoto = s.Product?.ProductProductPhotos.FirstOrDefault(f => f.Primary == true);
                                 string imgUrl = "https://www.svgrepo.com/show/486796/product-management.svg";
-                                
-                                // EXPLICACIÓN 3: Si sí hay foto binaria cargada en la BD, la convertimos a lenguaje Web (Base64)
                                 if (nexoFoto != null && nexoFoto.ProductPhoto?.ThumbNailPhoto != null)
                                 {
                                     var base64 = Convert.ToBase64String(nexoFoto.ProductPhoto.ThumbNailPhoto);
                                     imgUrl = $"data:image/jpeg;base64,{base64}";
                                 }
                             }
-                            <img src="@imgUrl" alt="@s.Product.Name" style="object-fit: cover; width: 100%; height: 100%; border-radius: 8px;" />
-                            
-                            @if (!string.IsNullOrWhiteSpace(s.Product.Color))
-                            {
-                                <span>@s.Product.Color</span>
-                            }
+                            <img src="@imgUrl" alt="@(s.Product?.Name ?? "Product Image")" style="object-fit: cover; width: 100%; height: 100%; border-radius: 8px;" />
+                             <span>@(s.Product?.Color ?? "N/A")</span>   
                         </div>
 
                         <div class="cart-item-info">
 
                             <div class="cart-item-top">
                                 <span class="cart-category">
-                                    @(s.Product.ProductSubcategory?.ProductCategory?.Name ?? "N/A")
+                                    @(s.Product?.ProductSubcategory?.ProductCategory?.Name ?? "N/A")
                                 </span>
 
                                 <i class="bi bi-trash cart-delete"
                                    @onclick="() => DeleteItemCart(s.ShoppingCartItemId)"></i>
                             </div>
 
-                            <div class="cart-name">@s.Product.Name</div>
+                            <div class="cart-name">@(s.Product?.Name ?? "N/A")</div>
 
                             <div class="cart-price">
-                                RD$ @s.Product.ListPrice.ToString("N2")
+                                RD$ @(s.Product?.ListPrice.ToString("N2") ?? "N/A")
                             </div>
 
                             <div class="cart-quantity">
@@ -142,26 +132,25 @@
 
     protected override async Task OnInitializedAsync()
     {
-        // Busca el usuario logeado
         var authState = await authenticationStateProvider.GetAuthenticationStateAsync();
         User = authState.User;
         IsAuthenticated = User.Identity?.IsAuthenticated ?? false;
         if (IsAuthenticated)
             UserEmail = User.FindFirst(ClaimTypes.Email)?.Value;
-
-        // Solo trae los items del usuario logeado
-        ShoppingCartItemList = await shoppingCartItemService.GetList(s => s.ShoppingCartId.Trim().ToLower().Equals(UserEmail));
-        userCurrent = await customerService.GetList(u => u.Person.EmailAddresses.Any(p => p.EmailAddress1.Trim().ToLower().Equals(UserEmail)));
+        ShoppingCartItemList = await shoppingCartItemService.GetList(s => s.ShoppingCartId == UserEmail);
+        userCurrent = await customerService.GetList(u => u.Person.EmailAddresses.Any(p => p.EmailAddress1 == UserEmail));
     }
-
-    private void GoToSale() => navigationManager.NavigateTo("/Sales");
-    private void GoToCheckout() => navigationManager.NavigateTo("/Checkout");
 
     private async Task SumQuentity(int itemId)
     {
         var item = ShoppingCartItemList.FirstOrDefault(x => x.ShoppingCartItemId == itemId);
         if (item != null)
         {
+            if(item.Product?.ProductInventories?.FirstOrDefault()?.Quantity < item.Quantity + 1)
+            {
+                toastService.ShowWarning("Sin cantidad disponible");
+                return;
+            }
             item.Quantity += 1;
             await shoppingCartItemService.Guardar(item);
         }
@@ -173,15 +162,16 @@
         if (item != null)
         {
             if (item.Quantity != 1)
+            {
                 item.Quantity -= 1;
-            await shoppingCartItemService.Guardar(item);
+                await shoppingCartItemService.Guardar(item);
+            }  
         }
     }
 
-
     private async Task RefreshShoppingCart()
     {
-        ShoppingCartItemList = await shoppingCartItemService.GetList(s => s.ShoppingCartId.Trim().ToLower().Equals(UserEmail));
+        ShoppingCartItemList = await shoppingCartItemService.GetList(s => s.ShoppingCartId == UserEmail);
     }
 
     private async Task DeleteItemCart(int itemId)
@@ -198,4 +188,7 @@
             Console.Write(ex.Message);
         }
     }
+
+    private void GoToSale() => navigationManager.NavigateTo("/Sales");
+    private void GoToCheckout() => navigationManager.NavigateTo("/Checkout");
 }

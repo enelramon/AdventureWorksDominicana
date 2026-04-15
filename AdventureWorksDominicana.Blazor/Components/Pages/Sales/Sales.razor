@@ -57,7 +57,6 @@
 						@{
 							var nexoFoto = p.ProductProductPhotos?.FirstOrDefault(f => f.Primary == true);
 							string imgUrl = "https://www.svgrepo.com/show/486796/product-management.svg";
-                            
 							if (nexoFoto != null && nexoFoto.ProductPhoto?.ThumbNailPhoto != null)
 							{
 								var base64 = Convert.ToBase64String(nexoFoto.ProductPhoto.ThumbNailPhoto);
@@ -65,23 +64,20 @@
 							}
 						}
 						<img src="@imgUrl" alt="@p.Name" />
-                        
-						@if (!string.IsNullOrWhiteSpace(p.Color))
-						{
-							<span>@p.Color</span>
-						}
+						<span>@(p?.Color ?? "N/A")</span>
 					</div>
                     
 					<div class="sale-product-info">
-						<span>@(p.ProductSubcategory?.ProductCategory?.Name ?? "N/A")</span>
+						<span>@(p?.ProductSubcategory?.ProductCategory?.Name ?? "N/A")</span>
 						<div class="sale-product-name">
-							<p>@p.Name</p>
+							<p>@(p?.Name ?? "N/A")</p>
 						</div>
 						<div class="sale-product-description">
-							<p>@(p.ProductModel?.ProductModelProductDescriptionCultures?.FirstOrDefault()?.ProductDescription?.Description ?? "Sin descripción")</p>
+							<p>@(p?.ProductModel?.ProductModelProductDescriptionCultures?
+								.FirstOrDefault()?.ProductDescription?.Description ?? "Sin descripción")</p>
 						</div>
 						<div class="sale-product-price">
-							<span>RD$ @p.ListPrice.ToString("N2")</span>
+							<span>RD$ @(p?.ListPrice.ToString("N2") ?? "N/A")</span>
 						</div>
 						<button type="button" @onclick:stopPropagation @onclick="() => Guardar(p.ProductId)">
 							<i class="bi bi-cart"></i>
@@ -92,47 +88,35 @@
 			}
 		</div>
 
-		<!-- PAGINACIÓN -->
+		<!-- PAGINATION -->
 		<div class="pagination">
-			<i class="bi bi-arrow-left" @onclick="PaginaAnterior"></i>
-			<span>@CurrentPage</span>
-			<span>/</span>
-			<span>@TotalPaginas</span>
-			<i class="bi bi-arrow-right" @onclick="PaginaSiguiente"></i>
+			<i class="bi bi-arrow-left @(CurrentPage == 1 ? "disabled" : "")" @onclick="PaginaAnterior"></i>
+			<span>@CurrentPage / @TotalPaginas</span>
+			<i class="bi bi-arrow-right @(CurrentPage == TotalPaginas ? "disabled" : "")" @onclick="PaginaSiguiente"></i>
 		</div>
 	</div>
 </div>
 
 @code {
-	// ========== LISTAS ==========
-	// 1. La lista original INMUTABLE que traemos de la BD
-	private IEnumerable<Product> _productosOriginales = new List<Product>();
-    
-	// 2. La lista con los filtros aplicados
-	private List<Product> ProductList = new();
-    
-	// 3. La lista final recortada que se dibuja en la pantalla
 	private List<Product> PagedProducts = new();
-    
-	// 4. Lista para el Select de categorías
+
 	private List<ProductCategory> Categorias = new();
 
-	// ========== FILTROS ==========
 	private int selectedCategoryId = 0;
 	private string searchTerm = string.Empty;
 
-	// ========== PAGINACIÓN ==========
+	private int TotalRegisters = 1;
 	private int CurrentPage = 1;
 	private int PageSize = 12;
-	private int TotalPaginas => (int)Math.Ceiling((double)ProductList.Count / PageSize);
+	private int TotalPaginas => TotalRegisters == 0 ? 1 : (int)Math.Ceiling((double)TotalRegisters / PageSize);
 
-	// ========== USUARIO ==========
 	private string? UserEmail { get; set; }
 	private int shoppingCount = 0;
 
 	protected override async Task OnInitializedAsync()
 	{
 		await LoadUserData();
+		await LoadCategories();
 		await LoadProducts();
 		await CountProductsShopping();
 	}
@@ -141,27 +125,29 @@
 	{
 		var authState = await authenticationStateProvider.GetAuthenticationStateAsync();
 		var user = authState.User;
-        
+
 		if (user.Identity?.IsAuthenticated == true)
 		{
 			UserEmail = user.FindFirst(ClaimTypes.Email)?.Value;
 		}
 	}
 
+	private async Task LoadCategories()
+	{
+		Categorias = await productService.GetCategories();
+	}
+
 	private async Task LoadProducts()
 	{
-		_productosOriginales = await productService.GetList(p =>
-			p.SellStartDate <= DateTime.Now &&
-			(p.SellEndDate == null || p.SellEndDate >= DateTime.Now) &&
-			p.ProductInventories.Any(i => i.Quantity >= 1));
+		Expression<Func<Product, bool>> criterio = p =>
+			(p.SellStartDate <= DateTime.Now && (p.SellEndDate == null || p.SellEndDate >= DateTime.Now) &&
+			p.ProductInventories.Any(i => i.Quantity >= 1)) &&
+			(selectedCategoryId == 0 || p.ProductSubcategory.ProductCategoryId == selectedCategoryId) &&
+			(string.IsNullOrEmpty(searchTerm) || p.Name.Contains(searchTerm));
 
-		Categorias = _productosOriginales
-			.Where(p => p.ProductSubcategory?.ProductCategory != null)
-			.Select(p => p.ProductSubcategory.ProductCategory)
-			.DistinctBy(c => c.ProductCategoryId)
-			.ToList();
-       
-		AplicarFiltros();
+		var result = await productService.GetList(criterio, CurrentPage, PageSize);
+		PagedProducts = result.Items;
+		TotalRegisters = result.Total;
 	}
 
 	private async Task CountProductsShopping()
@@ -183,15 +169,6 @@
 
 		try
 		{
-			var stockTotal = await productInventoryService.GetList(i => i.ProductId == productId);
-			var availableStock = stockTotal.Sum(i => i.Quantity);
-            
-			if (availableStock <= 0)
-			{
-				toastService.ShowWarning("Producto agotado");
-				return;
-			}
-
 			var creado = await shoppingCartItemService.Guardar(new ShoppingCartItem
 			{
 				ShoppingCartId = UserEmail,
@@ -200,7 +177,7 @@
 				DateCreated = DateTime.Now,
 				ModifiedDate = DateTime.Now
 			});
-            
+
 			toastService.ShowSuccess("Producto añadido al carrito");
 			await CountProductsShopping();
 		}
@@ -215,70 +192,34 @@
 		}
 	}
 
-	private void FiltrarPorCategoria()
-	{
-		AplicarFiltros();
-	}
-
-	private void Buscar(ChangeEventArgs e)
+	private async Task Buscar(ChangeEventArgs e)
 	{
 		searchTerm = e?.Value?.ToString() ?? string.Empty;
-		AplicarFiltros();
-	}
-
-	private void AplicarFiltros()
-	{
-		var query = _productosOriginales.AsQueryable();
-
-		if (!string.IsNullOrWhiteSpace(searchTerm))
-		{
-			var term = searchTerm.ToLower();
-			query = query.Where(p =>
-				(p.Name != null && p.Name.ToLower().Contains(term)) ||
-				(p.ProductSubcategory != null &&
-				 p.ProductSubcategory.ProductCategory != null &&
-				 p.ProductSubcategory.ProductCategory.Name != null &&
-				 p.ProductSubcategory.ProductCategory.Name.ToLower().Contains(term)));
-		}
-
-		if (selectedCategoryId > 0)
-		{
-			query = query.Where(p => p.ProductSubcategory != null &&
-									 p.ProductSubcategory.ProductCategoryId == selectedCategoryId);
-		}
-
-		ProductList = query.ToList();
-        
 		CurrentPage = 1;
-		ActualizarVista();
+		await LoadProducts();
 	}
 
-
-	private void ActualizarVista()
+	private async Task FiltrarPorCategoria()
 	{
-		PagedProducts = ProductList
-			.Skip((CurrentPage - 1) * PageSize)
-			.Take(PageSize)
-			.ToList();
-            
-		StateHasChanged();
+		CurrentPage = 1; 
+		await LoadProducts();
 	}
 
-	private void PaginaSiguiente()
+	private async Task PaginaSiguiente()
 	{
 		if (CurrentPage < TotalPaginas)
 		{
 			CurrentPage++;
-			ActualizarVista();
+			await LoadProducts();
 		}
 	}
 
-	private void PaginaAnterior()
+	private async Task PaginaAnterior()
 	{
 		if (CurrentPage > 1)
 		{
 			CurrentPage--;
-			ActualizarVista();
+			await LoadProducts();
 		}
 	}
 

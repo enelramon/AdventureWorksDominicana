@@ -1,20 +1,18 @@
-﻿@page "/Product/Create"
+@page "/Product/Create"
 @attribute [Authorize(Roles = "Admin, ProductionManager")]
 
-@inject ProductService productService;
-@inject ProductSubcategoryService subcategoryService;
-@inject ProductModelService modelService;
-@inject UnitMeasureService unitMeasureService;
-@inject ToastService toastService;
-@inject NavigationManager navigationManager;
 @rendermode InteractiveServer
 
 @inject ProductService productService
 @inject ProductSubcategoryService productSubcategoryService
 @inject ProductModelService productModelService
 @inject UnitMeasureService unitMeasureService
+@inject ProductPhotoService photoService
 @inject ToastService toastService
 @inject NavigationManager navigationManager
+@inject SpecialOfferProductService specialOfferProductService
+@inject SpecialOfferService specialOfferService
+
 
 <PageTitle>Crear Producto</PageTitle>
 
@@ -75,7 +73,16 @@
 
                     <div class="mb-3">
                         <label class="form-label"><strong>Tamaño</strong></label>
-                        <input class="form-control" type="text" @bind="Product.Size" placeholder="Ej: M, L, XL" />
+                        <div class="input-group">
+                            <input class="form-control" type="text" @bind="Product.Size" placeholder="Ej: M, L, XL, 58" />
+                            <select class="form-select" style="max-width: 100px;" @bind="Product.SizeUnitMeasureCode">
+                                <option value="">Unidad</option>
+                                @foreach (var u in ListaUnidades)
+                                {
+                                    <option value="@u.UnitMeasureCode">@u.UnitMeasureCode</option>
+                                }
+                            </select>
+                        </div>
                     </div>
 
                     <div class="mb-3">
@@ -221,6 +228,78 @@
                         <label class="form-label"><strong>Fecha de modificación</strong></label>
                         <input class="form-control" type="datetime-local" @bind="Product.ModifiedDate" disabled />
                     </div>
+                    <!-- SECCIÓN: FOTOGRAFÍA PRINCIPAL -->
+                    <h5 class="section-title mt-4">
+                        <i class="bi bi-camera"></i> Fotografía Principal <small class="text-muted">(opcional)</small>
+                    </h5>
+
+                    <div class="row align-items-center">
+                        <div class="col-md-4 text-center mb-3 mb-md-0">
+                            @if (UrlImagenPreview != null)
+                            {
+                                <img src="@UrlImagenPreview" class="product-preview-img" />
+                            }
+                            else
+                            {
+                                <div class="product-preview-placeholder">
+                                    <i class="bi bi-image fs-1 text-muted"></i>
+                                    <p class="mb-0 text-muted small">Sin imagen seleccionada</p>
+                                </div>
+                            }
+                        </div>
+                        <div class="col-md-8">
+                            <label class="form-label"><strong>Seleccionar imagen</strong></label>
+                            <InputFile class="form-control" OnChange="CargarFotoTemporal" accept="image/png, image/jpeg" />
+                            <small class="text-muted mt-2 d-block">Formatos: .jpg, .png. Tamaño máximo: 5MB</small>
+                        </div>
+                    </div>
+
+                    <!-- SECCIÓN: PROMOCIONES -->
+                    <h5 class="section-title mt-4">
+                        <i class="bi bi-percent"></i> Promociones Aplicadas
+                    </h5>
+
+                    <div class="border p-3 mb-3">
+                        <h5 class="mb-3">Asignar Oferta</h5>
+                        <div class="row mb-3">
+                            <div class="col-md-9">
+                                <select class="form-select" @bind="OfertaSeleccionadaId">
+                                    <option value="0">— Seleccione una oferta —</option>
+                                    @foreach (var off in TodasLasOfertas)
+                                    {
+                                        <option value="@off.SpecialOfferId">
+                                            @off.Description (@((off.DiscountPct * 100).ToString("N0"))% · hasta @off.EndDate.ToShortDateString())
+                                        </option>
+                                    }
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <button type="button" class="btn btn-primary bi bi-plus" @onclick="AgregarOferta"> Agregar</button>
+                            </div>
+                        </div>
+
+                        <QuickGrid Items="OfertasSeleccionadas.AsQueryable()" Class="table table-striped table-bordered table-hover">
+                            <PropertyColumn Property="@(o => o.Description)" Title="Oferta" />
+                            <TemplateColumn Title="Descuento">
+                                <ChildContent Context="det">
+                                    @((det.DiscountPct * 100).ToString("N0"))%
+                                </ChildContent>
+                            </TemplateColumn>
+                            <PropertyColumn Property="@(o => o.EndDate)" Format="dd/MM/yyyy" Title="Vence" />
+                            <TemplateColumn>
+                                <ChildContent Context="det">
+                                    <button type="button" class="btn btn-outline-dark btn-sm bi bi-trash" @onclick="(() => RemoverOferta(det))"> Eliminar</button>
+                                </ChildContent>
+                            </TemplateColumn>
+                        </QuickGrid>
+                    </div>
+
+                    <div class="mt-2 fw-bold">
+                        Ofertas a aplicar: @OfertasSeleccionadas.Count
+                    </div>
+
+
+
 
                 </div>
 
@@ -239,6 +318,23 @@
     public List<ProductModel> ListaModelos { get; set; } = new();
     public List<UnitMeasure> ListaUnidades { get; set; } = new();
 
+    public List<SpecialOffer> TodasLasOfertas { get; set; } = new();
+    public List<SpecialOffer> OfertasSeleccionadas { get; set; } = new();
+    public int OfertaSeleccionadaId { get; set; } = 0;
+
+
+    private IBrowserFile? ArchivoSeleccionado;
+    private string? UrlImagenPreview;
+
+    private async Task CargarFotoTemporal(InputFileChangeEventArgs e)
+    {
+        ArchivoSeleccionado = e.File;
+        using var ms = new MemoryStream();
+        await ArchivoSeleccionado.OpenReadStream(5242880).CopyToAsync(ms);
+        var base64 = Convert.ToBase64String(ms.ToArray());
+        UrlImagenPreview = $"data:image/jpeg;base64,{base64}";
+    }
+
     protected override async Task OnInitializedAsync()
     {
         Product.MakeFlag = true;
@@ -250,15 +346,41 @@
         Product.ListPrice = 0;
         Product.SellStartDate = DateTime.Now;
 
-        ListaSubcategorias = await subcategoryService.GetList(s => s.ProductSubcategoryId > 0);
-        ListaModelos = await modelService.GetList(m => m.ProductModelId > 0);
+        ListaSubcategorias = await productSubcategoryService.GetList(s => s.ProductSubcategoryId > 0);
+        ListaModelos = await productModelService.GetList(m => m.ProductModelId > 0);
         ListaUnidades = await unitMeasureService.GetList(u => true);
+        TodasLasOfertas = await specialOfferService.GetList(o => o.SpecialOfferId > 0);
+
     }
+
+    private void AgregarOferta()
+    {
+        if (OfertaSeleccionadaId == 0) return;
+
+        var oferta = TodasLasOfertas.FirstOrDefault(o => o.SpecialOfferId == OfertaSeleccionadaId);
+        if (oferta == null) return;
+
+        if (OfertasSeleccionadas.Any(o => o.SpecialOfferId == OfertaSeleccionadaId))
+        {
+            toastService.ShowWarning("Esta oferta ya está en la lista.");
+            return;
+        }
+
+        OfertasSeleccionadas.Add(oferta);
+        OfertaSeleccionadaId = 0;
+    }
+
+    private void RemoverOferta(SpecialOffer oferta)
+    {
+        OfertasSeleccionadas.Remove(oferta);
+    }
+
 
     public async Task Guardar()
     {
         // Limpiar valores vacíos
         Product.WeightUnitMeasureCode = string.IsNullOrWhiteSpace(Product.WeightUnitMeasureCode) ? null : Product.WeightUnitMeasureCode;
+        Product.SizeUnitMeasureCode = string.IsNullOrWhiteSpace(Product.SizeUnitMeasureCode) ? null : Product.SizeUnitMeasureCode;
         Product.ProductLine = string.IsNullOrWhiteSpace(Product.ProductLine) ? null : Product.ProductLine;
         Product.Class = string.IsNullOrWhiteSpace(Product.Class) ? null : Product.Class;
         Product.Style = string.IsNullOrWhiteSpace(Product.Style) ? null : Product.Style;
@@ -278,6 +400,26 @@
         bool guardado = await productService.Guardar(Product);
         if (guardado)
         {
+            // EF Core ya popoló Product.ProductId con el ID generado por SQL
+            if (ArchivoSeleccionado != null)
+            {
+                using var ms = new MemoryStream();
+                await ArchivoSeleccionado.OpenReadStream(5242880).CopyToAsync(ms);
+                await photoService.AsignarFotoPrincipal(Product.ProductId, ms.ToArray(), ArchivoSeleccionado.Name);
+            }
+
+
+            // Vincular ofertas seleccionadas ahora que tenemos el ProductId
+            foreach (var oferta in OfertasSeleccionadas)
+            {
+                await specialOfferProductService.Guardar(new SpecialOfferProduct
+                {
+                    ProductId = Product.ProductId,
+                    SpecialOfferId = oferta.SpecialOfferId
+                });
+            }
+
+
             toastService.ShowSuccess("Producto creado exitosamente.");
             navigationManager.NavigateTo("/Product/Index");
         }
@@ -285,5 +427,7 @@
         {
             toastService.ShowError("Ha ocurrido un error inesperado al guardar el producto.");
         }
+
+
     }
 }

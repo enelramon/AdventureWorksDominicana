@@ -190,7 +190,7 @@
                     .Select(pv => pv.Product)
                     .Distinct()
                     .ToListAsync();
-                    
+
                 if (order.PurchaseOrderDetails.Any())
                 {
                     order.PurchaseOrderDetails.Clear();
@@ -275,6 +275,11 @@
     {
         try
         {
+            if(order.PurchaseOrderDetails.Count < 1)
+            {
+                toastService.ShowWarning("No se puede guardar una orden de compra sin detalle. Por favor, agregue al menos un detalle y vuelva a intentarlo.");
+                return;
+            }
             Db.PurchaseOrderHeaders.Add(order);
             await Db.SaveChangesAsync();
             

@@ -1,0 +1,125 @@
+﻿@page "/ProductModel/Create"
+@attribute [Authorize(Roles = "Admin, ProductionManager")]
+@inject NavigationManager navigationManager
+@inject ToastService toastService
+@inject ProductModelService modelService
+@inject ProductDescriptionService descriptionService
+@inject CultureService cultureService
+@rendermode InteractiveServer
+
+<PageTitle>Crear Modelo</PageTitle>
+
+<EditForm Model="model" OnValidSubmit="Guardar">
+    <DataAnnotationsValidator />
+
+    <div class="container mt-4">
+        <div class="card shadow-lg">
+            <div class="card-header">
+                <h4 class="mb-0">Registro de Modelos de Producto</h4>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Nombre del Modelo</label>
+                    <InputText class="form-control" @bind-Value="model.Name" placeholder="Ej: Mountain-100, Road-50..." />
+                    <ValidationMessage For="() => model.Name" />
+                </div>
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">Catálogo (XML)</label>
+                        <InputTextArea class="form-control" @bind-Value="model.CatalogDescription" rows="2" />
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">Instrucciones (XML)</label>
+                        <InputTextArea class="form-control" @bind-Value="model.Instructions" rows="2" />
+                    </div>
+                </div>
+                <!-- DETALLE: Descripciones (Mismo patrón que ProductCategoryCreate) -->
+                <div class="border border-success p-3 mb-3">
+                    <h3 class="mb-3">Configuración de Idiomas y Textos</h3>
+                    <div class="row mb-3 g-2">
+                        <div class="col-md-3">
+                            <select class="form-select" @bind="nuevaCulturaId">
+                                <option value="">Cultura...</option>
+                                @foreach (var c in ListaCulturas)
+                                {
+                                    <option value="@c.CultureId">@c.Name</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="col-md-7">
+                            <InputTextArea class="form-control" rows="1" @bind-Value="nuevoTexto" placeholder="Texto descriptivo..." />
+                        </div>
+                        <div class="col-md-2">
+                            <button type="button" class="btn btn-primary bi bi-plus w-100" @onclick="AgregarDetalle"> Agregar</button>
+                        </div>
+                    </div>
+                    <QuickGrid Items="model.ProductModelProductDescriptionCultures.AsQueryable()" Class="table table-striped table-bordered table-hover">
+                        <TemplateColumn Title="Idioma" Context="item">
+                            <span class="badge bg-secondary">@item.CultureId</span>
+                        </TemplateColumn>
+                        <TemplateColumn Title="Descripción" Context="item">
+                            @item.ProductDescription?.Description
+                        </TemplateColumn>
+                        <TemplateColumn Class="text-center" Title="Acción" Context="item">
+                            <button type="button" class="btn btn-outline-dark btn-sm bi bi-trash" @onclick="(() => RemoverDetalle(item))"> Eliminar</button>
+                        </TemplateColumn>
+                    </QuickGrid>
+                </div>
+
+                <div class="mt-3 fw-bold">
+                    Total Idiomas Agregados: @model.ProductModelProductDescriptionCultures.Count
+                </div>
+            </div>
+
+            <div class="card-footer text-center">
+                <a class="btn btn-outline-secondary bi bi-arrow-left" href="/ProductModel/Index"> Volver</a>
+                <button type="submit" class="btn btn-outline-success bi bi-file-earmark"> Guardar</button>
+            </div>
+        </div>
+    </div>
+</EditForm>
+
+@code {
+    private ProductModel model = new() { ProductModelProductDescriptionCultures = new List<ProductModelProductDescriptionCulture>() };
+    private List<Culture> ListaCulturas = new();
+    private string nuevaCulturaId = "", nuevoTexto = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        ListaCulturas = await cultureService.GetList(c => true);
+    }
+
+    private async Task AgregarDetalle()
+    {
+        if (string.IsNullOrWhiteSpace(nuevaCulturaId) || string.IsNullOrWhiteSpace(nuevoTexto)) return;
+        
+        // Guardamos la descripción primero para tener el objeto persistido (o simulado si prefieres esperar al Guardar final)
+        var pDesc = new ProductDescription { Description = nuevoTexto, ModifiedDate = DateTime.Now, Rowguid = Guid.NewGuid() };
+        if (await descriptionService.Guardar(pDesc))
+        {
+            model.ProductModelProductDescriptionCultures.Add(new ProductModelProductDescriptionCulture
+            {
+                CultureId = nuevaCulturaId,
+                ProductDescriptionId = pDesc.ProductDescriptionId,
+                ProductDescription = pDesc
+            });
+            nuevoTexto = "";
+            toastService.ShowSuccess("Texto agregado a la lista.");
+        }
+    }
+
+    private void RemoverDetalle(ProductModelProductDescriptionCulture item)
+    {
+        model.ProductModelProductDescriptionCultures.Remove(item);
+        toastService.ShowWarning("Texto eliminado de la lista temporal.");
+    }
+
+    private async Task Guardar()
+    {
+        if (await modelService.Guardar(model))
+        {
+            toastService.ShowSuccess("Modelo de producto creado exitosamente.");
+            navigationManager.NavigateTo("/ProductModel/Index");
+        }
+    }
+}

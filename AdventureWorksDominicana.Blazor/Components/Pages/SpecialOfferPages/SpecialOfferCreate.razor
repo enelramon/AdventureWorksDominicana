@@ -1,4 +1,4 @@
-﻿@page "/SpecialOffer/Create"
+@page "/SpecialOffer/Create"
 @attribute [Authorize(Roles = "Admin, ProductionManager")]
 
 @using AdventureWorksDominicana.Data.Models
@@ -30,9 +30,11 @@
                     </div>
 
                     <div class="col-md-4">
-                        <label class="form-label fw-bold">% Descuento (Decimal: 0.15 = 15%)</label>
-                        <label class="form-label fw-bold">% Descuento (Decimal)</label>
-                        <InputNumber class="form-control" step="0.01" @bind-Value="Offer.DiscountPct" />
+                        <label class="form-label fw-bold">% Descuento (Ej: 15 = 15%)</label>
+                        <div class="input-group">
+                            <InputNumber class="form-control" step="0.01" @bind-Value="DiscountPorcentaje" min="0" max="100" />
+                            <span class="input-group-text">%</span>
+                        </div>
                         <ValidationMessage For="(() => Offer.DiscountPct)" />
                     </div>
 
@@ -110,6 +112,10 @@
         Rowguid = Guid.NewGuid()
     };
 
+    // Variable intermedia: el usuario ingresa en % natural (ej: 15 para 15%)
+    // Se convierte a decimal (0.15) antes de guardar en BD
+    private decimal DiscountPorcentaje { get; set; } = 0;
+
     public async Task Guardar()
     {
         if (string.IsNullOrWhiteSpace(Offer.Description))
@@ -135,6 +141,9 @@
             toastService.ShowWarning("Debe seleccionar un Tipo y una Categoría.");
             return;
         }
+
+        // Convertir % natural (ej: 15) a decimal de BD (ej: 0.15)
+        Offer.DiscountPct = DiscountPorcentaje / 100;
 
         if (await specialOfferService.Guardar(Offer))
         {

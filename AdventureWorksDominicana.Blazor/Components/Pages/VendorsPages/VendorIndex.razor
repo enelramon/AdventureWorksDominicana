@@ -48,7 +48,6 @@
                 <div class="col-md-3">
                     <select class="form-select" @bind="Filtro">
                         <option value="">Seleccione una opcion</option>
-                        <option value="Id">ID de Proveedor</option>
                         <option value="Nombre">Nombre</option>
                         <option value="Cuenta">Número de Cuenta</option>
                     </select>
@@ -83,7 +82,7 @@
 
                     <PropertyColumn Property="@(v => v.ModifiedDate)" Title="Fecha" Format="dd/MM/yyyy" Sortable="true" />
                     
-                    <TemplateColumn Title="Opciones" Align="Align.Center">
+                    <TemplateColumn Title="Acción" Align="Align.Center">
                         <div class="d-flex justify-content-center gap-2">
                             <a href="Vendor/Edit/@context.BusinessEntityId" class="btn btn-sm btn-outline-primary d-flex align-items-center gap-2" title="Modificar">
                                 <i class="bi bi-pencil"></i>
@@ -119,14 +118,11 @@
 
     private async Task Buscar()
     {
-        int.TryParse(ValorFiltro, out int idBuscado);
-
         VendorsList = await vendorService.GetList(v =>
             (!(StartDate.HasValue && EndDate.HasValue) ||
             (v.ModifiedDate >= StartDate.Value.Date && v.ModifiedDate <= EndDate.Value.Date.AddDays(1).AddTicks(-1)))
             &&
             (string.IsNullOrWhiteSpace(ValorFiltro) || string.IsNullOrWhiteSpace(Filtro) ||
-                (Filtro == "Id" && v.BusinessEntityId == idBuscado) ||
                 (Filtro == "Nombre" && v.Name.Contains(ValorFiltro)) ||
                 (Filtro == "Cuenta" && v.AccountNumber.Contains(ValorFiltro))
             )

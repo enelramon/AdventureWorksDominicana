@@ -1,76 +1,87 @@
 ﻿@page "/ProductModel/Index"
-
-@inject ProductModelService modelService;
+@attribute [Authorize(Roles = "Admin, ProductionManager")]
+@inject ProductModelService modelService
 @rendermode InteractiveServer
 
-<div class="container">
-    <div class="card shadow-lg">
-        <div class="card-header d-flex justify-content-between">
-            <h4>Modelos de Producto</h4>
-            <a class="btn btn-primary bi bi-plus-square" href="/ProductModel/Create"> Crear</a>
-        </div>
-        <div class="card-body">
-            @* Encabezados *@
-            <div class="row">
-                <div class="col-3">
-                    <label>Desde:</label>
-                </div>
-                <div class="col-3">
-                    <label>Hasta:</label>
-                </div>
-                <div class="col-3">
-                    <label>Filtro:</label>
-                </div>
-                <div class="col-3">
-                    <label>Buscar:</label>
-                </div>
-            </div>
+<PageTitle>Listado de Modelos</PageTitle>
 
-            @* Inputs *@
-            <div class="row pb-3">
-                <div class="col-3">
-                    <input class="form-control" type="datetime-local" @bind-value="FechaDesde" />
+<div class="container mb-5">
+    <div class="card shadow-lg">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h5 class="card-title m-0">Registro de Modelos de Producto</h5>
+            <a href="/ProductModel/Create" class="btn btn-primary bi bi-plus-square"> Crear</a>
+        </div>
+        
+        <div class="card-body">
+            @if (!string.IsNullOrWhiteSpace(mensajeError))
+            {
+                <div class="alert alert-danger" role="alert">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i> @mensajeError
                 </div>
-                <div class="col-3">
-                    <input class="form-control" type="datetime-local" @bind-value="FechaHasta" />
+            }
+
+            <div class="row align-items-end mb-4">
+                <div class="col-md-3">
+                    <label class="form-label fw-bold">Desde:</label>
+                    <input class="form-control" type="date" @bind-value="FechaDesde" />
                 </div>
-                <div class="col-3">
+                <div class="col-md-3">
+                    <label class="form-label fw-bold">Hasta:</label>
+                    <input class="form-control" type="date" @bind-value="FechaHasta" />
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label fw-bold">Filtro:</label>
                     <select class="form-select" @bind="Filtro">
-                        <option value="" disabled selected hidden>Seleccione un filtro...</option>
+                        <option value="" disabled selected hidden>Seleccione...</option>
                         <option value="Nombre">Nombre del Modelo</option>
                     </select>
                 </div>
-                <div class="col-3">
+                <div class="col-md-3">
+                    <label class="form-label fw-bold">Buscar:</label>
                     <div class="input-group">
                         <input class="form-control" type="text" @bind-value="ValorFiltro" placeholder="Buscar..." />
                         <button class="btn btn-primary bi bi-search" type="button" @onclick="Filtrar"></button>
-                        <button class="btn btn-outline-primary bi bi-arrow-clockwise" type="button" @onclick="Restablecer"></button>
+                        <button class="btn btn-outline-secondary bi bi-arrow-clockwise" type="button" @onclick="Restablecer"></button>
                     </div>
                 </div>
             </div>
 
             <div class="table-responsive">
-                <QuickGrid Class="table table-striped table-bordered table-hover" Pagination="@pages" Items="ListaModelos.AsQueryable()" ItemKey="@(m => m.ProductModelId)">
+                <QuickGrid Class="table table-striped table-hover align-middle mb-0" Pagination="@pages" Items="ListaModelos.AsQueryable()" ItemKey="@(m => m.ProductModelId)">
                     <PropertyColumn Property="@(m => m.ProductModelId)" Sortable="true" Title="Id" />
                     <PropertyColumn Property="@(m => m.Name)" Sortable="true" Title="Nombre del Modelo" />
-                    <PropertyColumn Property="@(m => m.ModifiedDate)" Sortable="true" Format="dd/MM/yyyy HH:mm" Title="Última Modificación" />
                     
-                    <TemplateColumn Class="text-center" Context="options" Title="Acci&oacute;n">
-                        <a href="/ProductModel/Edit/@options.ProductModelId" class="btn btn-outline-primary bi bi-pencil-square"> Modificar</a>
+                    <TemplateColumn Title="Descripciones" Class="text-center">
+                        <span class="badge bg-secondary">
+                            @(context.ProductModelProductDescriptionCultures?.Count ?? 0) Idioma(s)
+                        </span>
+                    </TemplateColumn>
+
+                    <PropertyColumn Property="@(m => m.ModifiedDate)" Sortable="true" Format="dd/MM/yyyy" Title="Modificación" />
+
+                    <TemplateColumn Class="text-center" Title="Acción">
+                        <a href="/ProductModel/Edit/@context.ProductModelId"
+                           class="btn btn-outline-primary btn-sm bi bi-pencil-square"
+                           title="Editar Modelo"></a>
                     </TemplateColumn>
                 </QuickGrid>
             </div>
-            <Paginator State="@pages" />
+            
+            <div class="d-flex justify-content-end mt-3">
+                <Paginator State="@pages" />
+            </div>
         </div>
     </div>
 </div>
 
 @code {
-    public List<ProductModel> ListaModelos { get; set; } = new List<ProductModel>();
+    public List<ProductModel> ListaModelos { get; set; } = new();
     public DateTime? FechaDesde { get; set; }
     public DateTime? FechaHasta { get; set; }
     public string Filtro { get; set; } = "";
     public string ValorFiltro { get; set; } = "";
+    
+    private string mensajeError = string.Empty;
     private PaginationState pages = new PaginationState { ItemsPerPage = 10 };
 
     protected override async Task OnInitializedAsync()
@@ -81,32 +92,32 @@
 
     public async Task Filtrar()
     {
+        mensajeError = string.Empty;
         Expression<Func<ProductModel, bool>> criterio = m => m.ProductModelId > 0;
 
         if (FechaDesde.HasValue && FechaHasta.HasValue)
         {
-            DateTime fechaHastaStr = FechaHasta.Value.Date.AddDays(1).AddTicks(-1);
-            criterio = criterio.And(m => m.ModifiedDate >= FechaDesde.Value && m.ModifiedDate <= fechaHastaStr);
+            DateTime fHasta = FechaHasta.Value.Date.AddDays(1).AddTicks(-1);
+            criterio = criterio.And(m => m.ModifiedDate >= FechaDesde.Value && m.ModifiedDate <= fHasta);
         }
-        else if (FechaDesde.HasValue)
-        {
-            criterio = criterio.And(m => m.ModifiedDate >= FechaDesde.Value);
-        }
-        else if (FechaHasta.HasValue)
-        {
-            var fechaHastaStr = FechaHasta.Value.Date.AddDays(1).AddTicks(-1);
-            criterio = criterio.And(m => m.ModifiedDate <= fechaHastaStr);
-        }
+        else if (FechaDesde.HasValue) criterio = criterio.And(m => m.ModifiedDate >= FechaDesde.Value);
+        else if (FechaHasta.HasValue) criterio = criterio.And(m => m.ModifiedDate <= FechaHasta.Value.Date.AddDays(1).AddTicks(-1));
         
-        if (Filtro != "" && ValorFiltro != "")
+        if (!string.IsNullOrWhiteSpace(Filtro) && !string.IsNullOrWhiteSpace(ValorFiltro))
         {
             if (Filtro == "Nombre")
             {
-                criterio = criterio.And(m => m.Name.Trim().ToLower().Contains(ValorFiltro.ToLower()));
+                criterio = criterio.And(m => m.Name.ToLower().Contains(ValorFiltro.ToLower()));
             }
         }
+        
         ListaModelos = await modelService.GetList(criterio);
         ListaModelos = ListaModelos.OrderByDescending(m => m.ModifiedDate).ToList();
+
+        if (!ListaModelos.Any())
+        {
+            mensajeError = "No se encontraron modelos con los criterios ingresados.";
+        }
     }
 
     public async Task Restablecer()
@@ -115,6 +126,7 @@
         FechaHasta = null;
         Filtro = "";
         ValorFiltro = "";
+        mensajeError = string.Empty;
         await Filtrar();
     }
 }

@@ -1,4 +1,4 @@
-﻿/* CONTENEDOR PRINCIPAL */
+/* CONTENEDOR PRINCIPAL */
 .product-container {
     max-width: 1200px;
     margin: auto;
@@ -124,6 +124,22 @@
     .product-form .btn-secondary:hover {
         background: #595C66;
     }
+
+/* PREVISUALIZACIÓN DE IMAGEN */
+.product-preview-img {
+    max-height: 150px;
+    max-width: 100%;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.product-preview-placeholder {
+    background: #f9fafb;
+    border: 2px dashed #d1d5db;
+    border-radius: 12px;
+    padding: 20px;
+    text-align: center;
+}
 
 /* INPUT GROUP */
 .product-form .input-group-text {

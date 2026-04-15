@@ -341,13 +341,9 @@
                         <div class="summary-product">
                             <div class="summary-product-img">
                                 @{
-                                    // EXPLICACIÓN 1: Extraemos el brazo relacionador que marca la imagen como "True" (Primaria)
                                     var nexoFoto = s.Product.ProductProductPhotos.FirstOrDefault(f => f.Primary == true);
-                                
-                                    // EXPLICACIÓN 2: Esto es un Fallback. Si el producto recién creado no se le subió foto, mostramos el gris
+                               
                                     string imgUrl = "https://www.svgrepo.com/show/486796/product-management.svg";
-                                
-                                    // EXPLICACIÓN 3: Si sí hay foto binaria cargada en la BD, la convertimos a lenguaje Web (Base64)
                                     if (nexoFoto != null && nexoFoto.ProductPhoto?.ThumbNailPhoto != null)
                                     {
                                         var base64 = Convert.ToBase64String(nexoFoto.ProductPhoto.ThumbNailPhoto);
@@ -441,20 +437,7 @@
 
     private string numeroTarjetaFormateado = "";
 
-    public string NumeroTarjetaFormateado
-    {
-        get => numeroTarjetaFormateado;
-        set
-        {
-            // Extrae solo los números y toma un máximo de 16 dígitos
-            var soloNumeros = new string((value ?? "").Where(char.IsDigit).Take(16).ToArray());
-
-            // Divide el texto en bloques de 4 y los une con un espacio
-            numeroTarjetaFormateado = string.Join(" ", soloNumeros.Chunk(4).Select(c => new string(c)));
-
-            if (NewCard != null) NewCard.CardNumber = numeroTarjetaFormateado;
-        }
-    }
+    
 
     // ========== INICIALIZACIÓN ==========
     protected override async Task OnInitializedAsync()
@@ -484,8 +467,6 @@
     private async Task LoadCartData()
     {
         ShoppingCartItemList = await shoppingCartItemService.GetList(s => s.ShoppingCartId == UserEmail);
-
-        // Si el carrito esta vacio
         if (!ShoppingCartItemList.Any())
         {
             toastService.ShowError("No hay productos en el carrito.");
@@ -609,9 +590,6 @@
             return false;
         }
 
-        // ========================
-        // 🚚 SHIPPING ADDRESS
-        // ========================
         if (showNewAddress)
         {
             if (!ValidateAddress(NewAddress))
@@ -854,7 +832,6 @@
 
         try
         {
-            // Limpiar número de tarjeta (solo dígitos)
             NewCard.CardNumber = new string(NewCard.CardNumber.Where(char.IsDigit).ToArray());
             NewCard.ModifiedDate = DateTime.Now;
             await creditCardService.Guardar(NewCard);
@@ -957,6 +934,17 @@
             .Where(o => (item.Quantity) >= o.MinQty)
             .OrderByDescending(o => o.DiscountPct)
             .FirstOrDefault()?.DiscountPct ?? 0;
+    }
+    public string NumeroTarjetaFormateado
+    {
+        get => numeroTarjetaFormateado;
+        set
+        {
+            var soloNumeros = new string((value ?? "").Where(char.IsDigit).Take(16).ToArray());
+            numeroTarjetaFormateado = string.Join(" ", soloNumeros.Chunk(4).Select(c => new string(c)));
+
+            if (NewCard != null) NewCard.CardNumber = numeroTarjetaFormateado;
+        }
     }
 
     private void GoToCart() => navigationManager.NavigateTo("/ShoppingCart");

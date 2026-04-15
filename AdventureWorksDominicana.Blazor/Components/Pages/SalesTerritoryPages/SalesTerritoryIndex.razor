@@ -2,6 +2,7 @@
 @attribute [Authorize(Roles = "Admin, SalesManager")]
 
 @inject SalesTerritoryService salesTerritoryService;
+@inject AuthenticationStateProvider authStateProvider
 @rendermode InteractiveServer
 
 <div class="container">
@@ -64,17 +65,19 @@
                     <PropertyColumn Property="@(s => s.SalesLastYear)" Sortable="true" Format="F2" Title="Ventas LY"></PropertyColumn>
                     <PropertyColumn Property="@(s => s.CostYtd)" Sortable="true" Format="F2" Title="Costos"></PropertyColumn>
                     <PropertyColumn Property="@(s => s.CostLastYear)" Sortable="true" Format="F2" Title="Costos LY"></PropertyColumn>
-                    <AuthorizeView Roles="Admin">
+                    @if (canEdit)
+                    {
                         <TemplateColumn Class="text-center" Context="options" Title="Acci&oacute;n">
                             <a href="/SalesTerritory/Edit/@options.TerritoryId" class="btn btn-outline-primary bi bi-pencil-square"> Modificar</a>
                         </TemplateColumn>
-                    </AuthorizeView>
-                </QuickGrid>
-            </div>
-            @*Pagination*@
-            <Paginator State="@pages" />
+                    }
+                    
+            </QuickGrid>
         </div>
+        @*Pagination*@
+        <Paginator State="@pages" />
     </div>
+</div>
 </div>
 
 @code {
@@ -84,9 +87,15 @@
     public string Filtro { get; set; } = "";
     public string ValorFiltro { get; set; } = "";
     private PaginationState pages = new PaginationState { ItemsPerPage = 5 };
+    private bool canEdit = false;
 
     protected override async Task OnInitializedAsync()
     {
+        var authState = await authStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+
+        canEdit = user.IsInRole("Admin") || user.IsInRole("ProductionManager");
+
         ListaSalesTerritory = await salesTerritoryService.GetList(s => s.TerritoryId > 0);
         ListaSalesTerritory = ListaSalesTerritory.OrderByDescending(s => s.ModifiedDate).ToList();
     }

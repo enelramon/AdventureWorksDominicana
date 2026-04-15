@@ -25,16 +25,16 @@ public class ProductDescriptionService(IDbContextFactory<Contexto> DbFactory) : 
     private async Task<bool> Insertar(ProductDescription description)
     {
         await using var contexto = await DbFactory.CreateDbContextAsync();
-        contexto.ProductDescriptions.Add(
-            new ProductDescription
-            {
-                Description = description.Description,
-                Rowguid = Guid.NewGuid(),
-                ModifiedDate = DateTime.Now
-            }
-        );
+
+        // CORRECCIÓN: Asignamos los campos directamente a la entidad que recibimos por parámetro
+        // Así Entity Framework actualizará el 'ProductDescriptionId' correctamente.
+        description.Rowguid = Guid.NewGuid();
+        description.ModifiedDate = DateTime.Now;
+
+        contexto.ProductDescriptions.Add(description);
         return await contexto.SaveChangesAsync() > 0;
     }
+
     private async Task<bool> Modificar(ProductDescription description)
     {
         await using var contexto = await DbFactory.CreateDbContextAsync();

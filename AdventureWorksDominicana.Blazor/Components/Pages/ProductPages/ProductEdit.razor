@@ -10,6 +10,9 @@
 @inject ProductPhotoService photoService
 @inject ToastService toastService
 @inject NavigationManager navigationManager
+@inject SpecialOfferProductService specialOfferProductService
+@inject SpecialOfferService specialOfferService
+
 
 <PageTitle>Editar Producto</PageTitle>
 
@@ -70,8 +73,18 @@
 
                     <div class="mb-3">
                         <label class="form-label"><strong>Tamaño</strong></label>
-                        <input class="form-control" type="text" @bind="Product.Size" placeholder="Ej: M, L, XL" />
+                        <div class="input-group">
+                            <input class="form-control" type="text" @bind="Product.Size" placeholder="Ej: M, L, XL, 58" />
+                            <select class="form-select" style="max-width: 100px;" @bind="Product.SizeUnitMeasureCode">
+                                <option value="">Unidad</option>
+                                @foreach (var u in ListaUnidades)
+                                {
+                                    <option value="@u.UnitMeasureCode">@u.UnitMeasureCode</option>
+                                }
+                            </select>
+                        </div>
                     </div>
+
 
                     <div class="mb-3">
                         <label class="form-label"><strong>Peso</strong></label>
@@ -212,6 +225,12 @@
                         <input class="form-control" type="datetime-local" @bind="Product.DiscontinuedDate" />
                     </div>
 
+                    <!-- FECHA MODIFICACIÓN -->
+                    <div class="mb-3">
+                        <label class="form-label"><strong>Fecha de modificación</strong></label>
+                        <input class="form-control" type="datetime-local" @bind="Product.ModifiedDate" disabled />
+                    </div>
+
                     <!-- SECCIÓN: FOTOGRAFÍA PRINCIPAL -->
                     <h5 class="section-title mt-4">
                         <i class="bi bi-camera"></i> Fotografía Principal
@@ -238,13 +257,54 @@
                         </div>
                     </div>
 
-                    <!-- FECHA MODIFICACIÓN -->
-                    <div class="mb-3">
-                        <label class="form-label"><strong>Fecha de modificación</strong></label>
-                        <input class="form-control" type="datetime-local" @bind="Product.ModifiedDate" disabled />
+                    <!-- SECCIÓN: PROMOCIONES Y OFERTAS -->
+                    <h5 class="section-title mt-4">
+                        <i class="bi bi-percent"></i> Promociones Aplicadas
+                    </h5>
+
+                    <div class="border p-3 mb-3">
+                        <h5 class="mb-3">Asignar Oferta</h5>
+                        <div class="row mb-3">
+                            <div class="col-md-9">
+                                <select class="form-select" @bind="OfertaSeleccionadaId">
+                                    <option value="0">— Seleccione una oferta —</option>
+                                    @foreach (var off in TodasLasOfertas)
+                                    {
+                                        <option value="@off.SpecialOfferId">
+                                            @off.Description (@((off.DiscountPct * 100).ToString("N0"))% · hasta @off.EndDate.ToShortDateString())
+                                        </option>
+                                    }
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <button type="button" class="btn btn-primary small bi bi-plus" @onclick="VincularOferta"> Agregar</button>
+                            </div>
+                        </div>
+
+                        <QuickGrid Items="OfertasDelProducto.AsQueryable()" Class="table table-striped table-bordered table-hover">
+                            <PropertyColumn Property="@(o => o.SpecialOffer.Description)" Title="Oferta" />
+                            <TemplateColumn Title="Descuento">
+                                <ChildContent Context="det">
+                                    @((det.SpecialOffer.DiscountPct * 100).ToString("N0"))%
+                                </ChildContent>
+                            </TemplateColumn>
+                            <PropertyColumn Property="@(o => o.SpecialOffer.EndDate)" Format="dd/MM/yyyy" Title="Vence" />
+                            <TemplateColumn Class="text-center" Context="options" Title="Acci&oacute;n">
+                                <ChildContent Context="det">
+                                    <button type="button" class="btn btn-danger btn-sm bi bi-trash" @onclick="(() => DesvincularOferta(det.SpecialOfferId))"> Eliminar</button>
+                                </ChildContent>
+                            </TemplateColumn>
+                        </QuickGrid>
                     </div>
 
+                    <div class="mt-2 fw-bold">
+                        Ofertas activas: @OfertasDelProducto.Count
+                    </div>
                 </div>
+
+
+
+
 
                 <div class="card-footer text-center">
                     <a class="btn btn-secondary bi bi-arrow-left" href="/Product/Index"> Volver</a>
@@ -265,6 +325,10 @@
     public List<ProductSubcategory> ListaSubcategorias { get; set; } = new();
     public List<ProductModel> ListaModelos { get; set; } = new();
     public List<UnitMeasure> ListaUnidades { get; set; } = new();
+    public List<SpecialOfferProduct> OfertasDelProducto { get; set; } = new();
+    public List<SpecialOffer> TodasLasOfertas { get; set; } = new();
+    public int OfertaSeleccionadaId { get; set; } = 0;
+
 
     private IBrowserFile? ArchivoSeleccionado;
     private string? UrlImagenPreview;
@@ -291,6 +355,10 @@
             var base64 = Convert.ToBase64String(fotoExistente.ThumbNailPhoto);
             UrlImagenPreview = $"data:image/jpeg;base64,{base64}";
         }
+
+        OfertasDelProducto = await specialOfferProductService.GetList(o => o.ProductId == ProductId);
+        TodasLasOfertas = await specialOfferService.GetList(o => o.SpecialOfferId > 0);
+
     }
 
     private async Task CargarFotoTemporal(InputFileChangeEventArgs e)
@@ -303,6 +371,40 @@
         var base64 = Convert.ToBase64String(buffer);
         UrlImagenPreview = $"data:image/jpeg;base64,{base64}";
     }
+
+    public async Task VincularOferta()
+    {
+        if (OfertaSeleccionadaId == 0)
+        {
+            toastService.ShowWarning("Selecciona una oferta primero.");
+            return;
+        }
+
+        var nueva = new SpecialOfferProduct { ProductId = ProductId, SpecialOfferId = OfertaSeleccionadaId };
+        bool resultado = await specialOfferProductService.Guardar(nueva);
+
+        if (resultado)
+        {
+            toastService.ShowSuccess("Oferta vinculada al producto.");
+            OfertasDelProducto = await specialOfferProductService.GetList(o => o.ProductId == ProductId);
+            OfertaSeleccionadaId = 0;
+        }
+        else
+        {
+            toastService.ShowWarning("Esta oferta ya está vinculada o hubo un error.");
+        }
+    }
+
+    public async Task DesvincularOferta(int offerId)
+    {
+        bool resultado = await specialOfferProductService.Eliminar(offerId, ProductId);
+        if (resultado)
+        {
+            toastService.ShowSuccess("Oferta removida del producto.");
+            OfertasDelProducto = await specialOfferProductService.GetList(o => o.ProductId == ProductId);
+        }
+    }
+
 
     public async Task Guardar()
     {

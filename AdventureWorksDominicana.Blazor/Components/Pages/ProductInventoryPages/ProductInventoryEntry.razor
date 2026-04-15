@@ -31,7 +31,7 @@
 						<option value="0"> Seleccionar Producto </option>
 						@foreach (var p in ListaProductos)
 						{
-							<option value="@p.ProductId">[@p.ProductNumber] @p.Name</option>
+							<option value="@p.ProductId">@p.Name</option>
 						}
 					</InputSelect>
 				</div>
@@ -39,7 +39,7 @@
 				<div class="mb-3">
 					<label class="form-label fw-bold">Almacén de Destino</label>
 					<InputSelect class="form-select shadow-none" @bind-Value="nuevaEntrada.LocationId" @bind-Value:after="ConsultarStockActual">
-						<option value="0">-- Seleccionar Almacén --</option>
+						<option value="0"> Seleccionar Almacén </option>
 						@foreach (var l in ListaUbicaciones)
 						{
 							<option value="@l.LocationId">@l.Name</option>
@@ -52,10 +52,10 @@
 						<label class="form-label fw-bold mb-0">Cantidad Entrante</label>
 						@if (nuevaEntrada.ProductId > 0 && nuevaEntrada.LocationId > 0)
 						{
-							<span class="badge @(stockActual > 0 ? "bg-info text-dark" : "bg-warning text-dark")">Actual en bodega: @stockActual</span>
+							<span class="badge @(stockActual > 0 ? "text-dark" : "text-dark")">Actual en bodega: @stockActual</span>
 						}
 					</div>
-					<InputNumber class="form-control fw-bold text-success shadow-none" @bind-Value="nuevaEntrada.Quantity" />
+					<InputNumber class="form-control fw-bold shadow-none" @bind-Value="nuevaEntrada.Quantity" />
 				</div>
 
 				<div class="row">

@@ -31,11 +31,35 @@ public class ProductService(IDbContextFactory<Contexto> DbContextFactory) : ISer
             .Where(criterio)
             .ToListAsync();
     }
+    public async Task<(List<Product> Items, int Total)> GetList(Expression<Func<Product, bool>> criterio, int pageIndex, int pageSize)
+    {
+        await using var contexto = await DbContextFactory.CreateDbContextAsync();
+        var query = contexto.Products
+            .AsNoTracking()
+            .Include(p => p.ProductSubcategory).ThenInclude(p => p.ProductCategory)
+            .Include(p => p.ProductModel).ThenInclude(d => d.ProductModelProductDescriptionCultures).ThenInclude(d => d.ProductDescription)
+            .Include(p => p.ProductProductPhotos).ThenInclude(ppp => ppp.ProductPhoto)
+            .Where(criterio);
 
+        int totalCount = await query.CountAsync();
+
+        var items = await query
+            .Skip((pageIndex - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync();
+
+        return (items, totalCount);
+    }
     public async Task<List<Product>> GetListIndex(Expression<Func<Product, bool>> criterio)
     {
         await using var contexto = await DbContextFactory.CreateDbContextAsync();
         return await contexto.Products.AsNoTracking().Include(p => p.ProductSubcategory).Where(criterio).ToListAsync();
+    }
+
+    public async Task<List<ProductCategory>> GetCategories()
+    {
+        await using var contexto = await DbContextFactory.CreateDbContextAsync();
+        return await contexto.ProductCategories.OrderBy(x => x.Name).ToListAsync();
     }
 
     public async Task<bool> Existe(int id)

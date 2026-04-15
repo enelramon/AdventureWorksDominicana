@@ -1,4 +1,4 @@
-﻿@page "/SpecialOffer/Edit/{OfferId:int}"
+@page "/SpecialOffer/Edit/{OfferId:int}"
 @attribute [Authorize(Roles = "Admin, ProductionManager")]
 @using AdventureWorksDominicana.Data.Models
 @using AdventureWorksDominicana.Services
@@ -27,8 +27,11 @@
                     </div>
 
                     <div class="col-md-4">
-                        <label class="form-label fw-bold">% Descuento (Decimal)</label>
-                        <InputNumber class="form-control" step="0.01" @bind-Value="Offer.DiscountPct" />
+                        <label class="form-label fw-bold">% Descuento (Ej: 15 = 15%)</label>
+                        <div class="input-group">
+                            <InputNumber class="form-control" step="0.01" @bind-Value="DiscountPorcentaje" min="0" max="100" />
+                            <span class="input-group-text">%</span>
+                        </div>
                         <ValidationMessage For="(() => Offer.DiscountPct)" />
                     </div>
 
@@ -104,6 +107,8 @@
     [Parameter] public int OfferId { get; set; }
     public SpecialOffer Offer { get; set; } = new SpecialOffer();
     private bool ConfirmarEliminacion = false;
+    // Variable intermedia en % natural (ej: 15 para 15%)
+    private decimal DiscountPorcentaje { get; set; } = 0;
 
     protected override async Task OnInitializedAsync()
     {
@@ -111,6 +116,8 @@
         if (encontrada != null)
         {
             Offer = encontrada;
+            // Convertir el decimal de BD (0.15) a % natural (15) para mostrar en el input
+            DiscountPorcentaje = Offer.DiscountPct * 100;
         }
         else
         {
@@ -126,6 +133,9 @@
             toastService.ShowError("La fecha de fin no puede ser anterior a la fecha de inicio.");
             return;
         }
+
+        // Convertir % natural (ej: 15) a decimal de BD (ej: 0.15)
+        Offer.DiscountPct = DiscountPorcentaje / 100;
 
         if (await specialOfferService.Guardar(Offer))
         {

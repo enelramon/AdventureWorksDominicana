@@ -6,7 +6,7 @@
 <div class="container">
     <div class="card shadow-lg">
         <div class="card-header d-flex justify-content-between">
-            <h4>Órdenes de Compra</h4>
+            <h4>Ordenes de Compra</h4>
             <a class="btn btn-primary bi bi-plus-square" href="/PurchaseOrder/Create"> Crear</a>
         </div>
         
@@ -38,7 +38,7 @@
                 <div class="col-3">
                     <select class="form-select" @bind="Filtro">
                         <option value="" disabled selected hidden>Seleccione un filtro...</option>
-                        <option value="Proovedor">Proveedor</option>
+                        <option value="Proveedor">Proveedor</option>
                         <option value="Estado">Estado</option>
                     </select>
                 </div>
@@ -107,10 +107,20 @@
 
         if (Filtro != "" && ValorFiltro != "")
         {
-            if (Filtro == "Proovedor")
+            if (Filtro == "Proveedor")
                 criterio = criterio.And(o => o.Vendor.Name.Trim().ToLower().Contains(ValorFiltro.ToLower()));
-            else if (Filtro == "Estado" && byte.TryParse(ValorFiltro, out byte status))
-                criterio = criterio.And(o => o.Status == status);
+            else if (Filtro.Equals("Estado", StringComparison.OrdinalIgnoreCase))
+            {
+                var filtro = ValorFiltro.Trim().ToLower();
+
+                criterio = criterio.And(o =>
+                    (o.Status == 1 && "pendiente".Contains(filtro)) ||
+                    (o.Status == 2 && "aprobado".Contains(filtro)) ||
+                    (o.Status == 3 && "rechazado".Contains(filtro)) ||
+                    (o.Status == 4 && "completado".Contains(filtro)) ||
+                    (o.Status == 5 && "desconocido".Contains(filtro))
+                );
+            }
         }
 
         ListaOrdenes = await purchaseOrderService.GetList(criterio);

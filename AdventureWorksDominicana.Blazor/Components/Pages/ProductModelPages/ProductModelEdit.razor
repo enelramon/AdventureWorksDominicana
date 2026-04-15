@@ -1,184 +1,189 @@
-﻿@page "/ProductModel/Edit/{ModelId:int}"
-
-@inject ProductModelService modelService;
-@inject ProductDescriptionService descriptionService;
-@inject CultureService cultureService;
-@inject ToastService toastService;
-@inject NavigationManager navigationManager;
+@page "/ProductModel/Edit/{Id:int}"
+@attribute [Authorize(Roles = "Admin, ProductionManager")]
+@inject NavigationManager navigationManager
+@inject ToastService toastService
+@inject ProductModelService modelService
+@inject ProductDescriptionService descriptionService
+@inject CultureService cultureService
 @rendermode InteractiveServer
 
-<EditForm Model="Model" FormName="editarModel" OnValidSubmit="Guardar">
-    <DataAnnotationsValidator />
+<PageTitle>Editar Modelo</PageTitle>
 
-    <div class="container pb-5">
-        <div class="card shadow-lg">
-            <div class="card-header text-center">
-                <h4>Modificar Modelo y Textos</h4>
-            </div>
-            <div class="card-body">
-                <h5 class="pb-3 text-primary border-bottom">Datos Técnicos del Modelo</h5>
-                
-                <div class="row">
-                    <div class="col-md-2 mb-3">
-                        <label><strong>ID Modelo</strong></label>
-                        <input class="form-control" type="text" value="@Model.ProductModelId" disabled />
-                    </div>
-                    <div class="col-md-10 mb-3">
-                        <label><strong>Nombre General de la Familia *</strong></label>
-                        <input class="form-control" type="text" maxlength="50" @bind="Model.Name" />
-                        <ValidationMessage For="(() => Model.Name)" />
-                    </div>
+@if (model == null)
+{
+    <p>Cargando...</p>
+}
+else
+{
+    <EditForm Model="model" OnValidSubmit="Guardar">
+        <DataAnnotationsValidator />
+
+        <div class="container mt-4">
+            <div class="card shadow-lg">
+                <div class="card-header">
+                    <h4 class="mb-0">Editar Modelo de Producto</h4>
                 </div>
 
-                <div class="border border-success rounded p-3 my-4 bg-light">
-                    <h5 class="mb-3 text-success">Textos Descriptivos (Multilingüe/Ventas)</h5>
-                    <div class="row mb-3 align-items-end">
-                        <div class="col-md-3">
-                            <label class="fw-bold text-muted small">Cultura/Idioma</label>
-                            <select class="form-select" @bind="idCulturaSel">
-                                <option value="" selected disabled>Seleccione...</option>
-                                @foreach (var cult in ListaCulturas)
-                                {
-                                    <option value="@cult.CultureId">@cult.Name (@cult.CultureId)</option>
-                                }
-                            </select>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">ID Modelo</label>
+                        <InputNumber class="form-control" @bind-Value="model.ProductModelId" readonly />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Nombre del Modelo</label>
+                        <InputText class="form-control" @bind-Value="model.Name" />
+                        <ValidationMessage For="() => model.Name" />
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Catálogo (XML)</label>
+                            <InputTextArea class="form-control" @bind-Value="model.CatalogDescription" rows="2" />
                         </div>
-                        <div class="col-md-7">
-                            <label class="fw-bold text-muted small">Seleccionar Párrafo Disponible</label>
-                            <select class="form-select" @bind="idDescSel">
-                                <option value="0" selected disabled>Escoge una descripción del banco...</option>
-                                @foreach (var desc in ListaDescripciones)
-                                {
-                                    <option value="@desc.ProductDescriptionId">@desc.Description</option>
-                                }
-                            </select>
-                        </div>
-                        <div class="col-md-2">
-                            <button type="button" class="btn btn-success w-100 bi bi-plus-circle" @onclick="VincularTexto"> Añadir</button>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Instrucciones (XML)</label>
+                            <InputTextArea class="form-control" @bind-Value="model.Instructions" rows="2" />
                         </div>
                     </div>
 
-                    <div class="table-responsive bg-white rounded border">
-                        <table class="table table-hover table-sm mb-0">
-                            <thead class="table-light">
-                                <tr>
-                                    <th>Cód. Idioma</th>
-                                    <th>Texto Asignado</th>
-                                    <th class="text-center">Quitar</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @if (Model.ProductModelProductDescriptionCultures.Count == 0)
-                                {
-                                    <tr><td colspan="3" class="text-center text-muted">Sin descripciones asignadas</td></tr>
-                                }
-                                @foreach (var item in Model.ProductModelProductDescriptionCultures)
-                                {
-                                    <tr>
-                                        <td><span class="badge bg-secondary">@item.CultureId</span></td>
-                                        @if (item.ProductDescription != null)
-                                        {
-                                            <td><small>@item.ProductDescription.Description</small></td>
-                                        }
-                                        else
-                                        {
-                                            <td><small>Texto ID: @item.ProductDescriptionId (Nueva asignación)</small></td>
-                                        }
-                                        <td class="text-center">
-                                            <button type="button" class="btn btn-outline-danger btn-sm bi bi-x-circle" @onclick="(() => DesvincularTexto(item))"></button>
-                                        </td>
-                                    </tr>
-                                }
-                            </tbody>
-                        </table>
+                    <!-- DETALLE: Descripciones (Patrón exacto de ProductCategory) -->
+                    <div class="border border-success p-3 mb-3">
+                        <h3 class="mb-3">Textos Comerciales</h3>
+                        <div class="row mb-3 g-2">
+                            <div class="col-md-3">
+                                <select class="form-select" @bind="nuevaCulturaId">
+                                    <option value="">Cultura...</option>
+                                    @foreach (var c in ListaCulturas)
+                                    {
+                                        <option value="@c.CultureId">@c.Name</option>
+                                    }
+                                </select>
+                            </div>
+                            <div class="col-md-7">
+                                <InputTextArea class="form-control" rows="1" @bind-Value="nuevoTexto" placeholder="Descripción comercial..." />
+
+                            </div>
+                            <div class="col-md-2 text-center">
+                                <button type="button" class="btn btn-primary bi bi-plus" @onclick="AgregarDetalle"> Agregar</button>
+                            </div>
+                        </div>
+
+                        <QuickGrid Items="model.ProductModelProductDescriptionCultures.AsQueryable()" Class="table table-striped table-bordered table-hover">
+                            <TemplateColumn Title="Idioma" Context="item">
+                                <span class="badge bg-secondary">@item.CultureId</span>
+                            </TemplateColumn>
+                            <TemplateColumn Title="Descripción" Context="item">
+                                @item.ProductDescription?.Description
+                            </TemplateColumn>
+                            <TemplateColumn Class="text-center" Title="Acción" Context="item">
+                                <button type="button" class="btn btn-danger btn-sm bi bi-trash" @onclick="(() => RemoverDetalle(item))"> Eliminar</button>
+                            </TemplateColumn>
+                        </QuickGrid>
                     </div>
-                </div>
-                
-                <h5 class="py-3 text-primary border-bottom">Documentación Extra</h5>
-                <div class="mb-3">
-                    <label><strong>Catálogo Técnico (XML)</strong></label>
-                    <textarea class="form-control" rows="2" @bind="Model.CatalogDescription"></textarea>
-                </div>
-                <div class="mb-3">
-                    <label><strong>Instrucciones Fab. (XML)</strong></label>
-                    <textarea class="form-control" rows="2" @bind="Model.Instructions"></textarea>
+
+                    <div class="mt-3 fw-bold">
+                        Total Idiomas: @model.ProductModelProductDescriptionCultures.Count
+                    </div>
+
+                    @if (!string.IsNullOrWhiteSpace(mensajeError))
+                    {
+                        <div class="alert alert-danger">
+                            @mensajeError
+                        </div>
+                    }
                 </div>
 
+                <div class="card-footer text-center">
+                    <a class="btn btn-secondary bi bi-arrow-left" href="/ProductModel/Index"> Volver</a>
+                    <button type="submit" class="btn btn-primary bi bi-file-earmark"> Guardar</button>
+                    <button type="button" class="btn btn-danger bi bi-trash" @onclick="MostrarConfirmacion"> Eliminar</button>
+                </div>
             </div>
-            <div class="card-footer text-center">
-                <a class="btn btn-secondary bi bi-arrow-left" href="/ProductModel/Index"> Volver</a>
-                <button class="btn btn-primary bi bi-floppy" type="submit"> Consolidar Cambios</button>
-            </div>
+
+            <!-- CONFIRMACIÓN DE ELIMINACIÓN (Patrón exacto de ProductCategory) -->
+            @if (confirmarEliminar)
+            {
+                <div class="alert alert-danger mt-3">
+                    <p>¿Desea eliminar este modelo y todas sus asociaciones?</p>
+                    <button type="button" class="btn btn-secondary me-2" @onclick="CerrarConfirmacion"> Cancelar</button>
+                    <button type="button" class="btn btn-danger" @onclick="EliminarConfirmado"> Si, eliminar</button>
+                </div>
+            }
         </div>
-    </div>
-</EditForm>
+    </EditForm>
+}
 
 @code {
-    [Parameter]
-    public int ModelId { get; set; }
-
-    public ProductModel Model { get; set; } = new ProductModel();
-    
-    public List<ProductDescription> ListaDescripciones { get; set; } = new();
-    public List<Culture> ListaCulturas { get; set; } = new();
-
-    private string idCulturaSel = "";
-    private int idDescSel = 0;
+    [Parameter] public int Id { get; set; }
+    private ProductModel? model;
+    private List<Culture> ListaCulturas = new();
+    private string nuevaCulturaId = "", nuevoTexto = "", mensajeError = "";
+    private bool confirmarEliminar = false;
 
     protected override async Task OnInitializedAsync()
     {
-        var modelEncontrado = await modelService.Buscar(ModelId);
-        if (modelEncontrado == null)
-        {
-            toastService.ShowError("No se pudo encontrar el modelo.");
-            navigationManager.NavigateTo("/ProductModel/Index");
-            return;
-        }
-        Model = modelEncontrado;
-
-        ListaDescripciones = await descriptionService.GetList(d => true);
+        model = await modelService.Buscar(Id);
         ListaCulturas = await cultureService.GetList(c => true);
     }
 
-    private void VincularTexto()
+    private async Task AgregarDetalle()
     {
-        if (string.IsNullOrEmpty(idCulturaSel) || idDescSel == 0)
+        if (string.IsNullOrWhiteSpace(nuevaCulturaId) || string.IsNullOrWhiteSpace(nuevoTexto)) return;
+
+        if (model!.ProductModelProductDescriptionCultures.Any(c => c.CultureId == nuevaCulturaId))
         {
-            toastService.ShowWarning("Debes seleccionar un idioma y una descripción.");
+            toastService.ShowWarning("Ya existe un texto comercial configurado para este idioma.");
             return;
         }
 
-        if (Model.ProductModelProductDescriptionCultures.Any(x => x.CultureId == idCulturaSel))
+        var pDesc = new ProductDescription { Description = nuevoTexto };
+        if (await descriptionService.Guardar(pDesc))
         {
-            toastService.ShowWarning($"Ya existe una descripción asignada para el idioma '{idCulturaSel}'.");
-            return;
+            model!.ProductModelProductDescriptionCultures.Add(new ProductModelProductDescriptionCulture
+            {
+                CultureId = nuevaCulturaId,
+                ProductDescriptionId = pDesc.ProductDescriptionId, 
+                ProductDescription = pDesc
+            });
+            nuevoTexto = "";
+            toastService.ShowSuccess("Texto agregado correctamente.");
+            
+            model.ProductModelProductDescriptionCultures = model.ProductModelProductDescriptionCultures.ToList();
+            StateHasChanged();
         }
-
-        Model.ProductModelProductDescriptionCultures.Add(new ProductModelProductDescriptionCulture
-        {
-            CultureId = idCulturaSel,
-            ProductDescriptionId = idDescSel,
-            ProductModelId = Model.ProductModelId
-        });
-        toastService.ShowSuccess("Párrafo asociado a la tabla temporal. No olvides guardar.");
-        idCulturaSel = ""; idDescSel = 0;
-    }
-    private void DesvincularTexto(ProductModelProductDescriptionCulture item)
-    {
-        Model.ProductModelProductDescriptionCultures.Remove(item);
     }
 
-    public async Task Guardar()
+
+
+    private void RemoverDetalle(ProductModelProductDescriptionCulture item)
     {
-        bool guardado = await modelService.Guardar(Model);
-        if (guardado)
+        model!.ProductModelProductDescriptionCultures.Remove(item);
+        toastService.ShowWarning("Eliminado de la lista.");
+    }
+
+    private async Task Guardar()
+    {
+        if (await modelService.Guardar(model!))
         {
-            toastService.ShowSuccess("El modelo multilingüe se consolidó correctamente.");
+            toastService.ShowSuccess("Modelo guardado.");
             navigationManager.NavigateTo("/ProductModel/Index");
         }
-        else
+    }
+
+    private void MostrarConfirmacion() => confirmarEliminar = true;
+    private void CerrarConfirmacion() => confirmarEliminar = false;
+
+    private async Task EliminarConfirmado()
+    {
+        try
         {
-            toastService.ShowError("Ha ocurrido un error al intentar vincular los datos.");
+            if (await modelService.Eliminar(Id))
+            {
+                toastService.ShowSuccess("Modelo eliminado.");
+                navigationManager.NavigateTo("/ProductModel/Index");
+            }
         }
+        catch (Exception ex) { toastService.ShowError(ex.Message); confirmarEliminar = false; }
     }
 }

@@ -52,9 +52,9 @@ else
                         <QuickGrid Items="categoria.ProductSubcategories.AsQueryable()" Class="table table-striped table-bordered table-hover">
                             <PropertyColumn Property="@(d => d.Name)" Title="Subcategoría" />
                             <PropertyColumn Property="@(d => d.ModifiedDate.ToString("dd/MM/yyyy HH:mm"))" Title="Fecha Modificación" />
-                            <TemplateColumn>
+                            <TemplateColumn Class="text-center" Context="options" Title="Acci&oacute;n">
                                 <ChildContent Context="det">
-                                    <button type="button" class="btn btn-outline-dark btn-sm bi bi-trash" @onclick="(() => RemoverDetalle(det))"> Eliminar</button>
+                                    <button type="button" class="btn btn-danger btn-sm bi bi-trash" @onclick="(() => RemoverDetalle(det))"> Eliminar</button>
                                 </ChildContent>
                             </TemplateColumn>
                         </QuickGrid>
@@ -73,9 +73,9 @@ else
                 </div>
 
                 <div class="card-footer text-center">
-                    <a class="btn btn-outline-secondary bi bi-arrow-left" href="/ProductCategory/Index"> Volver</a>
-                    <button type="submit" class="btn btn-outline-success bi bi-file-earmark"> Guardar</button>
-                    <button type="button" class="btn btn-outline-danger bi bi-trash" @onclick="MostrarModalEliminar"> Eliminar</button>
+                    <a class="btn btn-secondary bi bi-arrow-left" href="/ProductCategory/Index"> Volver</a>
+                    <button type="submit" class="btn btn-primary bi bi-file-earmark"> Guardar</button>
+                    <button type="button" class="btn btn-danger bi bi-trash" @onclick="MostrarModalEliminar"> Eliminar</button>
                 </div>
             </div>
         </div>

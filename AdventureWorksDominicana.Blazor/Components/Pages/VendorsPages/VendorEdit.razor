@@ -36,12 +36,12 @@
 
                 <div class="mb-3">
                     <label class="form-label"><strong>Preferred Vendor</strong></label>
-                    <input class="form-check-input" type="checkbox" @bind-value="Vendor.PreferredVendorStatus" />
+                    <input class="form-check-input" type="checkbox" @bind="Vendor.PreferredVendorStatus" />
                 </div>
 
                 <div class="mb-3">
                     <label class="form-label"><strong>Activo</strong></label>
-                    <input class="form-check-input" type="checkbox" @bind-value="Vendor.ActiveFlag" />
+                    <input class="form-check-input" type="checkbox" @bind="Vendor.ActiveFlag" />
                 </div>
 
                 <div class="mb-3">
@@ -79,31 +79,51 @@
 
     public async Task Modificar()
     {
-        bool modificado = await vendorService.Guardar(Vendor);
+        try{
+            if(Vendor.AccountNumber.IsWhiteSpace() || Vendor.Name.IsWhiteSpace() || Vendor.PurchasingWebServiceUrl.IsWhiteSpace()){
+                toastService.ShowWarning("Todos los campos deben estar llenos, por favor revise y vuelva a intentar.");
+                return;
+            }
 
-        if (modificado)
-        {
-            toastService.ShowSuccess("El vendor fue modificado exitosamente.");
-            navigationManager.NavigateTo("/Vendor/Index");
+            bool modificado = await vendorService.Guardar(Vendor);
+
+            if (modificado)
+            {
+                toastService.ShowSuccess("El vendor fue modificado exitosamente.");
+                navigationManager.NavigateTo("/Vendor/Index");
+            }
+            else
+            {
+                toastService.ShowError("Ha ocurrido un error al modificar el vendor.");
+            }
         }
-        else
+        catch (Exception e)
         {
-            toastService.ShowError("Ha ocurrido un error al modificar el vendor.");
+            toastService.ShowError("Ha ocurrido un error inesperado. Favor revisar los campos e intente de nuevo");
+            Console.WriteLine(e.Message);
         }
+        
     }
 
     public async Task Eliminar()
     {
-        bool eliminado = await vendorService.Eliminar(Vendor.BusinessEntityId);
+        try{
+            bool eliminado = await vendorService.Eliminar(Vendor.BusinessEntityId);
 
-        if (eliminado)
-        {
-            toastService.ShowSuccess("El vendor fue eliminado exitosamente.");
-            navigationManager.NavigateTo("/Vendor/Index");
+            if (eliminado)
+            {
+                toastService.ShowSuccess("El vendor fue eliminado exitosamente.");
+                navigationManager.NavigateTo("/Vendor/Index");
+            }
+            else
+            {
+                toastService.ShowError("Ha ocurrido un error al eliminar el vendor.");
+            }
+
+        }catch(Exception e){
+            toastService.ShowError("Ha ocurrido un error inesperado. Favor revisar los campos e intente de nuevo");
+            Console.WriteLine(e.Message);
         }
-        else
-        {
-            toastService.ShowError("Ha ocurrido un error al eliminar el vendor.");
-        }
+        
     }
 }

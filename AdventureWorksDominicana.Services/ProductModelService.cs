@@ -34,8 +34,13 @@ public class ProductModelService(IDbContextFactory<Contexto> DbContextFactory) :
     public async Task<List<ProductModel>> GetList(Expression<Func<ProductModel, bool>> criterio)
     {
         await using var contexto = await DbContextFactory.CreateDbContextAsync();
-        return await contexto.ProductModels.Where(criterio).AsNoTracking().ToListAsync();
+        return await contexto.ProductModels
+            .Include(pm => pm.ProductModelProductDescriptionCultures) // Cargamos los vínculos para el conteo
+            .Where(criterio)
+            .AsNoTracking()
+            .ToListAsync();
     }
+
     public async Task<bool> Guardar(ProductModel productModel)
     {
         if (!await Existe(productModel.ProductModelId))
@@ -57,17 +62,30 @@ public class ProductModelService(IDbContextFactory<Contexto> DbContextFactory) :
         await using var contexto = await DbContextFactory.CreateDbContextAsync();
         productModel.Rowguid = Guid.NewGuid();
         productModel.ModifiedDate = DateTime.Now;
+
+        if (productModel.ProductModelProductDescriptionCultures != null)
+        {
+            foreach (var item in productModel.ProductModelProductDescriptionCultures)
+            {
+                item.ProductDescription = null;
+            }
+        }
+
         contexto.ProductModels.Add(productModel);
         return await contexto.SaveChangesAsync() > 0;
     }
+
     public async Task<bool> Modificar(ProductModel productModel)
     {
         await using var contexto = await DbContextFactory.CreateDbContextAsync();
         productModel.ModifiedDate = DateTime.Now;
 
+        // 1. Borramos los registros viejos en la tabla intermedia
         var antiguos = await contexto.ProductModelProductDescriptionCultures
             .Where(x => x.ProductModelId == productModel.ProductModelId).ToListAsync();
         contexto.ProductModelProductDescriptionCultures.RemoveRange(antiguos);
+
+        // 2. Insertamos manualmente los seleccionados en la vista
         if (productModel.ProductModelProductDescriptionCultures != null)
         {
             foreach (var item in productModel.ProductModelProductDescriptionCultures)
@@ -80,8 +98,13 @@ public class ProductModelService(IDbContextFactory<Contexto> DbContextFactory) :
                     ModifiedDate = DateTime.Now
                 });
             }
+            productModel.ProductModelProductDescriptionCultures = null!;
         }
+
+        // 4. Marcamos la entidad madre como editada
         contexto.Entry(productModel).State = EntityState.Modified;
+
         return await contexto.SaveChangesAsync() > 0;
     }
+
 }

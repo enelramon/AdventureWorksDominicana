@@ -56,8 +56,8 @@
                             </div>
                         </div>
 
-                        <span class="order-status @(s.Status == 1 ? "status-processing" : "status-cancelled")">
-                            @(s.Status == 1 ? "En proceso" : "Cancelado")
+                        <span class="order-status @(s.Status == 1 ? "status-processing" : s.Status == 2 ? "status-processing" : s.Status == 3 ? "status-completed" : "status-cancelled")">
+                            @(s.Status == 1 ? "En proceso" : s.Status == 2 ? "Enviando" : s.Status == 3 ? "Completada" : "Cancelado")
                         </span>
                     </div>
 
@@ -65,7 +65,13 @@
                         RD$ @s.TotalDue
                     </div>
 
-                    <div class="order-actions">
+                    <div class="order-actions d-flex gap-2">
+                        @if(s.Status != 4)
+                        {
+                            <button class="btn btn-sm btn-outline-danger" @onclick:stopPropagation="true" @onclick="() => ChangeCancelOrder(s)">
+                                Cancelar
+                            </button>
+                        }
                         <button class="btn btn-sm btn-outline">
                             Ver detalles
                         </button>
@@ -98,28 +104,30 @@
 
     private void GoToSale() => navigationManager.NavigateTo("/Sales");
 
-    private async Task RefreshStatus(){
-        foreach(var s in SalesOrderHeadersList)
+    private async Task RefreshStatus()
+    {
+        foreach (var s in SalesOrderHeadersList)
         {
-            try
+            if (s.ShipDate == null) continue;
+
+            bool modificado = false;
+            if (DateTime.Today == s.ShipDate.Value.Date && s.Status != 2)
             {
-                if (s.ShipDate == null) return;
-                if (DateTime.Today == s.ShipDate.Value.Date)
-                {
-                    s.Status = 2;
-                    await salesOrderHeaderService.Guardar(s);
-                }
-                if (DateTime.Today > s.ShipDate.Value.Date.AddDays(5))
-                {
-                    s.Status = 3;
-                    await salesOrderHeaderService.Guardar(s);
-                }
+                s.Status = 2;
+                modificado = true;
             }
-            catch (Exception ex)
+            else if (DateTime.Today > s.ShipDate.Value.Date.AddDays(5) && s.Status != 3)
             {
-                toastService.ShowError("Estados de orden no pudieron ser actualizados");
+                s.Status = 3;
+                modificado = true;
+            }
+
+            if (modificado)
+            {
+                await salesOrderHeaderService.Guardar(s);
             }
         }
+        StateHasChanged();
     }
 
     private async Task ChangeCancelOrder(SalesOrderHeader sale){
@@ -132,6 +140,7 @@
         {
             toastService.ShowError("Orden no pudo ser Cancelada");
         }
+        StateHasChanged();
     }
 
     private void GoToOrderReview(int saleId) => navigationManager.NavigateTo($"Order/Review/{saleId}");
