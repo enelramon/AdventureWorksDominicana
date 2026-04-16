@@ -103,5 +103,13 @@
             Console.WriteLine(e.Message);
         }
 
+    } 
+    @* --- DEFINIR LAS CLASES DTO AL FINAL --- *@
+    public class StoreDemographicsDto
+    {
+        public decimal AnnualSales { get; set; }
+        public string BankName { get; set; } = "";
+        public int YearOpened { get; set; }
+        public int NumberEmployees { get; set; }
     }
 }
