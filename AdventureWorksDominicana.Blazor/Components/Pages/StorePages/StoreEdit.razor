@@ -134,12 +134,14 @@
             return;
         }
 
+        @* --- ASIGNAR EL XML GENERADO AL MODELO --- *@
+        Store.Demographics = SerializarAXml(demographicsDto);
         Store.ModifiedDate = DateTime.Now;
 
         bool guardado = await storeService.Guardar(Store);
         if (guardado)
         {
-            toastService.ShowSuccess("La tienda se ha guardado correctamente.");
+            toastService.ShowSuccess("La tienda se ha actualizado correctamente.");
             navigationManager.NavigateTo("/Store/Index");
         }
         else
