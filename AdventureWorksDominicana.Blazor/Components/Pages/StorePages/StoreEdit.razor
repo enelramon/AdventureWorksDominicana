@@ -44,16 +44,28 @@
                     <ValidationMessage For="(() => Store.SalesPersonId)" />
                 </div>
 
-                <div class="mb-3">
-                    <label class="form-label"><strong>Demographics (xml) - Opcional</strong></label>
-                    <textarea class="form-control" rows="4" @bind="Store.Demographics" placeholder="Información demográfica (xml)"></textarea>
-                    <ValidationMessage For="(() => Store.Demographics)" />
+                @* --- CAMBIAR TEXTAREA POR INPUTS VINCULADOS A DTOs --- *@
+                <h5 class="text-muted mt-4 mb-3">Información Demográfica</h5>
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label class="form-label"><strong>Ventas Anuales</strong></label>
+                        <InputNumber class="form-control" @bind-Value="demographicsDto.AnnualSales" />
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label"><strong>Nombre del Banco</strong></label>
+                        <InputText class="form-control" @bind-Value="demographicsDto.BankName" />
+                    </div>
                 </div>
 
-                <div class="mb-3">
-                    <label class="form-label"><strong>Fecha de modificación</strong></label>
-                    <input class="form-control" type="datetime-local" @bind-value="Store.ModifiedDate" />
-                    <ValidationMessage For="(() => Store.ModifiedDate)" />
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label class="form-label"><strong>Año de Apertura</strong></label>
+                        <InputNumber class="form-control" @bind-Value="demographicsDto.YearOpened" />
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label"><strong>Cantidad de Empleados</strong></label>
+                        <InputNumber class="form-control" @bind-Value="demographicsDto.NumberEmployees" />
+                    </div>
                 </div>
             </div>
 
