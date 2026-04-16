@@ -1,6 +1,9 @@
 ﻿@page "/Sales"
 @attribute [Authorize(Roles = "Customer, Admin, SalesManager")]
 @rendermode InteractiveServer
+@using AdventureWorksDominicana.Data.Context
+@using Microsoft.EntityFrameworkCore
+@inject IDbContextFactory<Contexto> DbFactory
 @inject ProductInventoryService productInventoryService
 @inject ProductService productService
 @inject ShoppingCartItemService shoppingCartItemService
@@ -11,7 +14,6 @@
 <PageTitle>SalesOrderHeader Index</PageTitle>
 
 <div class="sale-container">
-	<!-- HEADER -->
 	<div class="sale-topbar">
 		<div class="sale-topbar-left">
 			<h5>Tienda</h5>
@@ -30,7 +32,6 @@
 	</div>
 
 	<div class="card-body">
-		<!-- FILTROS -->
 		<div class="sale-input">
 			<div class="input-group">
 				<input class="form-control" placeholder="Buscar producto..." @oninput="Buscar" />
@@ -48,7 +49,6 @@
 			</div>
 		</div>
 
-		<!-- PRODUCTOS -->
 		<div class="sale-products">
 			@foreach (var p in PagedProducts)
 			{
@@ -76,10 +76,12 @@
 							<p>@(p?.ProductModel?.ProductModelProductDescriptionCultures?
 								.FirstOrDefault()?.ProductDescription?.Description ?? "Sin descripción")</p>
 						</div>
-						<div class="sale-product-price">
+						
+                        <div class="sale-product-price d-flex justify-content-between align-items-center">
 							<span>RD$ @(p?.ListPrice.ToString("N2") ?? "N/A")</span>
+							<small class="text-primary fw-bold">Stock: @(p?.ProductInventories?.Sum(i => i.Quantity) ?? 0)</small>
 						</div>
-						<button type="button" @onclick:stopPropagation @onclick="() => Guardar(p.ProductId)">
+                        <button type="button" @onclick:stopPropagation @onclick="() => Guardar(p.ProductId)">
 							<i class="bi bi-cart"></i>
 							<span>Añadir al Carrito</span>
 						</button>
@@ -88,7 +90,6 @@
 			}
 		</div>
 
-		<!-- PAGINATION -->
 		<div class="pagination">
 			<i class="bi bi-arrow-left @(CurrentPage == 1 ? "disabled" : "")" @onclick="PaginaAnterior"></i>
 			<span>@CurrentPage / @TotalPaginas</span>
@@ -99,7 +100,6 @@
 
 @code {
 	private List<Product> PagedProducts = new();
-
 	private List<ProductCategory> Categorias = new();
 
 	private int selectedCategoryId = 0;
@@ -134,7 +134,19 @@
 
 	private async Task LoadCategories()
 	{
-		Categorias = await productService.GetCategories();
+		await using var contexto = await DbFactory.CreateDbContextAsync();
+        
+		Categorias = await contexto.ProductCategories
+			.Where(c => c.ProductSubcategories.Any(sc => 
+				sc.Products.Any(p => 
+					p.SellStartDate <= DateTime.Now && 
+					(p.SellEndDate == null || p.SellEndDate >= DateTime.Now) &&
+					p.ProductInventories.Any(i => i.Quantity >= 1)
+				)
+			))
+			.OrderBy(c => c.Name)
+			.AsNoTracking()
+			.ToListAsync();
 	}
 
 	private async Task LoadProducts()

@@ -4,13 +4,13 @@
 @rendermode InteractiveServer
 @inject SalesOrderHeaderService salesOrderHeaderService
 @inject NavigationManager navigationManager
-@inject AuthenticationStateProvider authenticationStateProvider;
+@inject AuthenticationStateProvider authenticationStateProvider
 @inject ToastService toastService
+
 <PageTitle>Orders</PageTitle>
 
 <div class="orders-container">
 
-    <!-- HEADER -->
     <div class="orders-header">
         <div>
             <h3>Mis &oacute;rdenes</h3>
@@ -20,7 +20,6 @@
         <button class="btn btn-outline bi bi-arrow-left" @onclick="GoToSale"> Seguir comprando</button>
     </div>
 
-    <!-- RESUMEN -->
     <div class="orders-summary">
 
         <div class="summary-card">
@@ -35,15 +34,14 @@
 
         <div class="summary-card">
             <span>Total gastado</span>
-            <h4>RD$ @SalesOrderHeadersList.Sum(o => o.TotalDue)</h4>
+            <h4>RD$ @SalesOrderHeadersList.Sum(o => o.TotalDue).ToString("N2")</h4>
         </div>
 
     </div>
 
-    <!-- LISTA -->
-    <div class="orders-list">
-        @foreach (var s in SalesOrderHeadersList)
-        {
+    <div class="orders-list" style="max-height: 600px; overflow-y: auto; padding-right: 5px;">
+        
+        <Virtualize Items="@SalesOrderHeadersList" Context="s">
             <div class="order-card" @onclick="() => GoToOrderReview(s.SalesOrderId)">
 
                 <div class="order-card-body">
@@ -62,7 +60,7 @@
                     </div>
 
                     <div class="order-total">
-                        RD$ @s.TotalDue
+                        RD$ @s.TotalDue.ToString("N2")
                     </div>
 
                     <div class="order-actions d-flex gap-2">
@@ -79,9 +77,16 @@
 
                 </div>
             </div>
+        </Virtualize>
+        
+        @if (!SalesOrderHeadersList.Any())
+        {
+            <div class="text-center p-4 text-muted">
+                <i class="bi bi-box-seam fs-1 mb-2 d-block"></i>
+                <p>No tienes órdenes registradas.</p>
+            </div>
         }
     </div>
-
 </div>
 
 @code {
@@ -89,16 +94,22 @@
     private ClaimsPrincipal? User { get; set; }
     private bool IsAuthenticated { get; set; }
     private string? UserEmail { get; set; }
+
     protected override async Task OnInitializedAsync()
     {
         var authState = await authenticationStateProvider.GetAuthenticationStateAsync();
         User = authState.User;
         IsAuthenticated = User.Identity?.IsAuthenticated ?? false;
+        
         if (IsAuthenticated)
         {
             UserEmail = User.FindFirst(ClaimTypes.Email)?.Value;
         }
-        SalesOrderHeadersList = await salesOrderHeaderService.GetList(s => s.Customer.Person.EmailAddresses.Any(e => e.EmailAddress1 == UserEmail));
+        
+        var ordenes = await salesOrderHeaderService.GetList(s => s.Customer.Person.EmailAddresses.Any(e => e.EmailAddress1 == UserEmail));
+        
+        SalesOrderHeadersList = ordenes.OrderByDescending(o => o.SalesOrderId).ToList();
+        
         await RefreshStatus();
     }
 
@@ -130,13 +141,15 @@
         StateHasChanged();
     }
 
-    private async Task ChangeCancelOrder(SalesOrderHeader sale){
+    private async Task ChangeCancelOrder(SalesOrderHeader sale)
+    {
         sale.Status = 4;
         try
         {
             await salesOrderHeaderService.Guardar(sale);
             toastService.ShowSuccess("Orden Cancelada");
-        }catch(Exception ex)
+        }
+        catch(Exception ex)
         {
             toastService.ShowError("Orden no pudo ser Cancelada");
         }
