@@ -1,5 +1,7 @@
 @page "/ProductModel/Edit/{Id:int}"
 @attribute [Authorize(Roles = "Admin, ProductionManager")]
+@using System.Xml.Serialization
+@using System.IO
 @inject NavigationManager navigationManager
 @inject ToastService toastService
 @inject ProductModelService modelService
@@ -36,18 +38,18 @@ else
                         <ValidationMessage For="() => model.Name" />
                     </div>
 
+                    @* --- SECCIÓN CON DTOs --- *@
                     <div class="row mb-3">
                         <div class="col-md-6">
-                            <label class="form-label fw-bold">Catálogo (XML)</label>
-                            <InputTextArea class="form-control" @bind-Value="model.CatalogDescription" rows="2" />
+                            <label class="form-label fw-bold">Material (Catálogo)</label>
+                            <InputText class="form-control" @bind-Value="catalogDto.Material" />
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label fw-bold">Instrucciones (XML)</label>
-                            <InputTextArea class="form-control" @bind-Value="model.Instructions" rows="2" />
+                            <label class="form-label fw-bold">Instrucciones de Configuración</label>
+                            <InputText class="form-control" @bind-Value="instructionsDto.SetupSummary" />
                         </div>
                     </div>
 
-                    <!-- DETALLE: Descripciones (Patrón exacto de ProductCategory) -->
                     <div class="border border-success p-3 mb-3">
                         <h3 class="mb-3">Textos Comerciales</h3>
                         <div class="row mb-3 g-2">
@@ -62,7 +64,6 @@ else
                             </div>
                             <div class="col-md-7">
                                 <InputTextArea class="form-control" rows="1" @bind-Value="nuevoTexto" placeholder="Descripción comercial..." />
-
                             </div>
                             <div class="col-md-2 text-center">
                                 <button type="button" class="btn btn-primary bi bi-plus" @onclick="AgregarDetalle"> Agregar</button>
@@ -88,9 +89,7 @@ else
 
                     @if (!string.IsNullOrWhiteSpace(mensajeError))
                     {
-                        <div class="alert alert-danger">
-                            @mensajeError
-                        </div>
+                        <div class="alert alert-danger">@mensajeError</div>
                     }
                 </div>
 
@@ -101,7 +100,6 @@ else
                 </div>
             </div>
 
-            <!-- CONFIRMACIÓN DE ELIMINACIÓN (Patrón exacto de ProductCategory) -->
             @if (confirmarEliminar)
             {
                 <div class="alert alert-danger mt-3">
@@ -121,49 +119,52 @@ else
     private string nuevaCulturaId = "", nuevoTexto = "", mensajeError = "";
     private bool confirmarEliminar = false;
 
+    // Instancias de DTOs
+    private CatalogDto catalogDto = new();
+    private InstructionsDto instructionsDto = new();
+
     protected override async Task OnInitializedAsync()
     {
         model = await modelService.Buscar(Id);
         ListaCulturas = await cultureService.GetList(c => true);
-    }
 
-    private async Task AgregarDetalle()
-    {
-        if (string.IsNullOrWhiteSpace(nuevaCulturaId) || string.IsNullOrWhiteSpace(nuevoTexto)) return;
-
-        if (model!.ProductModelProductDescriptionCultures.Any(c => c.CultureId == nuevaCulturaId))
+        // PASO EXTRA EN EDIT: Cargar los datos del XML a los DTOs al iniciar
+        if (model != null)
         {
-            toastService.ShowWarning("Ya existe un texto comercial configurado para este idioma.");
-            return;
-        }
-
-        var pDesc = new ProductDescription { Description = nuevoTexto };
-        if (await descriptionService.Guardar(pDesc))
-        {
-            model!.ProductModelProductDescriptionCultures.Add(new ProductModelProductDescriptionCulture
-            {
-                CultureId = nuevaCulturaId,
-                ProductDescriptionId = pDesc.ProductDescriptionId, 
-                ProductDescription = pDesc
-            });
-            nuevoTexto = "";
-            toastService.ShowSuccess("Texto agregado correctamente.");
-            
-            model.ProductModelProductDescriptionCultures = model.ProductModelProductDescriptionCultures.ToList();
-            StateHasChanged();
+            catalogDto = DeserializarDesdeXml<CatalogDto>(model.CatalogDescription) ?? new();
+            instructionsDto = DeserializarDesdeXml<InstructionsDto>(model.Instructions) ?? new();
         }
     }
 
-
-
-    private void RemoverDetalle(ProductModelProductDescriptionCulture item)
+    // Método para convertir XML de la base de datos a Objeto DTO
+    private T? DeserializarDesdeXml<T>(string? xml) where T : class
     {
-        model!.ProductModelProductDescriptionCultures.Remove(item);
-        toastService.ShowWarning("Eliminado de la lista.");
+        if (string.IsNullOrWhiteSpace(xml)) return null;
+        try
+        {
+            var serializer = new XmlSerializer(typeof(T));
+            using var reader = new StringReader(xml);
+            return (T?)serializer.Deserialize(reader);
+        }
+        catch { return null; }
+    }
+
+    // Método para convertir Objeto DTO a XML para guardar
+    private string SerializarAXml<T>(T objeto)
+    {
+        if (objeto == null) return string.Empty;
+        var serializer = new XmlSerializer(typeof(T));
+        using var sw = new StringWriter();
+        serializer.Serialize(sw, objeto);
+        return sw.ToString();
     }
 
     private async Task Guardar()
     {
+        // Guardar los datos de los DTOs de vuelta al modelo como XML
+        model!.CatalogDescription = SerializarAXml(catalogDto);
+        model!.Instructions = SerializarAXml(instructionsDto);
+
         if (await modelService.Guardar(model!))
         {
             toastService.ShowSuccess("Modelo guardado.");
@@ -171,6 +172,31 @@ else
         }
     }
 
+    // (AgregarDetalle, RemoverDetalle, Eliminar) se mantienen igual
+    private async Task AgregarDetalle()
+    {
+        if (string.IsNullOrWhiteSpace(nuevaCulturaId) || string.IsNullOrWhiteSpace(nuevoTexto)) return;
+        if (model!.ProductModelProductDescriptionCultures.Any(c => c.CultureId == nuevaCulturaId))
+        {
+            toastService.ShowWarning("Ya existe este idioma.");
+            return;
+        }
+        var pDesc = new ProductDescription { Description = nuevoTexto };
+        if (await descriptionService.Guardar(pDesc))
+        {
+            model!.ProductModelProductDescriptionCultures.Add(new ProductModelProductDescriptionCulture
+            {
+                CultureId = nuevaCulturaId,
+                ProductDescriptionId = pDesc.ProductDescriptionId,
+                ProductDescription = pDesc
+            });
+            nuevoTexto = "";
+            toastService.ShowSuccess("Texto agregado.");
+            StateHasChanged();
+        }
+    }
+
+    private void RemoverDetalle(ProductModelProductDescriptionCulture item) => model!.ProductModelProductDescriptionCultures.Remove(item);
     private void MostrarConfirmacion() => confirmarEliminar = true;
     private void CerrarConfirmacion() => confirmarEliminar = false;
 
@@ -180,10 +206,14 @@ else
         {
             if (await modelService.Eliminar(Id))
             {
-                toastService.ShowSuccess("Modelo eliminado.");
+                toastService.ShowSuccess("Eliminado.");
                 navigationManager.NavigateTo("/ProductModel/Index");
             }
         }
-        catch (Exception ex) { toastService.ShowError(ex.Message); confirmarEliminar = false; }
+        catch (Exception ex) { toastService.ShowError(ex.Message); }
     }
+
+    // DEFINICIÓN DE DTOs
+    public class CatalogDto { public string Material { get; set; } = ""; }
+    public class InstructionsDto { public string SetupSummary { get; set; } = ""; }
 }
