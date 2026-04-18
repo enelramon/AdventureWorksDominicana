@@ -22,6 +22,10 @@ public partial class Payroll
     [Column(TypeName = "date")]
     public DateTime PeriodEndDate { get; set; }
 
+    [Required(ErrorMessage = "La frecuencia de pago es obligatoria")]
+    [Range(1, 2, ErrorMessage = "Seleccione una frecuencia válida (Mensual o Quincenal)")]
+    public byte PayFrequency { get; set; }
+
     [Column(TypeName = "date")]
     public DateTime? PaymentDate { get; set; }
 
@@ -33,4 +37,6 @@ public partial class Payroll
 
     [InverseProperty("Payroll")]
     public virtual ICollection<PayrollDetail> PayrollDetails { get; set; } = new List<PayrollDetail>();
+
+
 }

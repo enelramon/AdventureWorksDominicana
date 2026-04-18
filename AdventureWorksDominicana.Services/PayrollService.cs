@@ -9,7 +9,6 @@ namespace AdventureWorksDominicana.Services;
 
 public class PayrollService(IDbContextFactory<Contexto> DbFactory) : IService<Payroll, int>
 {
-    private const decimal TASA_CAMBIO = 60.50m; // Constante de conversión
 
     public async Task<bool> Guardar(Payroll entidad)
     {
@@ -60,31 +59,54 @@ public class PayrollService(IDbContextFactory<Contexto> DbFactory) : IService<Pa
         await using var contexto = await DbFactory.CreateDbContextAsync();
         List<string> errores = new();
 
+        // 1. Obtener parámetros
         var parametros = await contexto.PayrollParameters.AsNoTracking().FirstOrDefaultAsync(p => p.IsActive);
         if (parametros == null) throw new Exception("No hay parámetros de nómina activos.");
 
+        // 2. Obtener todos los empleados activos
         var empleados = await contexto.Employees
             .AsNoTracking()
             .Include(e => e.BusinessEntity)
             .Where(e => e.CurrentFlag)
             .ToListAsync();
 
+        var employeeIds = empleados.Select(e => e.BusinessEntityId).ToList();
+
+        // 3. CONSULTA EN LOTE (BULK): Obtener el historial de pago más reciente para todos los empleados activos a la vez
+        var sueldosActualesDict = await contexto.EmployeePayHistories
+            .AsNoTracking()
+            .Where(h => employeeIds.Contains(h.BusinessEntityId))
+            .GroupBy(h => h.BusinessEntityId)
+            .Select(g => g.OrderByDescending(h => h.RateChangeDate).FirstOrDefault())
+            .ToDictionaryAsync(h => h.BusinessEntityId);
+
+        // 4. CONSULTA EN LOTE (BULK): Obtener las asignaciones de departamento activas para el período a la vez
+        DateOnly inicioPeriodo = DateOnly.FromDateTime(nominaBorrador.PeriodStartDate);
+        DateOnly finPeriodo = DateOnly.FromDateTime(nominaBorrador.PeriodEndDate);
+
+        var asignacionesDeptoDict = await contexto.EmployeeDepartmentHistories
+            .AsNoTracking()
+            .Include(ed => ed.Shift)
+            .Where(ed => employeeIds.Contains(ed.BusinessEntityId) &&
+                         ed.StartDate <= finPeriodo &&
+                         (ed.EndDate == null || ed.EndDate >= inicioPeriodo))
+            .GroupBy(ed => ed.BusinessEntityId)
+            .Select(g => g.OrderByDescending(ed => ed.StartDate).FirstOrDefault())
+            .ToDictionaryAsync(ed => ed.BusinessEntityId);
+
+        // Topes de la TSS
         decimal topeSFS = parametros.MinimumWage * 10;
         decimal topeAFP = parametros.MinimumWage * 20;
 
-        int diasLaborables = CalcularDiasLaborables(nominaBorrador.PeriodStartDate, nominaBorrador.PeriodEndDate);
-
+        // 5. Iterar completamente en memoria (¡Cero llamadas a la BD aquí dentro!)
         foreach (var emp in empleados)
         {
-            var sueldoActual = await contexto.EmployeePayHistories
-                .AsNoTracking()
-                .Where(h => h.BusinessEntityId == emp.BusinessEntityId)
-                .OrderByDescending(h => h.RateChangeDate)
-                .FirstOrDefaultAsync();
-
             string nombreEmpleado = emp.BusinessEntity != null
-                    ? $"{emp.BusinessEntity.FirstName} {emp.BusinessEntity.LastName}"
-                    : $"ID: {emp.BusinessEntityId}";
+             ? $"{emp.BusinessEntity.FirstName} {emp.BusinessEntity.LastName}"
+             : $"ID: {emp.BusinessEntityId}";
+
+            // Obtener del diccionario en lugar de la base de datos
+            sueldosActualesDict.TryGetValue(emp.BusinessEntityId, out var sueldoActual);
 
             if (sueldoActual == null || sueldoActual.Rate <= 0)
             {
@@ -92,17 +114,14 @@ public class PayrollService(IDbContextFactory<Contexto> DbFactory) : IService<Pa
                 continue;
             }
 
-            DateOnly inicioPeriodo = DateOnly.FromDateTime(nominaBorrador.PeriodStartDate);
-            DateOnly finPeriodo = DateOnly.FromDateTime(nominaBorrador.PeriodEndDate);
+            if (sueldoActual.PayFrequency != nominaBorrador.PayFrequency)
+            {
+                errores.Add($"Advertencia: {nombreEmpleado} fue omitido porque su frecuencia de pago es distinta a la de la nómina actual.");
+                continue;
+            }
 
-            var asignacionDepto = await contexto.EmployeeDepartmentHistories
-                .AsNoTracking()
-                .Include(ed => ed.Shift)
-                .Where(ed => ed.BusinessEntityId == emp.BusinessEntityId &&
-                             ed.StartDate <= finPeriodo &&
-                             (ed.EndDate == null || ed.EndDate >= inicioPeriodo))
-                .OrderByDescending(ed => ed.StartDate)
-                .FirstOrDefaultAsync();
+            // Obtener del diccionario en lugar de la base de datos
+            asignacionesDeptoDict.TryGetValue(emp.BusinessEntityId, out var asignacionDepto);
 
             if (asignacionDepto?.Shift == null)
             {
@@ -110,57 +129,45 @@ public class PayrollService(IDbContextFactory<Contexto> DbFactory) : IService<Pa
                 continue;
             }
 
-            TimeSpan jornada = asignacionDepto.Shift.EndTime - asignacionDepto.Shift.StartTime;
-            decimal horasDiarias = (decimal)jornada.TotalHours;
-            if (horasDiarias > 5) horasDiarias -= 1;
 
-            // CONVERSIÓN DE USD (BD) A DOP (RD$) PARA LOS CÁLCULOS
-            decimal sueldoPorHoraRD = sueldoActual.Rate * TASA_CAMBIO;
 
-            decimal totalHorasTrabajadas = horasDiarias * diasLaborables;
-            decimal sueldoBrutoPeriodo = sueldoPorHoraRD * totalHorasTrabajadas;
-            decimal sueldoMensualProyectado = (sueldoPorHoraRD * horasDiarias) * 23.83m;
+            bool esMensual = nominaBorrador.PayFrequency == 1;
 
-            decimal baseSFS = Math.Min(sueldoMensualProyectado, topeSFS);
-            decimal baseAFP = Math.Min(sueldoMensualProyectado, topeAFP);
 
-            decimal descuentoSFSMensual = baseSFS * parametros.SfsPct;
-            decimal descuentoAFPMensual = baseAFP * parametros.AfpPct;
+            decimal salarioBaseMensual = sueldoActual.Rate;
 
-            decimal sueldoNetoAntesISR = sueldoMensualProyectado - descuentoSFSMensual - descuentoAFPMensual;
-            decimal isrMensual = CalcularISR(sueldoNetoAntesISR, parametros.IsrAnnualExemption);
 
-            decimal proporcion = (decimal)diasLaborables / 23.83m;
+            decimal baseSFSMensual = Math.Min(salarioBaseMensual, topeSFS);
+            decimal baseAFPMensual = Math.Min(salarioBaseMensual, topeAFP);
 
-            decimal dSFS = descuentoSFSMensual * proporcion;
-            decimal dAFP = descuentoAFPMensual * proporcion;
-            decimal dISR = isrMensual * proporcion;
 
+            decimal descuentoSFSMensual = baseSFSMensual * parametros.SfsPct;
+            decimal descuentoAFPMensual = baseAFPMensual * parametros.AfpPct;
+
+            decimal sueldoNetoAntesISRMensual = salarioBaseMensual - descuentoSFSMensual - descuentoAFPMensual;
+            decimal isrMensual = CalcularISR(sueldoNetoAntesISRMensual, parametros.IsrAnnualExemption);
+
+            decimal sueldoBrutoPeriodo = esMensual ? salarioBaseMensual : (salarioBaseMensual / 2m);
+            decimal sfsPeriodo = esMensual ? descuentoSFSMensual : (descuentoSFSMensual / 2m);
+            decimal afpPeriodo = esMensual ? descuentoAFPMensual : (descuentoAFPMensual / 2m);
+            decimal isrPeriodo = esMensual ? isrMensual : (isrMensual / 2m);
+
+            // 6. Guardar en el detalle de la nómina
             nominaBorrador.PayrollDetails.Add(new PayrollDetail
             {
                 BusinessEntityId = emp.BusinessEntityId,
                 GrossSalary = sueldoBrutoPeriodo,
-                SfsDeduction = dSFS,
-                AfpDeduction = dAFP,
-                IsrDeduction = dISR,
-                NetSalary = sueldoBrutoPeriodo - dSFS - dAFP - dISR
+                SfsDeduction = sfsPeriodo,
+                AfpDeduction = afpPeriodo,
+                IsrDeduction = isrPeriodo,
+                // El neto es lo que gana en este periodo menos los descuentos de este periodo
+                NetSalary = sueldoBrutoPeriodo - sfsPeriodo - afpPeriodo - isrPeriodo
             });
+
         }
+
         return errores;
     }
-
-    private int CalcularDiasLaborables(DateTime fechaInicio, DateTime fechaFin)
-    {
-        int dias = 0;
-        DateTime fechaActual = fechaInicio;
-        while (fechaActual <= fechaFin)
-        {
-            if (fechaActual.DayOfWeek != DayOfWeek.Saturday && fechaActual.DayOfWeek != DayOfWeek.Sunday) dias++;
-            fechaActual = fechaActual.AddDays(1);
-        }
-        return dias > 0 ? dias : 1;
-    }
-
     private decimal CalcularISR(decimal sueldoMensualNeto, decimal exencionAnual)
     {
         decimal sueldoAnual = sueldoMensualNeto * 12;

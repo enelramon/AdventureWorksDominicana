@@ -3,6 +3,7 @@
 public enum PayrollStatus
 {
     Borrador,
+    Pendiente,
     Aprobada,
     Pagada,
     Cancelada 

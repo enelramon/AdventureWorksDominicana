@@ -44,5 +44,11 @@ public class PayrollParameterService(IDbContextFactory<Contexto> DbFactory) : IS
     public async Task<bool> Eliminar(int id) 
     { 
         throw new NotImplementedException();
-    } 
+    }
+
+    public async Task<PayrollParameter?> ObtenerActive()
+    {
+        await using var contexto = await DbFactory.CreateDbContextAsync();
+        return await contexto.PayrollParameters.AsNoTracking().Where(e => e.IsActive == true).FirstOrDefaultAsync();
+    }
 }
