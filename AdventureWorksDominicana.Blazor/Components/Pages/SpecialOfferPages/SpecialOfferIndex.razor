@@ -10,105 +10,104 @@
 
 <PageTitle>Ofertas Especiales</PageTitle>
 
-<div class="container mt-4">
-    <div class="card shadow-lg">
-        
-        <div class="card-header d-flex justify-content-between align-items-center">
-            <h5 class="card-title mb-0">Ofertas Especiales</h5>
-            <a href="SpecialOffer/Create" class="btn btn-primary d-flex align-items-center gap-2">
-                <i class="bi bi-plus-square"></i>
-                <span>Crear</span>
-            </a>
+<div class="specialoffer-container">
+
+    <!-- HEADER -->
+    <div class="specialoffer-header">
+        <div>
+            <h3>Ofertas Especiales</h3>
+            <span>Gestión de promociones y descuentos</span>
         </div>
-        
-        <div class="card-body">
-            
-            <div class="row">
-                <div class="col-md-3">
-                    <label class="form-label fw-bold">Desde</label>
-                </div>
-                <div class="col-md-3">
-                    <label class="form-label fw-bold">Hasta</label>
-                </div>
-                <div class="col-md-3">
-                    <label class="form-label fw-bold">Filtro:</label>
-                </div>
-                <div class="col-md-3">
-                    <label class="form-label fw-bold">Buscar:</label>
+
+        <a href="/SpecialOffer/Create" class="btn btn-primary">
+            <i class="bi bi-plus-square"></i> Crear
+        </a>
+    </div>
+
+    <!-- FILTROS -->
+    <div class="specialoffer-filters">
+        <div class="row g-3">
+
+            <div class="col-12 col-md-6 col-lg-3">
+                <label class="form-label">Desde</label>
+                <input class="form-control" type="date" @bind="StartDate" />
+            </div>
+
+            <div class="col-12 col-md-6 col-lg-3">
+                <label class="form-label">Hasta</label>
+                <input class="form-control" type="date" @bind="EndDate" />
+            </div>
+
+            <div class="col-12 col-md-6 col-lg-3">
+                <label class="form-label">Filtro</label>
+                <select class="form-select" @bind="Filtro">
+                    <option value="">Seleccione...</option>
+                    <option value="Descripcion">Descripción</option>
+                    <option value="Tipo">Tipo de Oferta</option>
+                    <option value="Categoria">Categoría</option>
+                </select>
+            </div>
+
+            <div class="col-12 col-md-6 col-lg-3">
+                <label class="form-label">Buscar</label>
+                <div class="input-group">
+                    <input class="form-control" @bind="ValorFiltro" placeholder="Buscar..." />
+
+                    <button class="btn btn-primary" @onclick="Buscar">
+                        <i class="bi bi-search"></i>
+                    </button>
+
+                    <button class="btn btn-outline-primary" @onclick="Restablecer">
+                        <i class="bi bi-arrow-clockwise"></i>
+                    </button>
                 </div>
             </div>
 
-            <div class="row mb-4">
-                <div class="col-md-3">
-                    <input class="form-control" type="date" @bind="StartDate" />
-                </div>
-                <div class="col-md-3">
-                    <input class="form-control" type="date" @bind="EndDate" />
-                </div>
-                <div class="col-md-3">
-                    <select class="form-select" @bind="Filtro">
-                        <option value="">Seleccione una opcion</option>
-                        <option value="Descripcion">Descripción</option>
-                        <option value="Tipo">Tipo de Oferta</option>
-                        <option value="Categoria">Categoría</option>
-                    </select>
-                </div>
-                <div class="col-md-3">
-                    <div class="input-group">
-                        <input class="form-control" type="text" placeholder="Buscar..." @bind="ValorFiltro" />
-                        <button class="btn btn-primary" type="button" @onclick="Buscar" title="Buscar">
-                            <i class="bi bi-search"></i>
-                        </button>
-                        <button class="btn btn-outline-primary" type="button" @onclick="Restablecer" title="Limpiar Filtros">
-                            <i class="bi bi-arrow-clockwise"></i>
-                        </button>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="table-responsive">
-                <QuickGrid Items="OffersList.AsQueryable()" Pagination="@pages" Class="table table-striped table-bordered table-hover">
-                    <PropertyColumn Property="@(s => s.Description)" Title="Descripción" Sortable="true" />
-                    <PropertyColumn Property="@(s => s.Type)" Title="Tipo" Sortable="true" />
-                    <PropertyColumn Property="@(s => s.Category)" Title="Categoría" Sortable="true" />
-                    
-                    <TemplateColumn Title="Descuento" Sortable="true">
-                        @((context.DiscountPct * 100).ToString("N0")) %
-                    </TemplateColumn>
-                    
-                    <PropertyColumn Property="@(s => s.StartDate)" Title="Inicio" Format="dd/MM/yyyy" Sortable="true" />
-                    <PropertyColumn Property="@(s => s.EndDate)" Title="Fin" Format="dd/MM/yyyy" Sortable="true" />
-                    
-                    <TemplateColumn Title="Estado" Align="Align.Center">
-                        @if (context.EndDate >= DateTime.Now && context.StartDate <= DateTime.Now)
-                        {
-                            <span class="badge bg-success">Vigente</span>
-                        }
-                        else
-                        {
-                            <span class="badge bg-secondary">Inactiva</span>
-                        }
-                    </TemplateColumn>
-
-                    <TemplateColumn Title="Opciones" Align="Align.Center">
-                        <div class="d-flex justify-content-center gap-2">
-                            <a href="SpecialOffer/Edit/@context.SpecialOfferId" class="btn btn-sm btn-outline-primary d-flex align-items-center gap-2" title="Modificar">
-                                <i class="bi bi-pencil"></i>
-                                <span>Modificar</span>
-                            </a>
-                        </div>
-                    </TemplateColumn>
-                </QuickGrid>
-                
-                <Paginator State="@pages" />
-            </div>
         </div>
+    </div>
 
-        <div class="card-footer text-end">
-            <strong>Total Registros: @OffersList.Count</strong>
-        </div>
+    <!-- TABLA -->
+    <div class="table-responsive specialoffer-table">
+
+        <QuickGrid Items="OffersList.AsQueryable()"
+                   Pagination="@pages"
+                   Class="table table-hover">
+
+            <PropertyColumn Property="@(s => s.Description)" Title="Descripción" />
+            <PropertyColumn Property="@(s => s.Type)" Title="Tipo" />
+            <PropertyColumn Property="@(s => s.Category)" Title="Categoría" />
+
+            <TemplateColumn Title="Descuento">
+                @((context.DiscountPct * 100).ToString("N0")) %
+            </TemplateColumn>
+
+            <PropertyColumn Property="@(s => s.StartDate)" Format="dd/MM/yyyy" Title="Inicio" />
+            <PropertyColumn Property="@(s => s.EndDate)" Format="dd/MM/yyyy" Title="Fin" />
+
+            <TemplateColumn Title="Estado" Class="text-center">
+                @if (context.EndDate >= DateTime.Now && context.StartDate <= DateTime.Now)
+                {
+                    <span class="badge bg-success">Vigente</span>
+                }
+                else
+                {
+                    <span class="badge bg-secondary">Inactiva</span>
+                }
+            </TemplateColumn>
+
+            <TemplateColumn Title="Acciones" Class="text-center">
+                <a href="/SpecialOffer/Edit/@context.SpecialOfferId"
+                       class="btn btn-sm btn-outline-primary">
+                    <i class="bi bi-pencil"></i> Modificar
+                </a>
+            </TemplateColumn>
+
+        </QuickGrid>
+
+        <Paginator State="@pages" />
 
     </div>
+
 </div>
 
 @code {

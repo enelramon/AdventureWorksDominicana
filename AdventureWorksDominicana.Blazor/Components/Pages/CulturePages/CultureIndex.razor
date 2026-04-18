@@ -6,67 +6,85 @@
 
 <PageTitle>Culture Index</PageTitle>
 
-<div class="container">
-    <div class="card shadow-lg">
-        <div class="card-header d-flex justify-content-between">
-            <h4>Culturas</h4>
-            <a class="btn btn-primary bi bi-plus-square" href="/Culture/Create"> Crear</a>
+<div class="culture-container">
+
+    <!-- HEADER -->
+    <div class="culture-header">
+        <div>
+            <h3>Culturas</h3>
+            <span>Gestión de registros culturales</span>
         </div>
-        <div class="card-body">
 
-            <div class="row">
-                <div class="col-3">
-                    <label>Desde:</label>
-                </div>
-                <div class="col-3">
-                    <label>Hasta:</label>
-                </div>
-                <div class="col-3">
-                    <label>Filtro:</label>
-                </div>
-                <div class="col-3">
-                    <label>Buscar:</label>
+        <a class="btn btn-primary" href="/Culture/Create">
+            <i class="bi bi-plus-square"></i> Crear
+        </a>
+    </div>
+
+    <!-- FILTROS -->
+    <div class="culture-filters">
+        <div class="row g-3">
+
+            <div class="col-12 col-md-6 col-lg-3">
+                <label class="form-label">Desde</label>
+                <input class="form-control" type="datetime-local" @bind-value="FechaDesde" />
+            </div>
+
+            <div class="col-12 col-md-6 col-lg-3">
+                <label class="form-label">Hasta</label>
+                <input class="form-control" type="datetime-local" @bind-value="FechaHasta" />
+            </div>
+
+            <div class="col-12 col-md-6 col-lg-3">
+                <label class="form-label">Filtro</label>
+                <select class="form-select" @bind="Filtro">
+                    <option value="">Seleccione...</option>
+                    <option value="CultureId">ID de Cultura</option>
+                    <option value="Name">Nombre</option>
+                </select>
+            </div>
+
+            <div class="col-12 col-md-6 col-lg-3">
+                <label class="form-label">Buscar</label>
+                <div class="input-group">
+                    <input class="form-control" @bind-value="ValorFiltro" placeholder="Buscar..." />
+
+                    <button class="btn btn-primary" @onclick="Filtrar">
+                        <i class="bi bi-search"></i>
+                    </button>
+
+                    <button class="btn btn-outline-primary" @onclick="Restablecer">
+                        <i class="bi bi-arrow-clockwise"></i>
+                    </button>
                 </div>
             </div>
 
-
-            <div class="row pb-3">
-                <div class="col-3">
-                    <input class="form-control" type="datetime-local" @bind-value="FechaDesde" />
-                </div>
-                <div class="col-3">
-                    <input class="form-control" type="datetime-local" @bind-value="FechaHasta" />
-                </div>
-                <div class="col-3">
-                    <select class="form-select" @bind="Filtro">
-                        <option value="" disabled selected hidden>Seleccione un filtro...</option>
-                        <option value="CultureId">ID de Cultura</option>
-                        <option value="Name">Nombre</option>
-                    </select>
-                </div>
-                <div class="col-3">
-                    <div class="input-group">
-                        <input class="form-control" type="text" @bind-value="ValorFiltro" placeholder="Buscar..." />
-                        <button class="btn btn-primary bi bi-search" type="button" @onclick="Filtrar"></button>
-                        <button class="btn btn-outline-primary bi bi-arrow-clockwise" type="button" @onclick="Restablecer"></button>
-                    </div>
-                </div>
-            </div>
-
-            <div class="table-responsive">
-                <QuickGrid Class="table table-striped table-bordered table-hover" Pagination="@pages" Items="CulturesList.AsQueryable()" ItemKey="@(c => c.CultureId)">
-                    <PropertyColumn Property="@(c => c.CultureId)" Sortable="true" Title="Culture ID"></PropertyColumn>
-                    <PropertyColumn Property="@(c => c.Name)" Sortable="true" Title="Nombre"></PropertyColumn>
-                    <PropertyColumn Property="@(c => c.ModifiedDate)" Sortable="true" Format="dd-MM-yyyy" Title="Modificaci&oacute;n"></PropertyColumn>
-                    <TemplateColumn Class="text-center" Context="options" Title="Acci&oacute;n">
-                        <a href="/Culture/Edit/@options.CultureId" class="btn btn-outline-primary bi bi-pencil-square"> Modificar</a>
-                    </TemplateColumn>
-                </QuickGrid>
-            </div>
-            @*Pagination*@
-            <Paginator State="@pages" />
         </div>
     </div>
+
+    <!-- TABLA -->
+    <div class="table-responsive culture-table">
+
+        <QuickGrid Class="table table-hover"
+                   Pagination="@pages"
+                   Items="CulturesList.AsQueryable()"
+                   ItemKey="@(c => c.CultureId)">
+
+            <PropertyColumn Property="@(c => c.CultureId)" Title="Culture ID" />
+            <PropertyColumn Property="@(c => c.Name)" Title="Nombre" />
+            <PropertyColumn Property="@(c => c.ModifiedDate)" Format="dd-MM-yyyy" Title="Modificación" />
+
+            <TemplateColumn Class="text-center" Context="c" Title="Acción">
+                <a href="/Culture/Edit/@c.CultureId" class="btn btn-sm btn-outline-primary">
+                    <i class="bi bi-pencil"></i> Modificar
+                </a>
+            </TemplateColumn>
+
+        </QuickGrid>
+
+        <Paginator State="@pages" />
+
+    </div>
+
 </div>
 
 @code {

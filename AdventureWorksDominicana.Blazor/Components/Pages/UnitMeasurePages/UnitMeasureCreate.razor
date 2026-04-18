@@ -5,34 +5,78 @@
 @inject NavigationManager navigationManager;
 @rendermode InteractiveServer
 
-<EditForm Model="UnitMeasure" FormName="crearUnitMeasure" OnValidSubmit="Guardar">
-    <DataAnnotationsValidator />
+<div class="unitmeasure-create-container">
 
-    <div class="container">
-        <div class="card shadow-lg">
-            <div class="card-header text-center">
-                <h4>Crear Unidad de Medida</h4>
-            </div>
-            <div class="card-body">
-                <div class="mb-3">
-                    <label><strong>C&oacute;digo (Máx 3 Caracteres)</strong></label>
-                    <input class="form-control" type="text" maxlength="3" @bind="UnitMeasure.UnitMeasureCode" placeholder="Ej: LBS, KG, CM..." />
-                    <ValidationMessage For="(() => UnitMeasure.UnitMeasureCode)" />
-                </div>
-
-                <div class="mb-3">
-                    <label><strong>Nombre descriptivo</strong></label>
-                    <input class="form-control" type="text" maxlength="50" @bind="UnitMeasure.Name" placeholder="Ej: Libras" />
-                    <ValidationMessage For="(() => UnitMeasure.Name)" />
-                </div>
-            </div>
-            <div class="card-footer text-center">
-                <a class="btn btn-secondary bi bi-arrow-left" href="/UnitMeasure/Index"> Volver</a>
-                <button class="btn btn-primary bi bi-floppy" type="submit"> Guardar</button>
-            </div>
+    <!-- HEADER -->
+    <div class="unitmeasure-create-header">
+        <div>
+            <h3>Crear Unidad de Medida</h3>
+            <span>Registro de nuevas unidades</span>
         </div>
     </div>
-</EditForm>
+
+    <!-- FORM -->
+    <div class="unitmeasure-create-form">
+        <EditForm Model="UnitMeasure" FormName="crearUnitMeasure" OnValidSubmit="Guardar">
+            <DataAnnotationsValidator />
+
+            <div class="card shadow-lg">
+                <div class="card-body">
+
+                    <!-- SECCIÓN -->
+                    <h5 class="section-title">
+                        <i class="bi bi-rulers"></i> Información General
+                    </h5>
+
+                    <!-- CÓDIGO -->
+                    <div class="mb-3">
+                        <label class="form-label">
+                            <strong>Código (Máx 3 Caracteres)</strong>
+                        </label>
+
+                        <input class="form-control"
+                               type="text"
+                               maxlength="3"
+                               @bind="UnitMeasure.UnitMeasureCode"
+                               placeholder="Ej: LBS, KG, CM..." />
+
+                        <ValidationMessage For="(() => UnitMeasure.UnitMeasureCode)" />
+                    </div>
+
+                    <!-- NOMBRE -->
+                    <div class="mb-3">
+                        <label class="form-label">
+                            <strong>Nombre descriptivo</strong>
+                        </label>
+
+                        <input class="form-control"
+                               type="text"
+                               maxlength="50"
+                               @bind="UnitMeasure.Name"
+                               placeholder="Ej: Libras" />
+
+                        <ValidationMessage For="(() => UnitMeasure.Name)" />
+                    </div>
+
+                </div>
+
+                <!-- FOOTER -->
+                <div class="card-footer text-center">
+
+                    <a class="btn btn-secondary bi bi-arrow-left" href="/UnitMeasure/Index">
+                        Volver
+                    </a>
+
+                    <button class="btn btn-primary bi bi-floppy" type="submit">
+                        Guardar
+                    </button>
+
+                </div>
+            </div>
+        </EditForm>
+    </div>
+
+</div>
 
 @code {
     public UnitMeasure UnitMeasure { get; set; } = new UnitMeasure();

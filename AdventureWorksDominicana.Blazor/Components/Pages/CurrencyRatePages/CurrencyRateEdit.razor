@@ -13,99 +13,151 @@
 
 @if (tasa == null)
 {
-    <div class="container mt-4"><p>Cargando información...</p></div>
+    <div class="currencyrate-form-container">
+        <p>Cargando información...</p>
+    </div>
 }
 else
 {
-    <EditForm Model="tasa" OnValidSubmit="Guardar">
-        <DataAnnotationsValidator />
+    <div class="currencyrate-form-container">
 
-        <div class="container mt-4">
-            <div class="card shadow-lg">
-
-                <div class="card-header bg-white">
-                    <h4 class="mb-0">Modificar Tasa de Cambio</h4>
-                </div>
-
-                <div class="card-body">
-
-                    <div class="mb-3">
-                        <strong>ID Tasa (Solo Lectura)</strong>
-                        <InputNumber class="form-control" @bind-Value="tasa.CurrencyRateId" readonly />
-                    </div>
-
-                    <div class="mb-3">
-                        <strong>Fecha de Tasa</strong>
-                        <InputDate class="form-control" @bind-Value="tasa.CurrencyRateDate" />
-                        <ValidationMessage For="() => tasa.CurrencyRateDate" />
-                    </div>
-
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <strong>Moneda Origen</strong>
-                            <InputSelect class="form-select" @bind-Value="tasa.FromCurrencyCode">
-                                <option value="">Seleccione una moneda...</option>
-                                @foreach (var moneda in listaMonedas)
-                                {
-                                    <option value="@moneda.CurrencyCode">@moneda.CurrencyCode - @moneda.Name</option>
-                                }
-                            </InputSelect>
-                            <ValidationMessage For="() => tasa.FromCurrencyCode" />
-                        </div>
-
-                        <div class="col-md-6 mb-3">
-                            <strong>Moneda Destino</strong>
-                            <InputSelect class="form-select" @bind-Value="tasa.ToCurrencyCode">
-                                <option value="">Seleccione una moneda...</option>
-                                @foreach (var moneda in listaMonedas)
-                                {
-                                    <option value="@moneda.CurrencyCode">@moneda.CurrencyCode - @moneda.Name</option>
-                                }
-                            </InputSelect>
-                            <ValidationMessage For="() => tasa.ToCurrencyCode" />
-                        </div>
-                    </div>
-
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <strong>Tasa Promedio del Día</strong>
-                            <InputNumber class="form-control" @bind-Value="tasa.AverageRate" />
-                            <ValidationMessage For="() => tasa.AverageRate" />
-                        </div>
-
-                        <div class="col-md-6 mb-3">
-                            <strong>Tasa al Cierre del Día</strong>
-                            <InputNumber class="form-control" @bind-Value="tasa.EndOfDayRate" />
-                            <ValidationMessage For="() => tasa.EndOfDayRate" />
-                        </div>
-                    </div>
-
-                    @if (!string.IsNullOrWhiteSpace(mensajeError))
-                    {
-                        <div class="alert alert-danger mt-3">@mensajeError</div>
-                    }
-
-                </div>
-
-                <div class="card-footer text-center bg-white">
-                    <a href="/CurrencyRate/Index" class="btn btn-secondary bi bi-arrow-left"> Volver</a>
-                    <button type="submit" class="btn btn-primary bi bi-floppy"> Modificar</button>
-                    <button type="button" class="btn btn-danger bi bi-trash" @onclick="() => mostrarModal = true"> Eliminar</button>
-                </div>
+        <!-- HEADER -->
+        <div class="currencyrate-form-header">
+            <div>
+                <h3>Modificar Tasa de Cambio</h3>
+                <span>Edición de tasa de cambio existente</span>
             </div>
         </div>
-    </EditForm>
 
-    @if (mostrarModal)
-    {
-        <div class="container mt-3">
-            <div class="alert alert-danger shadow-sm">
-                <p class="fw-bold">¿Desea eliminar este registro?</p>
-                <button class="btn btn-secondary me-2" @onclick="() => mostrarModal = false">Cancelar</button>
-                <button class="btn btn-danger" @onclick="EliminarConfirmado">Si, eliminar definitivamente</button>
-            </div>
+        <!-- FORM -->
+        <div class="currencyrate-form-body">
+
+            <EditForm Model="tasa" OnValidSubmit="Guardar">
+                <DataAnnotationsValidator />
+
+                <div class="card">
+
+                    <div class="card-body">
+
+                        <!-- SECCIÓN -->
+                        <h5 class="section-title">
+                            <i class="bi bi-pencil-square"></i> Información General
+                        </h5>
+
+                        <!-- ID -->
+                        <div class="mb-3">
+                            <label class="form-label"><strong>ID Tasa</strong></label>
+                            <InputNumber class="form-control"
+                                         @bind-Value="tasa.CurrencyRateId"
+                                         readonly />
+                        </div>
+
+                        <!-- FECHA -->
+                        <div class="mb-3">
+                            <label class="form-label"><strong>Fecha de Tasa</strong></label>
+                            <InputDate class="form-control"
+                                       @bind-Value="tasa.CurrencyRateDate" />
+                            <ValidationMessage For="() => tasa.CurrencyRateDate" />
+                        </div>
+
+                        <!-- MONEDAS -->
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label"><strong>Moneda Origen</strong></label>
+                                <InputSelect class="form-select"
+                                             @bind-Value="tasa.FromCurrencyCode">
+                                    <option value="">Seleccione una moneda...</option>
+                                    @foreach (var moneda in listaMonedas)
+                                    {
+                                        <option value="@moneda.CurrencyCode">@moneda.CurrencyCode - @moneda.Name</option>
+                                    }
+                                </InputSelect>
+                                <ValidationMessage For="() => tasa.FromCurrencyCode" />
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label"><strong>Moneda Destino</strong></label>
+                                <InputSelect class="form-select"
+                                             @bind-Value="tasa.ToCurrencyCode">
+                                    <option value="">Seleccione una moneda...</option>
+                                    @foreach (var moneda in listaMonedas)
+                                    {
+                                        <option value="@moneda.CurrencyCode">@moneda.CurrencyCode - @moneda.Name</option>
+                                    }
+                                </InputSelect>
+                                <ValidationMessage For="() => tasa.ToCurrencyCode" />
+                            </div>
+                        </div>
+
+                        <!-- TASAS -->
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label"><strong>Tasa Promedio del Día</strong></label>
+                                <InputNumber class="form-control"
+                                             @bind-Value="tasa.AverageRate" />
+                                <ValidationMessage For="() => tasa.AverageRate" />
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label"><strong>Tasa al Cierre del Día</strong></label>
+                                <InputNumber class="form-control"
+                                             @bind-Value="tasa.EndOfDayRate" />
+                                <ValidationMessage For="() => tasa.EndOfDayRate" />
+                            </div>
+                        </div>
+
+                        @if (!string.IsNullOrWhiteSpace(mensajeError))
+                        {
+                            <div class="alert alert-danger mt-3">@mensajeError</div>
+                        }
+
+                    </div>
+
+                    <!-- FOOTER -->
+                    <div class="card-footer text-center">
+
+                        <a href="/CurrencyRate/Index" class="btn btn-secondary">
+                            <i class="bi bi-arrow-left"></i> Volver
+                        </a>
+
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-floppy"></i> Modificar
+                        </button>
+
+                        <button type="button"
+                                class="btn btn-danger"
+                                @onclick="() => mostrarModal = true">
+                            <i class="bi bi-trash"></i> Eliminar
+                        </button>
+
+                    </div>
+
+                </div>
+
+            </EditForm>
+
         </div>
-    }
+
+        <!-- MODAL SIMPLE -->
+        @if (mostrarModal)
+        {
+            <div class="currencyrate-delete-alert">
+                <div class="alert alert-danger shadow-sm">
+                    <p class="fw-bold">¿Desea eliminar este registro?</p>
+
+                    <button class="btn btn-secondary me-2"
+                            @onclick="() => mostrarModal = false">
+                        Cancelar
+                    </button>
+
+                    <button class="btn btn-danger"
+                            @onclick="EliminarConfirmado">
+                        Sí, eliminar definitivamente
+                    </button>
+                </div>
+            </div>
+        }
+    </div>
 }
 
 @code {

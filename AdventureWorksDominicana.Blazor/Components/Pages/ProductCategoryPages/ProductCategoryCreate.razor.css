@@ -1,0 +1,117 @@
+﻿/* CONTENEDOR */
+.category-form-container {
+    max-width: 1000px;
+    margin: auto;
+    padding: 20px;
+}
+
+/* HEADER */
+.category-form-header {
+    margin-bottom: 20px;
+}
+
+    .category-form-header h3 {
+        margin: 0;
+        color: #01398C;
+    }
+
+    .category-form-header span {
+        font-size: 0.9rem;
+        color: #6b7280;
+    }
+
+/* FORM */
+.category-form {
+    margin-top: 20px;
+}
+
+    /* CARD */
+    .category-form .card {
+        background-color: #F5F5F5;
+        border: 2px solid #E6E6E6;
+        border-radius: 20px;
+        box-shadow: 0 10px 25px -5px rgba(0,0,0,0.05), 0 8px 20px -6px rgba(0,0,0,0.02);
+    }
+
+    .category-form .card-body {
+        padding: 24px;
+    }
+
+    .category-form .card-footer {
+        background: white;
+        border-top: 1px solid #e5e7eb;
+        border-radius: 0 0 20px 20px;
+        padding: 16px;
+    }
+
+/* SECCIONES */
+.section-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #01398C;
+    margin-bottom: 16px;
+    padding-bottom: 8px;
+    border-bottom: 2px solid #e5e7eb;
+}
+
+/* INPUTS */
+.category-form .form-control,
+.category-form .form-select {
+    width: 100%;
+    border-radius: 10px;
+    border: 1px solid #dbeafe;
+    padding: 8px 12px;
+    font-size: 0.9rem;
+}
+
+    .category-form .form-control:focus,
+    .category-form .form-select:focus {
+        border-color: #466EDB;
+        box-shadow: 0 0 0 2px rgba(70,110,219,0.15);
+    }
+
+/* BOTONES */
+.category-form .btn-primary {
+    background: #466EDB;
+    border: none;
+    border-radius: 10px;
+}
+
+    .category-form .btn-primary:hover {
+        background: #01398C;
+    }
+
+.category-form .btn-secondary {
+    background: #6b7280;
+    border: none;
+    color: white;
+    border-radius: 10px;
+}
+
+    .category-form .btn-secondary:hover {
+        background: #595C66;
+    }
+
+/* TABLA DETALLE */
+.category-detail-table {
+    background: #ffffff;
+    border-radius: 15px;
+    padding: 10px;
+    border: 1px solid #e5e7eb;
+}
+
+/* TOTAL */
+.category-total {
+    text-align: right;
+}
+
+/* RESPONSIVE */
+@media (max-width: 768px) {
+    .category-form-container {
+        padding: 15px;
+    }
+
+    .category-form .card-body {
+        padding: 16px;
+    }
+}

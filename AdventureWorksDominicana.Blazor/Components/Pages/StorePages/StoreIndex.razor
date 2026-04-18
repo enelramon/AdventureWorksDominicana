@@ -10,73 +10,91 @@
 
 <PageTitle>Store</PageTitle>
 
-<div class="container-fluid">
-    <div class="card shadow-lg">
-        <div class="card-header d-flex justify-content-between align-content-center">
-            <h3 class="mb-0">Store</h3>
-            <a class="btn btn-primary" href="/Store/Create"><i class="bi bi-plus-square"></i> Crear</a>
+<div class="store-container">
+
+    <!-- HEADER -->
+    <div class="store-header">
+        <div>
+            <h3>Store</h3>
+            <span>Gestión de tiendas registradas</span>
         </div>
 
-        <div class="card-body">
-            <div class="row g-3 mb-3">
-                <div class="col-md-3">
-                    <label class="form-label">Desde</label>
-                </div>
-                <div class="col-md-3">
-                    <label class="form-label">Hasta</label>
-                </div>
-                <div class="col-md-3">
-                    <label class="form-label">Filtro</label>
-                </div>
-                <div class="col-md-3">
-                    <label class="form-label">Buscar</label>
-                </div>
-            </div>
-            <div class="row g-3 mb-3 align-items-end">
-                <div class="col-md-3">
-                    <InputDate class="form-control" @bind-Value="Desde" />
-                </div>
-                <div class="col-md-3">
-                    <InputDate class="form-control" @bind-Value="Hasta" />
-                </div>
-                <div class="col-md-3">
-                    <InputSelect class="form-select" @bind-Value="Filtros">
-                        <option disabled value="">Elige un filtro</option>
-                        <option value="Id">ID</option>
-                        <option value="Name">Nombre</option>
-                        <option value="SalesPerson">Sales Person ID</option>
-                    </InputSelect>
-                </div>
-                <div class="col-md-3">
-                    <div class="d-flex">
-                        <InputText class="form-control me-2" @bind-Value="ValorFiltro" placeholder="Buscar..." />
-                        <button class="btn btn-primary me-2" @onclick="Buscar">
-                            <i class="bi bi-search"></i>
-                        </button>
-                        <button type="button" class="btn btn-outline-primary bi bi-arrow-counterclockwise" @onclick="Restablecer"></button>
-                    </div>
-                </div>
-            </div>
-            <div class="table-responsive">
-                <QuickGrid TGridItem="Store" Items="ListaStores" Class="table table-striped table-bordered table-hover">
-                    <PropertyColumn Property="@(e => e.BusinessEntityId)" Sortable="true" Title="ID" />
-                    <PropertyColumn Property="@(e => e.Name)" Sortable="true" Title="Nombre" />
-                    <PropertyColumn Property="@(e => e.SalesPersonId)" Sortable="true" Title="SalesPersonId" />
-                    <PropertyColumn Property="@(e => e.ModifiedDate)" Format="dd/MM/yyyy" Title="Fecha de modificación" Sortable="true" />
+        <a class="btn btn-primary" href="/Store/Create">
+            <i class="bi bi-plus-square"></i> Crear
+        </a>
+    </div>
 
-                    <TemplateColumn Class="text-center align-middle" Title="Acción">
-                        <a class="btn btn-outline-primary btn-sm" href="/Store/Edit/@context.BusinessEntityId">
-                            <i class="bi bi-pencil-square"></i> Modificar
-                        </a>
-                    </TemplateColumn>
-                </QuickGrid>
-            </div>
-        </div>
+    <!-- FILTROS -->
+    <div class="store-filters">
+        <div class="row g-3">
 
-        <div class="card-footer text-end">
-            <strong>Conteo Registros: </strong> @ListaStores.Count()
+            <div class="col-12 col-md-6 col-lg-3">
+                <label class="form-label">Desde</label>
+                <InputDate class="form-control" @bind-Value="Desde" />
+            </div>
+
+            <div class="col-12 col-md-6 col-lg-3">
+                <label class="form-label">Hasta</label>
+                <InputDate class="form-control" @bind-Value="Hasta" />
+            </div>
+
+            <div class="col-12 col-md-6 col-lg-3">
+                <label class="form-label">Filtro</label>
+                <InputSelect class="form-select" @bind-Value="Filtros">
+                    <option value="">Seleccione...</option>
+                    <option value="Id">ID</option>
+                    <option value="Name">Nombre</option>
+                    <option value="SalesPerson">Sales Person</option>
+                </InputSelect>
+            </div>
+
+            <div class="col-12 col-md-6 col-lg-3">
+                <label class="form-label">Buscar</label>
+
+                <div class="input-group">
+                    <InputText class="form-control"
+                               @bind-Value="ValorFiltro"
+                               placeholder="Buscar..." />
+
+                    <button class="btn btn-primary" @onclick="Buscar">
+                        <i class="bi bi-search"></i>
+                    </button>
+
+                    <button class="btn btn-outline-primary" @onclick="Restablecer">
+                        <i class="bi bi-arrow-clockwise"></i>
+                    </button>
+                </div>
+            </div>
+
         </div>
     </div>
+
+    <!-- TABLA -->
+    <div class="table-responsive store-table">
+
+        <QuickGrid TGridItem="Store"
+                   Items="ListaStores"
+                   Class="table table-hover"
+                   ItemKey="@(s => s.BusinessEntityId)">
+
+            <PropertyColumn Property="@(e => e.BusinessEntityId)" Title="ID" />
+            <PropertyColumn Property="@(e => e.Name)" Title="Nombre" />
+            <PropertyColumn Property="@(e => e.SalesPersonId)" Title="SalesPersonId" />
+            <PropertyColumn Property="@(e => e.ModifiedDate)"
+                            Format="dd/MM/yyyy"
+                            Title="Fecha" />
+
+            <TemplateColumn Class="text-center" Title="Acciones">
+                <a class="btn btn-sm btn-outline-primary"
+                       href="/Store/Edit/@context.BusinessEntityId">
+                    <i class="bi bi-pencil"></i> Modificar
+                </a>
+            </TemplateColumn>
+
+        </QuickGrid>
+
+    </div>
+
 </div>
 
 @code {

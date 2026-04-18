@@ -10,85 +10,90 @@
 
 <PageTitle>Banco de Descripciones de Producto</PageTitle>
 
-<div class="container mt-4">
-    <div class="card shadow-lg">
-        
-        <div class="card-header d-flex justify-content-between align-items-center">
-            <h5 class="card-title mb-0">Banco de Descripciones de Producto</h5>
-            <a href="ProductDescription/Create" class="btn btn-primary d-flex align-items-center gap-2">
-                <i class="bi bi-plus-square"></i>
-                <span>Crear</span>
-            </a>
+<div class="product-description-container">
+
+    <!-- HEADER -->
+    <div class="product-description-header">
+        <div>
+            <h3>Banco de Descripciones</h3>
+            <span>Gestión de descripciones de productos</span>
         </div>
-        
-        <div class="card-body">
-            
-            <div class="row">
-                <div class="col-md-3">
-                    <label class="form-label fw-bold">Desde</label>
-                </div>
-                <div class="col-md-3">
-                    <label class="form-label fw-bold">Hasta</label>
-                </div>
-                <div class="col-md-3">
-                    <label class="form-label fw-bold">Filtro:</label>
-                </div>
-                <div class="col-md-3">
-                    <label class="form-label fw-bold">Buscar:</label>
+
+        <a href="/ProductDescription/Create" class="btn btn-primary">
+            <i class="bi bi-plus-square"></i> Crear
+        </a>
+    </div>
+
+    <!-- FILTROS -->
+    <div class="product-description-filters">
+        <div class="row g-3">
+
+            <div class="col-md-3">
+                <label class="form-label">Desde</label>
+                <input class="form-control" type="date" @bind="StartDate" />
+            </div>
+
+            <div class="col-md-3">
+                <label class="form-label">Hasta</label>
+                <input class="form-control" type="date" @bind="EndDate" />
+            </div>
+
+            <div class="col-md-3">
+                <label class="form-label">Filtro</label>
+                <select class="form-select" @bind="Filtro">
+                    <option value="">Seleccione...</option>
+                    <option value="Id">ID</option>
+                    <option value="Descripcion">Descripción</option>
+                </select>
+            </div>
+
+            <div class="col-md-3">
+                <label class="form-label">Buscar</label>
+                <div class="input-group">
+                    <input class="form-control" placeholder="Buscar..." @bind="ValorFiltro" />
+
+                    <button class="btn btn-primary" @onclick="Buscar">
+                        <i class="bi bi-search"></i>
+                    </button>
+
+                    <button class="btn btn-outline-primary" @onclick="Restablecer">
+                        <i class="bi bi-arrow-clockwise"></i>
+                    </button>
                 </div>
             </div>
 
-            <div class="row mb-4">
-                <div class="col-md-3">
-                    <input class="form-control" type="date" @bind="StartDate" />
-                </div>
-                <div class="col-md-3">
-                    <input class="form-control" type="date" @bind="EndDate" />
-                </div>
-                <div class="col-md-3">
-                    <select class="form-select" @bind="Filtro">
-                        <option value="">Seleccione una opcion</option>
-                        <option value="Id">ID</option>
-                        <option value="Descripcion">Descripción</option>
-                    </select>
-                </div>
-                <div class="col-md-3">
-                    <div class="input-group">
-                        <input class="form-control" type="text" placeholder="Buscar..." @bind="ValorFiltro" />
-                        <button class="btn btn-primary" type="button" @onclick="Buscar" title="Buscar">
-                            <i class="bi bi-search"></i>
-                        </button>
-                        <button class="btn btn-outline-primary" type="button" @onclick="Restablecer" title="Limpiar Filtros">
-                            <i class="bi bi-arrow-clockwise"></i>
-                        </button>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="table-responsive">
-                <QuickGrid Items="DescriptionsList.AsQueryable()" Pagination="@pages" Class="table table-striped table-bordered table-hover">
-                    <PropertyColumn Property="@(d => d.ProductDescriptionId)" Title="ID" Sortable="true" />
-                    <PropertyColumn Property="@(d => d.Description)" Title="Texto de Descripción" Sortable="true" />
-                    <PropertyColumn Property="@(d => d.ModifiedDate)" Title="Fecha" Format="dd/MM/yyyy" Sortable="true" />
-                    <TemplateColumn Title="Opciones" Align="Align.Center">
-                        <div class="d-flex justify-content-center gap-2">
-                            <a href="ProductDescription/Edit/@context.ProductDescriptionId" class="btn btn-sm btn-outline-primary d-flex align-items-center gap-2" title="Modificar">
-                                <i class="bi bi-pencil"></i>
-                                <span>Modificar</span>
-                            </a>
-                        </div>
-                    </TemplateColumn>
-                </QuickGrid>
-                
-                <Paginator State="@pages" />
-            </div>
         </div>
+    </div>
 
-        <div class="card-footer text-end">
-            <strong>Conteo Registros: @DescriptionsList.Count</strong>
-        </div>
+    <!-- TABLA -->
+    <div class="product-description-table">
+
+        <QuickGrid Items="DescriptionsList.AsQueryable()"
+                   Pagination="@pages"
+                   Class="table table-hover">
+
+            <PropertyColumn Property="@(d => d.ProductDescriptionId)"
+                            Title="ID" Sortable="true" />
+
+            <PropertyColumn Property="@(d => d.Description)"
+                            Title="Descripción" Sortable="true" />
+
+            <PropertyColumn Property="@(d => d.ModifiedDate)"
+                            Title="Fecha" Format="dd/MM/yyyy" Sortable="true" />
+
+            <TemplateColumn Title="Acciones" Class="text-center">
+                <a href="/ProductDescription/Edit/@context.ProductDescriptionId"
+                       class="btn btn-sm btn-outline-primary">
+                    <i class="bi bi-pencil"></i> Modificar
+                </a>
+            </TemplateColumn>
+
+        </QuickGrid>
+
+        <Paginator State="@pages" />
 
     </div>
+
 </div>
 
 @code {

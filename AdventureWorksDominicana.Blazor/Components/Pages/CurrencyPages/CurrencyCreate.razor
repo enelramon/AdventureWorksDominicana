@@ -8,68 +8,88 @@
 
 <PageTitle>Crear Moneda</PageTitle>
 
-<div class="container">
-	<div class="card shadow-lg">
+<div class="product-container">
 
-		<div class="card-header">
-			<h5 class="card-title text-black mb-0">Crear Registro de Moneda</h5>
-		</div>
-        
-		<div class="card-body">
-			<EditForm Model="currency" OnValidSubmit="Guardar">
-				<DataAnnotationsValidator />
-				<ValidationSummary class="text-danger" />
+    <!-- HEADER -->
+    <div class="product-header">
+        <div>
+            <h3>Crear Moneda</h3>
+            <span>Registro de nuevas monedas en el sistema</span>
+        </div>
+    </div>
 
-				<div class="row mb-3 d-flex gap-2">
-					<div>
-						<label class="form-label fw-bold">Código de Moneda</label>
-						<InputText class="form-control form-control-sm w-25" @bind-Value="currency.CurrencyCode" placeholder="Ej: DOP" />
-						<ValidationMessage For="@(() => currency.CurrencyCode)" />
-					</div>
-                    
-					<div>
-						<label class="form-label fw-bold">Nombre</label>
-						<InputText class="form-control form-control-sm w-25" @bind-Value="currency.Name" placeholder="Ej: Peso Dominicano" />
-						<ValidationMessage For="@(() => currency.Name)" />
-					</div>
-				</div>
+    <!-- FORM -->
+    <div class="product-form">
+        <EditForm Model="currency" OnValidSubmit="Guardar">
+            <DataAnnotationsValidator />
+            <ValidationSummary class="text-danger" />
 
-				<div class="mt-4 d-flex justify-content-center gap-2">
-					
-					<a href="Currency/Index" class="btn btn-primary">
-						<i class="bi bi-arrow-left"></i> Volver
-					</a>
+            <div class="card shadow-lg">
+                <div class="card-body">
 
-					<button type="submit" class="btn btn-primary">
-						<i class="bi bi-floppy"></i> Guardar
-					</button>
-				</div>
-			</EditForm>
-		</div>
-	</div>
+                    <!-- SECCIÓN -->
+                    <h5 class="section-title">
+                        <i class="bi bi-currency-dollar"></i> Información General
+                    </h5>
+
+                    <!-- CÓDIGO -->
+                    <div class="mb-3">
+                        <label class="form-label"><strong>Código de Moneda</strong></label>
+                        <InputText class="form-control"
+                                   @bind-Value="currency.CurrencyCode"
+                                   placeholder="Ej: DOP" />
+                        <ValidationMessage For="@(() => currency.CurrencyCode)" />
+                    </div>
+
+                    <!-- NOMBRE -->
+                    <div class="mb-3">
+                        <label class="form-label"><strong>Nombre</strong></label>
+                        <InputText class="form-control"
+                                   @bind-Value="currency.Name"
+                                   placeholder="Ej: Peso Dominicano" />
+                        <ValidationMessage For="@(() => currency.Name)" />
+                    </div>
+
+                </div>
+
+                <!-- FOOTER -->
+                <div class="card-footer text-center">
+
+                    <a href="/Currency/Index" class="btn btn-secondary bi bi-arrow-left">
+                        Volver
+                    </a>
+
+                    <button type="submit" class="btn btn-primary bi bi-floppy">
+                        Guardar
+                    </button>
+
+                </div>
+            </div>
+        </EditForm>
+    </div>
 </div>
 
 @code {
-	private Currency currency = new Currency();
+    private Currency currency = new Currency();
 
-	private async Task Guardar()
-	{
-		if (!string.IsNullOrEmpty(currency.CurrencyCode))
-		{
-			currency.CurrencyCode = currency.CurrencyCode.ToUpper();
-		}
+    private async Task Guardar()
+    {
+        if (!string.IsNullOrEmpty(currency.CurrencyCode))
+        {
+            currency.CurrencyCode = currency.CurrencyCode.ToUpper();
+        }
 
-		var guardo = await CurrencyService.Guardar(currency);
+        var guardo = await CurrencyService.Guardar(currency);
 
-		if (guardo)
-		{
-			toast.ShowSuccess("Moneda guardada correctamente.");
-			Volver();
-		}
-		else
-		{
-			toast.ShowError("Error al guardar la moneda. Verifique que el código no exista.");
-		}
-	}
-	private void Volver() => NavigationManager.NavigateTo("/BillOfMaterial/Index");
+        if (guardo)
+        {
+            toast.ShowSuccess("Moneda guardada correctamente.");
+            Volver();
+        }
+        else
+        {
+            toast.ShowError("Error al guardar la moneda. Verifique que el código no exista.");
+        }
+    }
+    private void Volver() => NavigationManager.NavigateTo("/BillOfMaterial/Index");
 }

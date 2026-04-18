@@ -1,0 +1,128 @@
+﻿/* CONTENEDOR */
+.unitmeasure-container {
+    max-width: 1200px;
+    margin: auto;
+    padding: 20px;
+}
+
+/* HEADER */
+.unitmeasure-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+    .unitmeasure-header h3 {
+        margin: 0;
+        color: #01398C;
+    }
+
+    .unitmeasure-header span {
+        font-size: 0.9rem;
+        color: #6b7280;
+    }
+
+/* FILTROS */
+.unitmeasure-filters {
+    background-color: #F5F5F5;
+    border: 2px solid #E6E6E6;
+    padding: 20px 24px;
+    border-radius: 20px;
+    margin-bottom: 24px;
+    box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 20px -6px rgba(0,0,0,0.05);
+    transition: all 0.3s ease;
+}
+
+    .unitmeasure-filters:hover {
+        box-shadow: 0 10px 25px -5px rgba(0,0,0,0.15), 0 8px 20px -6px rgba(0,0,0,0.15);
+    }
+
+    .unitmeasure-filters label {
+        font-size: 0.85rem;
+        color: #6b7280;
+    }
+
+    /* INPUTS */
+    .unitmeasure-filters .form-control,
+    .unitmeasure-filters .form-select {
+        border-radius: 10px;
+        border: 1px solid #dbeafe;
+    }
+
+        .unitmeasure-filters .form-control:focus,
+        .unitmeasure-filters .form-select:focus {
+            border-color: #466EDB;
+            box-shadow: 0 0 0 2px rgba(70,110,219,0.15);
+        }
+
+/* BOTONES */
+.unitmeasure-container .btn-primary {
+    background: #466EDB;
+    border: none;
+}
+
+    .unitmeasure-container .btn-primary:hover {
+        background: #01398C;
+    }
+
+.unitmeasure-container .btn-outline-primary {
+    border-color: #466EDB;
+    color: #466EDB;
+}
+
+    .unitmeasure-container .btn-outline-primary:hover {
+        background: #466EDB;
+        color: white;
+    }
+
+/* TABLA */
+.unitmeasure-table {
+    background-color: #F5F5F5;
+    border: 2px solid #E6E6E6;
+    border-radius: 20px;
+    padding: 20px;
+    overflow-x: auto;
+    box-shadow: 0 10px 25px -5px rgba(0,0,0,0.15), 0 8px 20px -6px rgba(0,0,0,0.15);
+    transition: all 0.3s ease;
+}
+
+    .unitmeasure-table:hover {
+        box-shadow: 0 10px 25px -5px rgba(0,0,0,0.25), 0 8px 20px -6px rgba(0,0,0,0.25);
+    }
+
+    /* CELDAS */
+    .unitmeasure-table td {
+        border-top: none !important;
+    }
+
+    /* REDONDEO FILAS */
+    .unitmeasure-table tbody tr td:first-child {
+        border-top-left-radius: 12px;
+        border-bottom-left-radius: 12px;
+    }
+
+    .unitmeasure-table tbody tr td:last-child {
+        border-top-right-radius: 12px;
+        border-bottom-right-radius: 12px;
+    }
+
+    /* PAGINACIÓN */
+    .unitmeasure-table .pagination {
+        margin-top: 15px;
+    }
+
+/* RESPONSIVE */
+@media (max-width: 768px) {
+    .unitmeasure-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+
+    .unitmeasure-filters .row {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+}

@@ -1,0 +1,115 @@
+﻿/* CONTENEDOR */
+.specialoffer-container {
+    max-width: 1200px;
+    margin: auto;
+    padding: 20px;
+}
+
+/* HEADER */
+.specialoffer-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+    .specialoffer-header h3 {
+        margin: 0;
+        color: #01398C;
+    }
+
+    .specialoffer-header span {
+        font-size: 0.9rem;
+        color: #6b7280;
+    }
+
+/* FILTROS */
+.specialoffer-filters {
+    background-color: #F5F5F5;
+    border: 2px solid #E6E6E6;
+    padding: 20px 24px;
+    border-radius: 20px;
+    margin-bottom: 24px;
+    box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 20px -6px rgba(0,0,0,0.05);
+    transition: 0.3s ease;
+}
+
+    .specialoffer-filters:hover {
+        box-shadow: 0 10px 25px -5px rgba(0,0,0,0.15), 0 8px 20px -6px rgba(0,0,0,0.15);
+    }
+
+    .specialoffer-filters label {
+        font-size: 0.85rem;
+        color: #6b7280;
+    }
+
+    /* INPUTS */
+    .specialoffer-filters .form-control,
+    .specialoffer-filters .form-select {
+        border-radius: 10px;
+        border: 1px solid #dbeafe;
+    }
+
+        .specialoffer-filters .form-control:focus,
+        .specialoffer-filters .form-select:focus {
+            border-color: #466EDB;
+            box-shadow: 0 0 0 2px rgba(70,110,219,0.15);
+        }
+
+    /* BOTONES */
+    .specialoffer-container .btn-primary {
+        background: #466EDB;
+        border: none;
+    }
+
+        .specialoffer-container .btn-primary:hover {
+            background: #01398C;
+        }
+
+.specialoffer-container .btn-outline-primary {
+    border-color: #466EDB;
+    color: #466EDB;
+}
+
+    .specialoffer-container .btn-outline-primary:hover {
+        background: #466EDB;
+        color: white;
+    }
+
+/* TABLA */
+.specialoffer-table {
+    background-color: #F5F5F5;
+    border: 2px solid #E6E6E6;
+    border-radius: 20px;
+    padding: 20px;
+    box-shadow: 0 10px 25px -5px rgba(0,0,0,0.15), 0 8px 20px -6px rgba(0,0,0,0.15);
+    transition: 0.3s ease;
+}
+
+    .specialoffer-table:hover {
+        box-shadow: 0 10px 25px -5px rgba(0,0,0,0.25), 0 8px 20px -6px rgba(0,0,0,0.25);
+    }
+
+    .specialoffer-table td {
+        border-top: none !important;
+    }
+
+    .specialoffer-table thead {
+        color: white;
+    }
+
+/* FOOTER */
+.specialoffer-footer {
+    text-align: right;
+    margin-top: 10px;
+    font-weight: bold;
+}
+
+/* RESPONSIVE */
+@media (max-width: 768px) {
+    .specialoffer-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+}

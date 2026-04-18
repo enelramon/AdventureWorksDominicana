@@ -24,10 +24,13 @@ public partial class PayrollParameter
     public decimal AfpPct { get; set; } // (Fondo de Pensión)
 
     //  TOPES PARA QUE LA MATEMÁTICA NO FALLE
-    [Required(ErrorMessage = "El sueldo mínimo es necesario para los topes")]
-    [Range(1000, 100000, ErrorMessage = "Monto de sueldo mínimo no válido")]
+    [Required(ErrorMessage = "El sueldo mínimo es necesario")]
     [Column(TypeName = "money")]
     public decimal MinimumWage { get; set; } // Salario Mínimo
+
+    [Required(ErrorMessage = "El sueldo máximo es necesario")]
+    [Column(TypeName = "money")]
+    public decimal MaxWage { get; set; } // Salario Máximo
 
     [Column(TypeName = "money")]
     [Required(ErrorMessage = "La exención de ISR es obligatoria")]

@@ -1,0 +1,84 @@
+﻿/* CONTENEDOR */
+.state-create-container {
+    max-width: 800px;
+    margin: auto;
+    padding: 20px;
+}
+
+/* HEADER */
+.state-create-header {
+    margin-bottom: 20px;
+}
+
+    .state-create-header h3 {
+        margin: 0;
+        color: #01398C;
+    }
+
+    .state-create-header span {
+        font-size: 0.9rem;
+        color: #6b7280;
+    }
+
+/* FORM */
+.state-create-form {
+    background-color: #F5F5F5;
+    border: 2px solid #E6E6E6;
+    border-radius: 20px;
+    padding: 20px;
+}
+
+    /* LABELS */
+    .state-create-form .form-label {
+        font-size: 0.85rem;
+        color: #374151;
+    }
+
+    /* INPUTS */
+    .state-create-form .form-control,
+    .state-create-form .form-select {
+        border-radius: 10px;
+        border: 1px solid #dbeafe;
+        background-color: white;
+    }
+
+        .state-create-form .form-control:focus,
+        .state-create-form .form-select:focus {
+            border-color: #466EDB;
+            box-shadow: 0 0 0 2px rgba(70,110,219,0.15);
+        }
+
+/* FOOTER */
+.state-create-footer {
+    margin-top: 20px;
+    padding-top: 15px;
+    border-top: 1px solid #e5e7eb;
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+}
+
+/* BOTONES */
+.state-create-container .btn-primary {
+    background: #466EDB;
+    border: none;
+    border-radius: 10px;
+}
+
+    .state-create-container .btn-primary:hover {
+        background: #01398C;
+    }
+
+.state-create-container .btn-outline-primary {
+    border-color: #466EDB;
+    color: #466EDB;
+}
+
+    .state-create-container .btn-outline-primary:hover {
+        background: #466EDB;
+        color: white;
+    }
+
+.state-create-container .btn-secondary {
+    border-radius: 10px;
+}

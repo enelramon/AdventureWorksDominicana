@@ -9,48 +9,101 @@
 @inject NavigationManager navigationManager;
 @inject Contexto contexto
 
-<EditForm Model="Store" FormName="crearStore" OnValidSubmit="Guardar">
-    <DataAnnotationsValidator />
+<div class="store-create-container">
 
-    <div class="container">
-        <div class="card">
-            <div class="card-header text-center">
-                <h4>Crear Store</h4>
-            </div>
-            <div class="card-body">
-                <div class="mb-3">
-                    <label class="form-label"><strong>Nombre</strong></label>
-                    <input class="form-control" type="text" maxlength="50" @bind-value="Store.Name" placeholder="Escriba el nombre..." />
-                    <ValidationMessage For="(() => Store.Name)" />
-                </div>
-
-                <div class="mb-3">
-                    <label class="form-label"><strong>Sales Person</strong></label>
-                    <InputSelect class="form-select" @bind-Value="Store.SalesPersonId">
-                        <option value="" disabled selected hidden>Seleccione un sales person...</option>
-                        <option value="">Ninguno</option>
-                        @foreach (var sp in ListaSalesPerson)
-                        {
-                            <option value="@sp.BusinessEntityId">ID @sp.BusinessEntityId</option>
-                        }
-                    </InputSelect>
-                    <ValidationMessage For="(() => Store.SalesPersonId)" />
-                </div>
-
-                <div class="mb-3">
-                    <label class="form-label"><strong>Demographics (xml) - Opcional</strong></label>
-                    <textarea class="form-control" rows="4" @bind="Store.Demographics" placeholder="Información demográfica (xml)"></textarea>
-                    <ValidationMessage For="(() => Store.Demographics)" />
-                </div>
-            </div>
-
-            <div class="card-footer text-center">
-                <a class="btn btn-secondary bi bi-arrow-left" href="/Store/Index"> Volver</a>
-                <button class="btn btn-primary bi bi-floppy" type="submit"> Guardar</button>
-            </div>
+    <!-- HEADER -->
+    <div class="store-create-header">
+        <div>
+            <h3>Crear Store</h3>
+            <span>Registro de nuevas tiendas</span>
         </div>
     </div>
-</EditForm>
+
+    <!-- FORM -->
+    <div class="store-create-form">
+        <EditForm Model="Store" FormName="crearStore" OnValidSubmit="Guardar">
+            <DataAnnotationsValidator />
+
+            <div class="card shadow-lg">
+                <div class="card-body">
+
+                    <!-- SECCIÓN -->
+                    <h5 class="section-title">
+                        <i class="bi bi-shop"></i> Información General
+                    </h5>
+
+                    <!-- NOMBRE -->
+                    <div class="mb-3">
+                        <label class="form-label">
+                            <strong>Nombre</strong>
+                        </label>
+
+                        <input class="form-control"
+                               type="text"
+                               maxlength="50"
+                               @bind-value="Store.Name"
+                               placeholder="Escriba el nombre..." />
+
+                        <ValidationMessage For="(() => Store.Name)" />
+                    </div>
+
+                    <!-- SALES PERSON -->
+                    <div class="mb-3">
+                        <label class="form-label">
+                            <strong>Sales Person</strong>
+                        </label>
+
+                        <InputSelect class="form-select"
+                                     @bind-Value="Store.SalesPersonId">
+                            <option value="">Seleccione...</option>
+                            <option value="">Ninguno</option>
+
+                            @foreach (var sp in ListaSalesPerson)
+                            {
+                                <option value="@sp.BusinessEntityId">
+                                    ID @sp.BusinessEntityId
+                                </option>
+                            }
+                        </InputSelect>
+
+                        <ValidationMessage For="(() => Store.SalesPersonId)" />
+                    </div>
+
+                    <!-- DEMOGRAPHICS -->
+                    <div class="mb-3">
+                        <label class="form-label">
+                            <strong>Demographics (XML)</strong>
+                        </label>
+
+                        <textarea class="form-control textarea"
+                                  rows="4"
+                                  @bind="Store.Demographics"
+                                      placeholder="Información demográfica (xml)">
+                        </textarea>
+
+                            <ValidationMessage For="(() => Store.Demographics)" />
+                        </div>
+
+                    </div>
+
+                    <!-- FOOTER -->
+                    <div class="card-footer text-center">
+
+                        <a class="btn btn-secondary bi bi-arrow-left"
+                               href="/Store/Index">
+                            Volver
+                        </a>
+
+                        <button class="btn btn-primary bi bi-floppy"
+                                type="submit">
+                            Guardar
+                        </button>
+
+                    </div>
+                </div>
+            </EditForm>
+        </div>
+    </div>
 
 @code {
     public Store Store { get; set; } = new Store();
@@ -95,7 +148,8 @@
             {
                 toastService.ShowError("No se pudo guardar la tienda.");
             }
-        }catch(Exception e)
+        }
+        catch (Exception e)
         {
             toastService.ShowError("Ha ocurrido un error inesperado. Favor verifique los campos antes de guardar.");
             Console.WriteLine(e.Message);

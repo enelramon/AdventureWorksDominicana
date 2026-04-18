@@ -13,84 +13,158 @@
 
 @if (categoria == null)
 {
-    <p>Cargando...</p>
+    <div class="category-form-container">
+        <p>Cargando...</p>
+    </div>
 }
 else
 {
-    <EditForm Model="categoria" OnValidSubmit="Guardar">
-        <DataAnnotationsValidator />
+    <div class="category-form-container">
 
-        <div class="container mt-4">
-            <div class="card shadow-lg">
-                <div class="card-header">
-                    <h4 class="mb-0">Editar asignación</h4>
-                </div>
-
-                <div class="card-body">
-                    <div class="mb-3">
-                        <label class="form-label fw-bold">ID Categoría</label>
-                        <InputNumber class="form-control" @bind-Value="categoria.ProductCategoryId" readonly />
-                    </div>
-
-                    <div class="mb-3">
-                        <label class="form-label fw-bold">Nombre de Categoría</label>
-                        <InputText class="form-control" @bind-Value="categoria.Name" />
-                        <ValidationMessage For="() => categoria.Name" />
-                    </div>
-
-                    <div class="border border-success p-3 mb-3">
-                        <h3 class="mb-3">Detalle Asignacion</h3>
-                        <div class="row mb-3">
-                            <div class="col-md-6">
-                                <InputText class="form-control" @bind-Value="NuevaSubcategoriaNombre" placeholder="Nueva subcategoría..." />
-                            </div>
-                            <div class="col-md-2">
-                                <button type="button" class="btn btn-primary bi bi-plus" @onclick="AgregarDetalle"> Agregar</button>
-                            </div>
-                        </div>
-
-                        <QuickGrid Items="categoria.ProductSubcategories.AsQueryable()" Class="table table-striped table-bordered table-hover">
-                            <PropertyColumn Property="@(d => d.Name)" Title="Subcategoría" />
-                            <PropertyColumn Property="@(d => d.ModifiedDate.ToString("dd/MM/yyyy HH:mm"))" Title="Fecha Modificación" />
-                            <TemplateColumn Class="text-center" Context="options" Title="Acci&oacute;n">
-                                <ChildContent Context="det">
-                                    <button type="button" class="btn btn-danger btn-sm bi bi-trash" @onclick="(() => RemoverDetalle(det))"> Eliminar</button>
-                                </ChildContent>
-                            </TemplateColumn>
-                        </QuickGrid>
-                    </div>
-
-                    <div class="mt-3 fw-bold">
-                        Total Subcategorías: @categoria.ProductSubcategories.Count
-                    </div>
-
-                    @if (!string.IsNullOrWhiteSpace(mensaje))
-                    {
-                        <div class="alert alert-danger">
-                            @mensaje
-                        </div>
-                    }
-                </div>
-
-                <div class="card-footer text-center">
-                    <a class="btn btn-secondary bi bi-arrow-left" href="/ProductCategory/Index"> Volver</a>
-                    <button type="submit" class="btn btn-primary bi bi-file-earmark"> Guardar</button>
-                    <button type="button" class="btn btn-danger bi bi-trash" @onclick="MostrarModalEliminar"> Eliminar</button>
-                </div>
+        <!-- HEADER -->
+        <div class="category-form-header">
+            <div>
+                <h3>Editar Categoría</h3>
+                <span>Asignación y gestión de subcategorías</span>
             </div>
         </div>
-    </EditForm>
 
-    @if (mostrarModal)
-    {
-        <div class="alert alert-danger mt-3">
-            <p>¿Desea eliminar esta categoría y todas sus subcategorías?</p>
-            <button class="btn btn-secondary me-2" @onclick="CerrarModalEliminar"> Cancelar</button>
-            <button class="btn btn-danger" @onclick="EliminarConfirmado"> Si, eliminar</button>
+        <!-- FORM -->
+        <div class="category-form">
+
+            <EditForm Model="categoria" OnValidSubmit="Guardar">
+                <DataAnnotationsValidator />
+
+                <div class="card shadow-lg">
+                    <div class="card-body">
+
+                        <!-- SECCIÓN GENERAL -->
+                        <h5 class="section-title">
+                            <i class="bi bi-folder"></i> Información General
+                        </h5>
+
+                        <div class="mb-3">
+                            <label class="form-label"><strong>Nombre de Categoría</strong></label>
+                            <InputText class="form-control"
+                                       @bind-Value="categoria.Name" />
+                            <ValidationMessage For="() => categoria.Name" />
+                        </div>
+
+                        <!-- SECCIÓN DETALLE -->
+                        <h5 class="section-title mt-4">
+                            <i class="bi bi-diagram-3"></i> Subcategorías
+                        </h5>
+
+                        <!-- INPUT NUEVO -->
+                        <div class="row g-2 mb-3 align-items-end">
+                            <div class="col-md-10">
+                                <label class="form-label"><strong>Nueva Subcategoría</strong></label>
+                                <InputText class="form-control"
+                                           @bind-Value="NuevaSubcategoriaNombre"
+                                           placeholder="Nueva subcategoría..." />
+                            </div>
+
+                            <div class="col-md-2">
+                                <button type="button"
+                                        class="btn btn-primary w-100 bi bi-plus"
+                                        @onclick="AgregarDetalle">
+                                    Agregar
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- TABLA -->
+                        <div class="category-detail-table">
+
+                            <QuickGrid Items="categoria.ProductSubcategories.AsQueryable()"
+                                       Class="table table-hover">
+
+                                <PropertyColumn Property="@(d => d.Name)"
+                                                Title="Subcategoría" />
+
+                                <PropertyColumn Property="@(d => d.ModifiedDate.ToString("dd/MM/yyyy HH:mm"))"
+                                                Title="Fecha Modificación" />
+
+                                <TemplateColumn Title="Acción" Class="text-center" Context="category">
+                                    <button type="button"
+                                            class="btn btn-sm btn-outline-danger bi bi-trash"
+                                            @onclick="(() => RemoverDetalle(category))">
+                                        Eliminar
+                                    </button>
+                                </TemplateColumn>
+
+                            </QuickGrid>
+
+                        </div>
+
+                        <!-- TOTAL -->
+                        <div class="mt-3 fw-bold category-total">
+                            Total Subcategorías: @categoria.ProductSubcategories.Count
+                        </div>
+
+                        <!-- ERROR -->
+                        @if (!string.IsNullOrWhiteSpace(mensaje))
+                        {
+                            <div class="alert alert-danger mt-3">
+                                @mensaje
+                            </div>
+                        }
+
+                    </div>
+
+                    <!-- FOOTER -->
+                    <div class="card-footer text-center">
+
+                        <a class="btn btn-secondary bi bi-arrow-left"
+                               href="/ProductCategory/Index">
+                            Volver
+                        </a>
+
+                        <button type="submit"
+                                class="btn btn-primary bi bi-floppy">
+                            Guardar
+                        </button>
+
+                        <button type="button"
+                                class="btn btn-danger bi bi-trash"
+                                @onclick="MostrarModalEliminar">
+                            Eliminar
+                        </button>
+
+                    </div>
+                </div>
+
+            </EditForm>
         </div>
-    }
-}
 
+        <!-- MODAL SIMPLE -->
+        @if (mostrarModal)
+        {
+            <div class="category-modal-overlay">
+                <div class="category-modal">
+
+                    <p class="fw-bold mb-3">
+                        ¿Desea eliminar esta categoría y todas sus subcategorías?
+                    </p>
+
+                    <div class="d-flex justify-content-end gap-2">
+                        <button class="btn btn-secondary"
+                                @onclick="CerrarModalEliminar">
+                            Cancelar
+                        </button>
+
+                        <button class="btn btn-danger"
+                                @onclick="EliminarConfirmado">
+                            Sí, eliminar
+                        </button>
+                    </div>
+
+                </div>
+            </div>
+        }
+
+    </div>
+}
 @code {
     [Parameter] public int Id { get; set; }
 

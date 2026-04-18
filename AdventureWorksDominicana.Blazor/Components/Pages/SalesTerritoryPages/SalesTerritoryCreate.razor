@@ -7,58 +7,79 @@
 @inject CountryRegionsService countryRegionsService;
 @rendermode InteractiveServer
 
-<EditForm Model="SalesTerritory" FormName="crearSalesTerritory" OnValidSubmit="Guardar">
-    <DataAnnotationsValidator />
+<div class="sales-territory-container">
 
-    <div class="container">
-        <div class="card shadow-lg">
-            <div class="card-header text-center">
-                <h3>Crear Sales Territory</h3>
-            </div>
-            <div class="card-body">
-                <div class="mb-3">
-                    <label class="form-label"><strong>Nombre</strong></label>
-                    <input class="form-control" type="text" maxlength="50" placeholder="Escriba el nombre..." @bind-value="@SalesTerritory.Name" />
-                    <ValidationMessage For="(() => SalesTerritory.Name)" />
-                </div>
-
-                <div class="mb-3">
-                    <label class="form-label"><strong>C&oacute;digo de pa&iacute;s/regi&oacute;n</strong></label>
-                    <select class="form-select" @bind="@SalesTerritory.CountryRegionCode">
-                        <option value="" disabled hidden selected>Seleccione un pa&iacute;s/regi&oacute;n...</option>
-                        @foreach (var countryRegion in ListaCountryRegion)
-                        {
-                            <option value="@countryRegion.CountryRegionCode">@countryRegion.Name (@countryRegion.CountryRegionCode)</option>
-                        }
-                    </select>
-                    <ValidationMessage For="(() => SalesTerritory.CountryRegionCode)" />
-                </div>
-
-                <div class="mb-3">
-                    <label class="form-label"><strong>Grupo</strong></label>
-                    <select class="form-select" @bind="SalesTerritory.Group">
-                        <option value="" disabled hidden selected>Seleccione un grupo...</option>
-                        <option value="Norteamerica">Norteam&eacute;rica</option>
-                        <option value="Europa">Europa</option>
-                        <option value="Pacifico">Pac&iacute;fico</option>
-                        <option value="Asia">Asia</option>
-                        <option value="Sudamerica">Sudam&eacute;rica</option>
-                        <option value="Centroamerica">Centroam&eacute;rica</option>
-                        <option value="Africa">&Aacute;frica</option>
-                        <option value="Medio Oriente">Medio Oriente</option>
-                        <option value="Oceania">Ocean&iacute;a</option>
-                        <option value="Caribe">Caribe</option>
-                    </select>
-                    <ValidationMessage For="(() => SalesTerritory.Group)" />
-                </div>
-            </div>
-            <div class="card-footer text-center">
-                <a class="btn btn-secondary bi bi-arrow-left" href="/SalesTerritory/Index"> Volver</a>
-                <button class="btn btn-primary bi bi-floppy" type="submit"> Guardar</button>
-            </div>
+    <!-- HEADER -->
+    <div class="sales-territory-header">
+        <div>
+            <h3>Crear Territorio de Venta</h3>
+            <span>Registro de nuevos territorios comerciales</span>
         </div>
     </div>
-</EditForm>
+
+    <!-- FORM -->
+    <div class="sales-territory-form">
+        <EditForm Model="SalesTerritory" OnValidSubmit="Guardar">
+            <DataAnnotationsValidator />
+
+            <div class="card shadow-lg">
+
+                <div class="card-body">
+
+                    <!-- SECCIÓN -->
+                    <h5 class="section-title">
+                        <i class="bi bi-geo"></i> Información General
+                    </h5>
+
+                    <div class="mb-3">
+                        <label class="form-label"><strong>Nombre</strong></label>
+                        <input class="form-control" type="text" maxlength="50"
+                               placeholder="Ej: Norteamérica - Este"
+                               @bind-value="SalesTerritory.Name" />
+                        <ValidationMessage For="(() => SalesTerritory.Name)" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label"><strong>País / Región</strong></label>
+                        <select class="form-select" @bind="SalesTerritory.CountryRegionCode">
+                            <option value="">— Seleccione —</option>
+                            @foreach (var c in ListaCountryRegion)
+                            {
+                                <option value="@c.CountryRegionCode">@c.Name (@c.CountryRegionCode)</option>
+                            }
+                        </select>
+                        <ValidationMessage For="(() => SalesTerritory.CountryRegionCode)" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label"><strong>Grupo</strong></label>
+                        <select class="form-select" @bind="SalesTerritory.Group">
+                            <option value="">— Seleccione —</option>
+                            <option value="Norteamerica">Norteamérica</option>
+                            <option value="Europa">Europa</option>
+                            <option value="Pacifico">Pacífico</option>
+                            <option value="Asia">Asia</option>
+                            <option value="Sudamerica">Sudamérica</option>
+                            <option value="Centroamerica">Centroamérica</option>
+                            <option value="Africa">África</option>
+                            <option value="Medio Oriente">Medio Oriente</option>
+                            <option value="Oceania">Oceanía</option>
+                            <option value="Caribe">Caribe</option>
+                        </select>
+                        <ValidationMessage For="(() => SalesTerritory.Group)" />
+                    </div>
+
+                </div>
+
+                <div class="card-footer text-center">
+                    <a class="btn btn-secondary bi bi-arrow-left" href="/SalesTerritory/Index"> Volver</a>
+                    <button class="btn btn-primary bi bi-floppy" type="submit"> Guardar</button>
+                </div>
+
+            </div>
+        </EditForm>
+    </div>
+</div>
 
 @code {
     public List<CountryRegion> ListaCountryRegion { get; set; } = new List<CountryRegion>();

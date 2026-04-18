@@ -9,60 +9,131 @@
 @inject NavigationManager navigationManager;
 @inject Contexto contexto
 
-<EditForm Model="Store" FormName="editarStore" OnValidSubmit="Guardar">
-    <DataAnnotationsValidator />
+<div class="store-edit-container">
 
-    <div class="container">
-        <div class="card">
-            <div class="card-header text-center">
-                <h4>Editar Store</h4>
-            </div>
-            <div class="card-body">
-                <div class="mb-3">
-                    <label class="form-label"><strong>ID</strong></label>
-                    <label class="form-control">@Store.BusinessEntityId</label>
-                </div>
-
-                <div class="mb-3">
-                    <label class="form-label"><strong>Nombre</strong></label>
-                    <input class="form-control" type="text" maxlength="50" @bind-value="Store.Name" placeholder="Escriba el nombre..." />
-                    <ValidationMessage For="(() => Store.Name)" />
-                </div>
-
-                <div class="mb-3">
-                    <label class="form-label"><strong>Sales Person</strong></label>
-                    <InputSelect class="form-select" @bind-Value="Store.SalesPersonId">
-                        <option value="" disabled selected hidden>Seleccione un sales person (opcional)...</option>
-                        <option value="">Ninguno</option>
-                        @foreach (var sp in ListaSalesPerson)
-                        {
-                            <option value="@sp.BusinessEntityId">ID @sp.BusinessEntityId</option>
-                        }
-                    </InputSelect>
-                    <ValidationMessage For="(() => Store.SalesPersonId)" />
-                </div>
-
-                <div class="mb-3">
-                    <label class="form-label"><strong>Demographics (xml) - Opcional</strong></label>
-                    <textarea class="form-control" rows="4" @bind="Store.Demographics" placeholder="Información demográfica (xml)"></textarea>
-                    <ValidationMessage For="(() => Store.Demographics)" />
-                </div>
-
-                <div class="mb-3">
-                    <label class="form-label"><strong>Fecha de modificación</strong></label>
-                    <input class="form-control" type="datetime-local" @bind-value="Store.ModifiedDate" />
-                    <ValidationMessage For="(() => Store.ModifiedDate)" />
-                </div>
-            </div>
-
-            <div class="card-footer text-center">
-                <a class="btn btn-secondary bi bi-arrow-left" href="/Store/Index"> Volver</a>
-                <button class="btn btn-primary bi bi-floppy" type="submit"> Guardar</button>
-                <button class="btn btn-danger bi bi-trash" type="button" @onclick="Eliminar"> Eliminar</button>
-            </div>
+    <!-- HEADER -->
+    <div class="store-edit-header">
+        <div>
+            <h3>Editar Store</h3>
+            <span>Modificación de tienda existente</span>
         </div>
     </div>
-</EditForm>
+
+    <!-- FORM -->
+    <div class="store-edit-form">
+        <EditForm Model="Store" FormName="editarStore" OnValidSubmit="Guardar">
+            <DataAnnotationsValidator />
+
+            <div class="card shadow-lg">
+                <div class="card-body">
+
+                    <!-- SECCIÓN -->
+                    <h5 class="section-title">
+                        <i class="bi bi-shop"></i> Información General
+                    </h5>
+
+                    <!-- ID -->
+                    <div class="mb-3">
+                        <label class="form-label">
+                            <strong>ID</strong>
+                        </label>
+
+                        <input class="form-control"
+                               value="@Store.BusinessEntityId"
+                               disabled />
+                    </div>
+
+                    <!-- NOMBRE -->
+                    <div class="mb-3">
+                        <label class="form-label">
+                            <strong>Nombre</strong>
+                        </label>
+
+                        <input class="form-control"
+                               type="text"
+                               maxlength="50"
+                               @bind-value="Store.Name"
+                               placeholder="Escriba el nombre..." />
+
+                        <ValidationMessage For="(() => Store.Name)" />
+                    </div>
+
+                    <!-- SALES PERSON -->
+                    <div class="mb-3">
+                        <label class="form-label">
+                            <strong>Sales Person</strong>
+                        </label>
+
+                        <InputSelect class="form-select"
+                                     @bind-Value="Store.SalesPersonId">
+                            <option value="">Seleccione...</option>
+                            <option value="">Ninguno</option>
+
+                            @foreach (var sp in ListaSalesPerson)
+                            {
+                                <option value="@sp.BusinessEntityId">
+                                    ID @sp.BusinessEntityId
+                                </option>
+                            }
+                        </InputSelect>
+
+                        <ValidationMessage For="(() => Store.SalesPersonId)" />
+                    </div>
+
+                    <!-- DEMOGRAPHICS -->
+                    <div class="mb-3">
+                        <label class="form-label">
+                            <strong>Demographics (XML)</strong>
+                        </label>
+
+                        <textarea class="form-control textarea"
+                                  rows="4"
+                                  @bind="Store.Demographics"
+                                      placeholder="Información demográfica (xml)">
+                        </textarea>
+
+                            <ValidationMessage For="(() => Store.Demographics)" />
+                        </div>
+
+                        <!-- FECHA -->
+                        <div class="mb-3">
+                            <label class="form-label">
+                                <strong>Fecha de modificación</strong>
+                            </label>
+
+                            <input class="form-control"
+                                   type="datetime-local"
+                                   @bind-value="Store.ModifiedDate" />
+
+                            <ValidationMessage For="(() => Store.ModifiedDate)" />
+                        </div>
+
+                    </div>
+
+                    <!-- FOOTER -->
+                    <div class="card-footer text-center">
+
+                        <a class="btn btn-secondary bi bi-arrow-left"
+                               href="/Store/Index">
+                            Volver
+                        </a>
+
+                        <button class="btn btn-primary bi bi-floppy"
+                                type="submit">
+                            Guardar
+                        </button>
+
+                        <button class="btn btn-danger bi bi-trash"
+                                type="button"
+                                @onclick="Eliminar">
+                            Eliminar
+                        </button>
+
+                    </div>
+                </div>
+            </EditForm>
+        </div>
+    </div>
 
 @code {
     [Parameter]

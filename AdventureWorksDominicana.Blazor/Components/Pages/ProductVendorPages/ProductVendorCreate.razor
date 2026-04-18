@@ -11,21 +11,34 @@
 
 <PageTitle>Nuevo Proveedor de Producto</PageTitle>
 
-<EditForm Model="productVendor" OnValidSubmit="Guardar">
-    <DataAnnotationsValidator />
+<div class="product-vendor-form-container">
 
-    <div class="container mt-4">
-        <div class="card shadow-lg">
-            <div class="card-header text-center">
-                <h3>Nuevo Proveedor de Producto</h3>
-            </div>
-            <div class="card-body">
-                
-                <div class="row">
-                    <div class="col-md-6 mb-3">
+    <!-- HEADER -->
+    <div class="product-vendor-form-header">
+        <div>
+            <h3>Nuevo Proveedor de Producto</h3>
+            <span>Registro de relación producto-proveedor</span>
+        </div>
+    </div>
+
+    <!-- FORM -->
+    <div class="product-vendor-form">
+
+        <EditForm Model="productVendor" OnValidSubmit="Guardar">
+            <DataAnnotationsValidator />
+
+            <div class="card shadow-lg">
+                <div class="card-body">
+
+                    <!-- SECCIÓN: RELACIÓN -->
+                    <h5 class="section-title">
+                        <i class="bi bi-link-45deg"></i> Relación
+                    </h5>
+
+                    <div class="mb-3">
                         <label class="form-label"><strong>Producto</strong></label>
                         <InputSelect class="form-select" @bind-Value="productVendor.ProductId">
-                            <option value="0">-- Seleccione Producto --</option>
+                            <option value="0">Seleccione Producto...</option>
                             @foreach (var prod in listaProductos)
                             {
                                 <option value="@prod.ProductId">@prod.Name</option>
@@ -34,10 +47,10 @@
                         <ValidationMessage For="() => productVendor.ProductId" />
                     </div>
 
-                    <div class="col-md-6 mb-3">
+                    <div class="mb-3">
                         <label class="form-label"><strong>Proveedor</strong></label>
                         <InputSelect class="form-select" @bind-Value="productVendor.BusinessEntityId">
-                            <option value="0">-- Seleccione Proveedor --</option>
+                            <option value="0">Seleccione Proveedor...</option>
                             @foreach (var vendor in listaProveedores)
                             {
                                 <option value="@vendor.BusinessEntityId">@vendor.Name</option>
@@ -45,76 +58,113 @@
                         </InputSelect>
                         <ValidationMessage For="() => productVendor.BusinessEntityId" />
                     </div>
-                </div>
 
-                <div class="row">
-                    <div class="col-md-6 mb-3">
+                    <!-- SECCIÓN: PRECIOS -->
+                    <h5 class="section-title mt-4">
+                        <i class="bi bi-currency-dollar"></i> Costos
+                    </h5>
+
+                    <div class="mb-3">
                         <label class="form-label"><strong>Precio Estándar</strong></label>
-                        <InputNumber class="form-control" @bind-Value="productVendor.StandardPrice" step="0.01" />
+                        <InputNumber class="form-control"
+                                     @bind-Value="productVendor.StandardPrice"
+                                     step="0.01" />
                         <ValidationMessage For="() => productVendor.StandardPrice" />
                     </div>
 
-                    <div class="col-md-6 mb-3">
+                    <div class="mb-3">
                         <label class="form-label"><strong>Unidad de Medida</strong></label>
                         <InputSelect class="form-select" @bind-Value="productVendor.UnitMeasureCode">
-                            <option value="">-- Seleccione Unidad --</option>
+                            <option value="">Seleccione Unidad...</option>
                             @foreach (var unidad in listaUnidades)
                             {
-                                <option value="@unidad.UnitMeasureCode">@unidad.Name (@unidad.UnitMeasureCode)</option>
+                                <option value="@unidad.UnitMeasureCode">
+                                    @unidad.Name (@unidad.UnitMeasureCode)
+                                </option>
                             }
                         </InputSelect>
                         <ValidationMessage For="() => productVendor.UnitMeasureCode" />
                     </div>
-                </div>
 
-                <div class="row">
-                    <div class="col-md-4 mb-3">
+                    <!-- SECCIÓN: LOGÍSTICA -->
+                    <h5 class="section-title mt-4">
+                        <i class="bi bi-truck"></i> Logística
+                    </h5>
+
+                    <div class="mb-3">
                         <label class="form-label"><strong>Tiempo Promedio de Entrega</strong></label>
-                        <InputNumber class="form-control" @bind-Value="productVendor.AverageLeadTime" />
+                        <InputNumber class="form-control"
+                                     @bind-Value="productVendor.AverageLeadTime" />
                         <ValidationMessage For="() => productVendor.AverageLeadTime" />
                     </div>
 
-                    <div class="col-md-4 mb-3">
+                    <div class="mb-3">
+                        <label class="form-label"><strong>Fecha Último Recibo</strong></label>
+                        <InputDate class="form-control"
+                                   @bind-Value="productVendor.LastReceiptDate" />
+                        <ValidationMessage For="() => productVendor.LastReceiptDate" />
+                    </div>
+
+                    <!-- SECCIÓN: HISTÓRICO -->
+                    <h5 class="section-title mt-4">
+                        <i class="bi bi-clock-history"></i> Histórico
+                    </h5>
+
+                    <div class="mb-3">
                         <label class="form-label"><strong>Costo Último Recibo</strong></label>
-                        <InputNumber class="form-control" @bind-Value="productVendor.LastReceiptCost" step="0.01" />
+                        <InputNumber class="form-control"
+                                     @bind-Value="productVendor.LastReceiptCost"
+                                     step="0.01" />
                         <ValidationMessage For="() => productVendor.LastReceiptCost" />
                     </div>
 
-                    <div class="col-md-4 mb-3">
-                        <label class="form-label"><strong>Fecha Último Recibo</strong></label>
-                        <InputDate class="form-control" @bind-Value="productVendor.LastReceiptDate" />
-                        <ValidationMessage For="() => productVendor.LastReceiptDate" />
-                    </div>
-                </div>
+                    <!-- SECCIÓN: ÓRDENES -->
+                    <h5 class="section-title mt-4">
+                        <i class="bi bi-box-seam"></i> Órdenes
+                    </h5>
 
-                <div class="row">
-                    <div class="col-md-4 mb-3">
+                    <div class="mb-3">
                         <label class="form-label"><strong>Cantidad Mínima de Orden</strong></label>
-                        <InputNumber class="form-control" @bind-Value="productVendor.MinOrderQty" />
+                        <InputNumber class="form-control"
+                                     @bind-Value="productVendor.MinOrderQty" />
                         <ValidationMessage For="() => productVendor.MinOrderQty" />
                     </div>
 
-                    <div class="col-md-4 mb-3">
+                    <div class="mb-3">
                         <label class="form-label"><strong>Cantidad Máxima de Orden</strong></label>
-                        <InputNumber class="form-control" @bind-Value="productVendor.MaxOrderQty" />
+                        <InputNumber class="form-control"
+                                     @bind-Value="productVendor.MaxOrderQty" />
                         <ValidationMessage For="() => productVendor.MaxOrderQty" />
                     </div>
 
-                    <div class="col-md-4 mb-3">
+                    <div class="mb-3">
                         <label class="form-label"><strong>Cantidad en Orden</strong></label>
-                        <InputNumber class="form-control" @bind-Value="productVendor.OnOrderQty" />
+                        <InputNumber class="form-control"
+                                     @bind-Value="productVendor.OnOrderQty" />
                         <ValidationMessage For="() => productVendor.OnOrderQty" />
                     </div>
+
+                </div>
+
+                <!-- FOOTER -->
+                <div class="card-footer text-center">
+                    <a class="btn btn-secondary bi bi-arrow-left"
+                           href="/ProductVendor/Index">
+                        Volver
+                    </a>
+
+                    <button class="btn btn-primary bi bi-floppy"
+                            type="submit">
+                        Guardar
+                    </button>
                 </div>
 
             </div>
-            <div class="card-footer text-center">
-                <a class="btn btn-secondary bi bi-arrow-left" href="/ProductVendor/Index"> Volver</a>
-                <button class="btn btn-primary bi bi-floppy" type="submit"> Guardar</button>
-            </div>
-        </div>
+
+        </EditForm>
+
     </div>
-</EditForm>
+</div>
 
 @code {
     public ProductVendor productVendor { get; set; } = new ProductVendor { LastReceiptDate = DateTime.Now };

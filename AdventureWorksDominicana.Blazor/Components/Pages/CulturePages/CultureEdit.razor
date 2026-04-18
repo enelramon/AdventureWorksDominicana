@@ -14,55 +14,97 @@
 }
 else
 {
-    <EditForm Model="culture" FormName="editarCulture" OnValidSubmit="Guardar">
-        <DataAnnotationsValidator />
+    <div class="culture-edit-container">
 
-        <div class="container">
-            <div class="card shadow-lg">
-                <div class="card-header text-center">
-                    <h4>Editar Cultura</h4>
-                </div>
-                <div class="card-body">
-                    <h5 class="pb-3">Datos de la Cultura</h5>
-                    
-
-                    <div class="mb-3">
-                        <label><strong>ID de Cultura</strong></label>
-                        <input class="form-control" value="@culture.CultureId" disabled />
-                        <ValidationMessage For="(() => culture.CultureId)" />
-                    </div>
-
-
-                    <div class="mb-3">
-                        <label><strong>Nombre</strong></label>
-                        <input class="form-control" type="text" maxlength="50" @bind="culture.Name" placeholder="Escriba el nombre de la cultura..." />
-                        <ValidationMessage For="(() => culture.Name)" />
-                    </div>
-
-
-                    <div class="mb-3">
-                        <label><strong>Última Modificación</strong></label>
-                        <input class="form-control" type="text" value="@culture.ModifiedDate.ToString("dd/MM/yyyy")" disabled />
-                        <ValidationMessage For="(() => culture.ModifiedDate)" />
-                    </div>
-
-                    @if (!string.IsNullOrWhiteSpace(mensaje))
-                    {
-                        <div class="alert alert-danger mt-3">
-                            @mensaje
-                        </div>
-                    }
-                </div>
-                <div class="card-footer text-center">
-                    <a class="btn btn-secondary bi bi-arrow-left" href="/Culture/Index"> Volver</a>
-                    <button class="btn btn-primary bi bi-floppy" type="submit"> Modificar</button>
-                    <button class="btn btn-danger bi bi-trash" type="button" @onclick="Eliminar"> Eliminar</button>
-                </div>
+        <!-- HEADER -->
+        <div class="culture-edit-header">
+            <div>
+                <h3>Editar Cultura</h3>
+                <span>Modificación de cultura existente</span>
             </div>
         </div>
-    </EditForm>
-}
 
+        <!-- FORM -->
+        <div class="culture-edit-form">
+            <EditForm Model="culture" OnValidSubmit="Guardar">
+                <DataAnnotationsValidator />
+
+                <div class="card shadow-lg">
+                    <div class="card-body">
+
+                        <!-- SECCIÓN -->
+                        <h5 class="section-title">
+                            <i class="bi bi-globe"></i> Datos de la Cultura
+                        </h5>
+
+                        <!-- ID -->
+                        <div class="mb-3">
+                            <label class="form-label">
+                                <strong>ID de Cultura</strong>
+                            </label>
+
+                            <input class="form-control"
+                                   value="@culture.CultureId"
+                                   disabled />
+                        </div>
+
+                        <!-- NOMBRE -->
+                        <div class="mb-3">
+                            <label class="form-label">
+                                <strong>Nombre</strong>
+                            </label>
+
+                            <input class="form-control"
+                                   type="text"
+                                   maxlength="50"
+                                   @bind="culture.Name"
+                                   placeholder="Ej: Español (República Dominicana)" />
+
+                            <ValidationMessage For="(() => culture.Name)" />
+                        </div>
+
+                        <!-- FECHA -->
+                        <div class="mb-3">
+                            <label class="form-label">
+                                <strong>Última Modificación</strong>
+                            </label>
+
+                            <input class="form-control"
+                                   value="@culture.ModifiedDate.ToString("dd/MM/yyyy")"
+                                   disabled />
+                        </div>
+
+                        @if (!string.IsNullOrWhiteSpace(mensaje))
+                        {
+                            <div class="alert alert-danger mt-3">
+                                @mensaje
+                            </div>
+                        }
+
+                    </div>
+
+                    <!-- FOOTER -->
+                    <div class="card-footer text-center">
+
+                        <a class="btn btn-secondary bi bi-arrow-left" href="/Culture/Index">
+                            Volver
+                        </a>
+
+                        <button class="btn btn-primary bi bi-floppy" type="submit">
+                            Modificar
+                        </button>
+
+                        <button class="btn btn-danger bi bi-trash" type="button" @onclick="Eliminar">
+                            Eliminar
+                        </button>
+
+                    </div>
+                </div>
+            </EditForm>
+        </div>
+
+    </div>
+}
 @code {
     [Parameter]
     public string CultureId { get; set; } = string.Empty;

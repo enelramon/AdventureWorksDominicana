@@ -56,6 +56,12 @@
                             </div>
 
                             <div class="col-md-3 mb-3">
+                                <label class="form-label fw-bold">Sueldo M&aacute;ximo</label>
+                                <InputNumber class="form-control" @bind-Value="Modelo.MaxWage" />
+                                <ValidationMessage For="@(() => Modelo.MaxWage)" class="text-danger" />
+                            </div>
+
+                            <div class="col-md-3 mb-3">
                                 <label class="form-label fw-bold">Exento ISR (Anual)</label>
                                 <InputNumber class="form-control" @bind-Value="Modelo.IsrAnnualExemption" />
                                 <ValidationMessage For="@(() => Modelo.IsrAnnualExemption)" class="text-danger" />
@@ -143,7 +149,7 @@
     {
         mensajeError = string.Empty;
         // Agrego valores por defecto comunes segun la ley actual de TSS
-        Modelo = new PayrollParameter { IsActive = true, SfsPct = 0.0304m, AfpPct = 0.0287m, MinimumWage = 16262.50m };
+        Modelo = new PayrollParameter { IsActive = true, SfsPct = 0.0304m, AfpPct = 0.0287m, MinimumWage = 16262.50m, MaxWage = 500000.00m };
     }
 
     private void Editar(PayrollParameter item)

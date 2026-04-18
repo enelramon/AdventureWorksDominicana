@@ -1,0 +1,87 @@
+﻿/* CONTENEDOR */
+.product-vendor-form-container {
+    max-width: 900px;
+    margin: auto;
+    padding: 20px;
+}
+
+/* HEADER */
+.product-vendor-form-header {
+    margin-bottom: 20px;
+}
+
+    .product-vendor-form-header h3 {
+        margin: 0;
+        color: #01398C;
+    }
+
+    .product-vendor-form-header span {
+        font-size: 0.9rem;
+        color: #6b7280;
+    }
+
+/* FORM */
+.product-vendor-form {
+    margin-top: 20px;
+}
+
+    /* CARD */
+    .product-vendor-form .card {
+        background-color: #F5F5F5;
+        border: 2px solid #E6E6E6;
+        border-radius: 20px;
+        box-shadow: 0 10px 25px -5px rgba(0,0,0,0.05), 0 8px 20px -6px rgba(0,0,0,0.02);
+    }
+
+    .product-vendor-form .card-body {
+        padding: 24px;
+    }
+
+    .product-vendor-form .card-footer {
+        background: white;
+        border-top: 1px solid #e5e7eb;
+        border-radius: 0 0 20px 20px;
+        padding: 16px;
+    }
+
+/* SECCIONES */
+.section-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #01398C;
+    margin-bottom: 16px;
+    padding-bottom: 8px;
+    border-bottom: 2px solid #e5e7eb;
+}
+
+/* INPUTS */
+.product-vendor-form .form-control,
+.product-vendor-form .form-select {
+    width: 100%;
+    border-radius: 10px;
+    border: 1px solid #dbeafe;
+}
+
+    .product-vendor-form .form-control:focus,
+    .product-vendor-form .form-select:focus {
+        border-color: #466EDB;
+        box-shadow: 0 0 0 2px rgba(70,110,219,0.15);
+    }
+
+/* BOTONES */
+.product-vendor-form .btn-primary {
+    background: #466EDB;
+    border: none;
+    border-radius: 10px;
+}
+
+    .product-vendor-form .btn-primary:hover {
+        background: #01398C;
+    }
+
+.product-vendor-form .btn-secondary {
+    background: #6b7280;
+    border: none;
+    color: white;
+    border-radius: 10px;
+}
