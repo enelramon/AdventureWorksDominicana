@@ -203,6 +203,7 @@
         // Verifico que realmente buscaron y seleccionaron a alguien
         if (!SelectedPersonId.HasValue)
         {
+            errorPersona = true;
             mensajeError = "Debe elegir una persona.";
             return;
         }
@@ -217,6 +218,8 @@
         // Verifico que asignaran los datos iniciales de trabajo
         if (SelectedDepartmentId == 0 || SelectedShiftId == 0)
         {
+            if (SelectedDepartmentId == 0) errorDepartamento = true;
+            if (SelectedShiftId == 0) errorTanda = true;
             mensajeError = "Debe asignar un Departamento y una Tanda al empleado.";
             return;
         }
@@ -235,6 +238,7 @@
         var empleadoExistente = await employeeService.Buscar(SelectedPersonId.Value);
         if (empleadoExistente != null)
         {
+            errorPersona = true;
             mensajeError = "Esta persona ya se encuentra registrada como empleado en el sistema.";
             return;
         }
