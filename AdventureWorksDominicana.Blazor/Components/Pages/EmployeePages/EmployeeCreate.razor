@@ -11,152 +11,179 @@
 
 <PageTitle>Creaci&oacute;n de Empleado</PageTitle>
 
-<EditForm Model="Employee" FormName="crearEmployee" OnValidSubmit="Guardar">
-    <DataAnnotationsValidator />
+@if (editContext != null)
+{
+    <EditForm EditContext="editContext" FormName="crearEmployee" OnSubmit="Guardar">
+        <DataAnnotationsValidator />
 
-    <div class="container mb-5">
-        <div class="card shadow-lg">
-            
-            <div class="card-header d-flex justify-content-start">
-                <h5 class="card-title">Creaci&oacute;n de Empleado</h5>
-            </div>
-            
-            <div class="card-body">
-                
-                @if (!string.IsNullOrWhiteSpace(mensajeError))
-                {
-                    <div class="alert alert-danger" role="alert">
-                        <i class="bi bi-exclamation-triangle-fill me-2"></i> @mensajeError
-                    </div>
-                }
+        <div class="container mb-5">
+            <div class="card shadow-lg">
 
-                <h5 class="mt-2 text-primary border-bottom pb-2">Datos Personales</h5>
-                
-                <div class="row mt-3">
-                    <div class="col-md-6 mb-3">
-                        <label class="form-label fw-bold">Persona</label>
-                        <PersonSearch @bind-PersonaId="SelectedPersonId" />
-                        <ValidationMessage For="(() => Employee.BusinessEntityId)" class="text-danger" />
-                    </div>
-                    <div class="col-md-6 mb-3">
-                        <label class="form-label fw-bold">N&uacute;mero de c&eacute;dula</label>
-                        <InputText class="form-control" maxlength="13" @bind-Value="Employee.NationalIdnumber" placeholder="Ej: 000-0000000-0" />
-                        <ValidationMessage For="(() => Employee.NationalIdnumber)" class="text-danger" />
-                    </div>
-                    <div class="col-md-4 mb-3">
-                        <label class="form-label fw-bold">G&eacute;nero</label>
-                        <InputSelect class="form-select" @bind-Value="Employee.Gender">
-                            <option value="" selected hidden disabled>Seleccione...</option>
-                            <option value="M">Masculino</option>
-                            <option value="F">Femenino</option>
-                        </InputSelect>
-                        <ValidationMessage For="(() => Employee.Gender)" class="text-danger" />
-                    </div>
-                    <div class="col-md-4 mb-3">
-                        <label class="form-label fw-bold">Estado civil</label>
-                        <InputSelect class="form-select" @bind-Value="Employee.MaritalStatus">
-                            <option value="" selected hidden disabled>Seleccione...</option>
-                            <option value="M">Casado/a</option>
-                            <option value="S">Soltero/a</option>
-                        </InputSelect>
-                        <ValidationMessage For="(() => Employee.MaritalStatus)" class="text-danger" />
-                    </div>
-                    <div class="col-md-4 mb-3">
-                        <label class="form-label fw-bold">Fecha de nacimiento</label>
-                        <InputDate class="form-control" @bind-Value="Employee.BirthDate" />
-                        <ValidationMessage For="(() => Employee.BirthDate)" class="text-danger" />
-                    </div>
+                <div class="card-header d-flex justify-content-start">
+                    <h5 class="card-title">Creaci&oacute;n de Empleado</h5>
                 </div>
 
-                <h5 class="mt-4 text-primary border-bottom pb-2">Datos Laborales</h5>
-                
-                <div class="row mt-3">
-                    <div class="col-md-6 mb-3">
-                        <label class="form-label fw-bold">Puesto</label>
-                        <InputText class="form-control" maxlength="50" @bind-Value="Employee.JobTitle" placeholder="Ej: Software Engineer" />
-                        <ValidationMessage For="(() => Employee.JobTitle)" class="text-danger" />
-                    </div>
-                    <div class="col-md-6 mb-3">
-                        <label class="form-label fw-bold">Usuario (Login)</label>
-                        <InputText class="form-control" maxlength="256" @bind-Value="Employee.LoginId" placeholder="Ej: dominio\usuario" />
-                        <ValidationMessage For="(() => Employee.LoginId)" class="text-danger" />
-                    </div>
-                    <div class="col-md-4 mb-3">
-                        <label class="form-label fw-bold">Fecha de contrataci&oacute;n</label>
-                        <InputDate class="form-control" @bind-Value="Employee.HireDate" />
-                        <ValidationMessage For="(() => Employee.HireDate)" class="text-danger" />
-                    </div>
-                    <div class="col-md-4 mb-3">
-                        <label class="form-label fw-bold">Horas Vacaciones</label>
-                        <InputNumber class="form-control" @bind-Value="Employee.VacationHours" />
-                        <ValidationMessage For="(() => Employee.VacationHours)" class="text-danger" />
-                    </div>
-                    <div class="col-md-4 mb-3">
-                        <label class="form-label fw-bold">Horas Enfermedad</label>
-                        <InputNumber class="form-control" @bind-Value="Employee.SickLeaveHours" />
-                        <ValidationMessage For="(() => Employee.SickLeaveHours)" class="text-danger" />
-                    </div>
-                </div>
+                <div class="card-body">
 
-                <h5 class="mt-4 text-primary border-bottom pb-2">Asignaci&oacute;n Inicial</h5>
-                
-                <div class="row mt-3">
-                    <div class="col-md-6 mb-3">
-                        <label class="form-label fw-bold">Departamento</label>
-                        <select class="form-select" @bind="SelectedDepartmentId" required>
-                            <option value="0" selected hidden disabled>Seleccione un departamento...</option>
-                            @foreach (var depto in Departamentos)
+                    @if (!string.IsNullOrWhiteSpace(mensajeError))
+                    {
+                        <div class="alert alert-danger" role="alert">
+                            <i class="bi bi-exclamation-triangle-fill me-2"></i> @mensajeError
+                        </div>
+                    }
+
+                    <h5 class="mt-2 text-primary border-bottom pb-2">Datos Personales</h5>
+
+                    <div class="row mt-3">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold">Persona</label>
+                            <div class="@(errorPersona ? "border border-danger rounded p-1" : "")">
+                                <PersonSearch @bind-PersonaId="SelectedPersonId" />
+                            </div>
+                            @if (errorPersona)
                             {
-                                <option value="@depto.DepartmentId">@depto.Name</option>
+                                <div class="text-danger small mt-1">Debe elegir una persona.</div>
                             }
-                        </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold">N&uacute;mero de c&eacute;dula</label>
+                            <InputText class="form-control" maxlength="13" @bind-Value="Employee.NationalIdnumber" placeholder="Ej: 000-0000000-0" />
+                            <ValidationMessage For="(() => Employee.NationalIdnumber)" class="text-danger" />
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label fw-bold">G&eacute;nero</label>
+                            <InputSelect class="form-select" @bind-Value="Employee.Gender">
+                                <option value="" selected hidden disabled>Seleccione...</option>
+                                <option value="M">Masculino</option>
+                                <option value="F">Femenino</option>
+                            </InputSelect>
+                            <ValidationMessage For="(() => Employee.Gender)" class="text-danger" />
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label fw-bold">Estado civil</label>
+                            <InputSelect class="form-select" @bind-Value="Employee.MaritalStatus">
+                                <option value="" selected hidden disabled>Seleccione...</option>
+                                <option value="M">Casado/a</option>
+                                <option value="S">Soltero/a</option>
+                            </InputSelect>
+                            <ValidationMessage For="(() => Employee.MaritalStatus)" class="text-danger" />
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label fw-bold">Fecha de nacimiento</label>
+                            <InputDate class="form-control" @bind-Value="Employee.BirthDate" />
+                            <ValidationMessage For="(() => Employee.BirthDate)" class="text-danger" />
+                        </div>
                     </div>
-                    <div class="col-md-6 mb-3">
-                        <label class="form-label fw-bold">Tanda (Turno)</label>
-                        <select class="form-select" @bind="SelectedShiftId" required>
-                            <option value="0" selected hidden disabled>Seleccione un turno...</option>
-                            @foreach (var turno in Turnos)
+
+                    <h5 class="mt-4 text-primary border-bottom pb-2">Datos Laborales</h5>
+
+                    <div class="row mt-3">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold">Puesto</label>
+                            <InputText class="form-control" maxlength="50" @bind-Value="Employee.JobTitle" placeholder="Ej: Software Engineer" />
+                            <ValidationMessage For="(() => Employee.JobTitle)" class="text-danger" />
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold">Usuario (Login)</label>
+                            <InputText class="form-control" maxlength="256" @bind-Value="Employee.LoginId" placeholder="Ej: dominio\usuario" />
+                            <ValidationMessage For="(() => Employee.LoginId)" class="text-danger" />
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label fw-bold">Fecha de contrataci&oacute;n</label>
+                            <InputDate class="form-control" @bind-Value="Employee.HireDate" />
+                            <ValidationMessage For="(() => Employee.HireDate)" class="text-danger" />
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label fw-bold">Horas Vacaciones</label>
+                            <InputNumber class="form-control" @bind-Value="Employee.VacationHours" />
+                            <ValidationMessage For="(() => Employee.VacationHours)" class="text-danger" />
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label fw-bold">Horas Enfermedad</label>
+                            <InputNumber class="form-control" @bind-Value="Employee.SickLeaveHours" />
+                            <ValidationMessage For="(() => Employee.SickLeaveHours)" class="text-danger" />
+                        </div>
+                    </div>
+
+                    <h5 class="mt-4 text-primary border-bottom pb-2">Asignaci&oacute;n Inicial</h5>
+
+                    <div class="row mt-3">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold">Departamento</label>
+                            <InputSelect class="@($"form-select {(errorDepartamento ? "is-invalid" : "")}")" @bind-Value="SelectedDepartmentId">
+                                <option value="0" selected hidden disabled>Seleccione un departamento...</option>
+                                @foreach (var depto in Departamentos)
+                                {
+                                    <option value="@depto.DepartmentId">@depto.Name</option>
+                                }
+                            </InputSelect>
+                            @if (errorDepartamento)
                             {
-                                <option value="@turno.ShiftId">@turno.Name (@turno.StartTime - @turno.EndTime)</option>
+                                <div class="text-danger small mt-1">Debe seleccionar un departamento.</div>
                             }
-                        </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold">Tanda (Turno)</label>
+                            <InputSelect class="@($"form-select {(errorTanda ? "is-invalid" : "")}")" @bind-Value="SelectedShiftId">
+                                <option value="0" selected hidden disabled>Seleccione un turno...</option>
+                                @foreach (var turno in Turnos)
+                                {
+                                    <option value="@turno.ShiftId">@turno.Name (@turno.StartTime - @turno.EndTime)</option>
+                                }
+                            </InputSelect>
+                            @if (errorTanda)
+                            {
+                                <div class="text-danger small mt-1">Debe seleccionar una tanda.</div>
+                            }
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold">Sueldo Inicial por Hora (RD$)</label>
+                            <InputNumber class="form-control" step="0.01" @bind-Value="InitialRateDOP" placeholder="0.00" />
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold">Frecuencia de Pago</label>
+                            <InputSelect class="form-select" @bind-Value="InitialPayFrequency">
+                                <option value="1">Mensual</option>
+                                <option value="2">Quincenal</option>
+                            </InputSelect>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold">N&uacute;mero de Cuenta (Banreservas)</label>
+                            <InputText class="@($"form-control {(errorCuenta ? "is-invalid" : "")}")"
+                                       maxlength="10"
+                                       @bind-Value="Employee.BankAccountNumber"
+                                       placeholder="Ej: 9601234567" />
+                            <small class="text-muted">La cuenta debe tener 10 d&iacute;gitos.</small>
+                            <ValidationMessage For="(() => Employee.BankAccountNumber)" class="text-danger" />
+                        </div>
                     </div>
-                    <div class="col-md-6 mb-3">
-                        <label class="form-label fw-bold">Sueldo Inicial por Hora (RD$)</label>
-                        <InputNumber class="form-control" step="0.01" min="@(6.5m * TasaCambio)" max="@(200m * TasaCambio)" @bind-Value="InitialRateDOP" placeholder="0.00" required />
-                    </div>
-                    <div class="col-md-6 mb-3">
-                        <label class="form-label fw-bold">Frecuencia de Pago</label>
-                        <select class="form-select" @bind="InitialPayFrequency" required>
-                            <option value="1">Mensual</option>
-                            <option value="2">Quincenal</option>
-                        </select>
-                    </div>
-                    <div class="col-md-6 mb-3">
-                        <label class="form-label fw-bold">N&uacute;mero de Cuenta (Banreservas)</label>
-                        <InputText class="form-control" maxlength="20" @bind-Value="Employee.BankAccountNumber" placeholder="Ej: 9601234567" />
-                        <small class="text-muted">M&iacute;nimo 10 d&iacute;gitos para cuentas de ahorro.</small>
-                        <ValidationMessage For="(() => Employee.BankAccountNumber)" class="text-danger" />
-                    </div>
+
                 </div>
 
-            </div>
-            
-            <div class="card-footer d-flex justify-content-center gap-2">
-                <a href="Employee/Index" class="btn btn-secondary d-flex gap-1">
-                    <i class="bi bi-arrow-left"></i>
-                    <span>Volver</span>
-                </a>
-                <button class="btn btn-primary bi bi-floppy" type="submit"> Guardar</button>
+                <div class="card-footer d-flex justify-content-center gap-2">
+                    <a href="Employee/Index" class="btn btn-secondary d-flex gap-1">
+                        <i class="bi bi-arrow-left"></i>
+                        <span>Volver</span>
+                    </a>
+                    <button class="btn btn-primary bi bi-floppy" type="submit"> Guardar</button>
+                </div>
             </div>
         </div>
-    </div>
-</EditForm>
+    </EditForm>
+}
 
 @code {
     public Employee Employee { get; set; } = new Employee();
+    private EditContext? editContext;
+    private ValidationMessageStore? messageStore;
+
     private int? SelectedPersonId;
     private string mensajeError = string.Empty;
+
+    private bool errorPersona = false;
+    private bool errorDepartamento = false;
+    private bool errorTanda = false;
+    private bool errorCuenta = false;
 
     private short SelectedDepartmentId = 0;
     private byte SelectedShiftId = 0;
@@ -169,6 +196,9 @@
 
     protected override async Task OnInitializedAsync()
     {
+        editContext = new(Employee);
+        messageStore = new(editContext);
+
         // Pongo los valores predeterminados para cuando abren el formulario
         Employee.HireDate = DateOnly.FromDateTime(DateTime.Today);
         Employee.BirthDate = DateOnly.FromDateTime(DateTime.Today.AddYears(-18));
@@ -178,33 +208,69 @@
         // Cargo las listas de la base de datos para llenar los select
         Departamentos = await departmentService.GetList(d => true);
         Turnos = await shiftService.GetList(s => true);
-        
+
         // Asigno el sueldo minimo por defecto usando la tasa de cambio
         InitialRateDOP = 6.5m * TasaCambio;
     }
 
     public async Task Guardar()
     {
+        messageStore?.Clear();
         mensajeError = string.Empty;
+        errorPersona = false;
+        errorDepartamento = false;
+        errorTanda = false;
+        errorCuenta = false;
+
+        // Validamos el estado inicial del EditContext (DataAnnotations)
+        bool esValido = editContext!.Validate();
 
         // Verifico que realmente buscaron y seleccionaron a alguien
-        if (!SelectedPersonId.HasValue)
+        if (!SelectedPersonId.HasValue || SelectedPersonId == 0)
         {
-            mensajeError = "Debe elegir una persona.";
-            return;
+            errorPersona = true;
+            esValido = false;
         }
 
         // Reviso que la cedula tenga la estructura correcta dominicana
         if (!personService.EsCedulaValida(Employee.NationalIdnumber))
         {
-            mensajeError = "La cédula ingresada no es válida.";
-            return;
+            messageStore?.Add(() => Employee.NationalIdnumber, "La cédula ingresada no es válida.");
+            esValido = false;
         }
 
         // Verifico que asignaran los datos iniciales de trabajo
-        if (SelectedDepartmentId == 0 || SelectedShiftId == 0)
+        if (SelectedDepartmentId == 0) { errorDepartamento = true; esValido = false; }
+        if (SelectedShiftId == 0) { errorTanda = true; esValido = false; }
+
+        // Validamos la cuenta bancaria: exactamente 10 dígitos numéricos
+        var cuentaLimpia = Employee.BankAccountNumber?.Replace("-", "").Trim() ?? "";
+        if (cuentaLimpia.Length != 10 || !cuentaLimpia.All(char.IsDigit))
         {
-            mensajeError = "Debe asignar un Departamento y una Tanda al empleado.";
+            errorCuenta = true;
+            messageStore?.Add(() => Employee.BankAccountNumber, "La cuenta de Banreservas debe tener 10 dígitos.");
+            esValido = false;
+        }
+
+        // Validamos la edad de la persona (mínimo 18 años)
+        var fechaActual = DateOnly.FromDateTime(DateTime.Today);
+        if (Employee.BirthDate.AddYears(18) > fechaActual)
+        {
+            messageStore?.Add(() => Employee.BirthDate, "El empleado debe tener al menos 18 años de edad.");
+            esValido = false;
+        }
+
+        // Validar fecha de contratación (no puede ser futura)
+        if (Employee.HireDate > fechaActual)
+        {
+            messageStore?.Add(() => Employee.HireDate, "La fecha de contratación no puede ser una fecha futura.");
+            esValido = false;
+        }
+
+        // Si hay errores de validación, notificamos al contexto y paramos
+        if (!esValido)
+        {
+            editContext.NotifyValidationStateChanged();
             return;
         }
 
@@ -250,7 +316,7 @@
 
         // Mando a insertar todo junto
         bool guardado = await employeeService.Guardar(Employee);
-        
+
         if (guardado)
         {
             toastService.ShowSuccess("Empleado creado correctamente.");

@@ -6,85 +6,87 @@
 
 <PageTitle>Location Index</PageTitle>
 
-<div class="container mt-4">
-    <div class="card shadow-lg">
-        
-        <div class="card-header d-flex justify-content-between align-items-center">
-            <h5 class="card-title mb-0">Registro de Ubicaciones</h5>
-            <a href="Location/Create" class="btn btn-primary d-flex align-items-center gap-2">
-                <i class="bi bi-plus-square"></i>
-                <span>Crear Nueva</span>
-            </a>
+<div class="location-container">
+
+    <!-- HEADER -->
+    <div class="location-header">
+        <div>
+            <h3>Ubicaciones</h3>
+            <span>Gestión y consulta de ubicaciones</span>
         </div>
-        
-        <div class="card-body">
-            
-            <div class="row">
-                <div class="col-md-3">
-                    <label class="form-label fw-bold">Desde</label>
-                </div>
-                <div class="col-md-3">
-                    <label class="form-label fw-bold">Hasta</label>
-                </div>
-                <div class="col-md-3">
-                    <label class="form-label fw-bold">Filtro:</label>
-                </div>
-                <div class="col-md-3">
-                    <label class="form-label fw-bold">Buscar:</label>
+
+        <a class="btn btn-primary" href="/Location/Create">
+            <i class="bi bi-plus-square"></i> Crear Nueva
+        </a>
+    </div>
+
+    <!-- FILTROS -->
+    <div class="location-filters">
+        <div class="row g-3">
+
+            <div class="col-12 col-md-6 col-lg-3">
+                <label class="form-label">Desde</label>
+                <input class="form-control" type="date" @bind="StartDate" />
+            </div>
+
+            <div class="col-12 col-md-6 col-lg-3">
+                <label class="form-label">Hasta</label>
+                <input class="form-control" type="date" @bind="EndDate" />
+            </div>
+
+            <div class="col-12 col-md-6 col-lg-3">
+                <label class="form-label">Filtro</label>
+                <select class="form-select" @bind="Filtro">
+                    <option value="">Seleccione...</option>
+                    <option value="LocationId">ID de Ubicación</option>
+                    <option value="Name">Nombre</option>
+                </select>
+            </div>
+
+            <div class="col-12 col-md-6 col-lg-3">
+                <label class="form-label">Buscar</label>
+                <div class="input-group">
+                    <input class="form-control" @bind="ValorFiltro" placeholder="Buscar..." />
+
+                    <button class="btn btn-primary" @onclick="Buscar">
+                        <i class="bi bi-search"></i>
+                    </button>
+
+                    <button class="btn btn-outline-primary" @onclick="Restablecer">
+                        <i class="bi bi-arrow-clockwise"></i>
+                    </button>
                 </div>
             </div>
 
-            <div class="row mb-4">
-                <div class="col-md-3">
-                    <input class="form-control" type="date" @bind="StartDate" />
-                </div>
-                <div class="col-md-3">
-                    <input class="form-control" type="date" @bind="EndDate" />
-                </div>
-                <div class="col-md-3">
-                    <select class="form-select" @bind="Filtro">
-                        <option value="">Seleccione una opci&oacute;n</option>
-                        <option value="LocationId">ID de Ubicación</option>
-                        <option value="Name">Nombre</option>
-                    </select>
-                </div>
-                <div class="col-md-3">
-                    <div class="input-group">
-                        <input class="form-control" type="text" placeholder="Buscar..." @bind="ValorFiltro" />
-                        <button class="btn btn-primary" type="button" @onclick="Buscar" title="Buscar">
-                            <i class="bi bi-search"></i>
-                        </button>
-                        <button class="btn btn-outline-primary" type="button" @onclick="Restablecer" title="Limpiar Filtros">
-                            <i class="bi bi-arrow-clockwise"></i>
-                        </button>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="table-responsive">
-                <QuickGrid Items="LocationsList.AsQueryable()" Pagination="@pages" Class="table table-striped table-bordered table-hover">
-                    <PropertyColumn Property="@(l => l.LocationId)" Title="Location ID" Sortable="true" />
-                    <PropertyColumn Property="@(l => l.Name)" Title="Nombre" Sortable="true" />
-                    <PropertyColumn Property="@(l => l.CostRate)" Title="Tarifa de Costo" Sortable="true" />
-                    <PropertyColumn Property="@(l => l.Availability)" Title="Disponibilidad" Sortable="true" />
-                    <PropertyColumn Property="@(l => l.ModifiedDate)" Title="Fecha de Modificaci&oacute;n" Format="dd/MM/yyyy" Sortable="true" />
-                    <TemplateColumn Title="Opciones">
-                        <div class="d-flex gap-2">
-                            <a href="Location/Edit/@context.LocationId" class="btn btn-sm btn-outline-primary" title="Modificar">
-                                <i class="bi bi-pencil"> Modificar</i>
-                            </a>
-                        </div>
-                    </TemplateColumn>
-                </QuickGrid>
-                
-                <Paginator State="@pages" />
-            </div>
-        </div>
-
-        <div class="card-footer text-end fw-bold">
-            Total de Registros: @LocationsList.Count
         </div>
     </div>
+
+    <!-- TABLA -->
+    <div class="table-responsive location-table">
+
+        <QuickGrid Items="LocationsList.AsQueryable()"
+                   Pagination="@pages"
+                   Class="table table-hover">
+
+            <PropertyColumn Property="@(l => l.LocationId)" Title="ID" />
+            <PropertyColumn Property="@(l => l.Name)" Title="Nombre" />
+            <PropertyColumn Property="@(l => l.CostRate)" Title="Tarifa" />
+            <PropertyColumn Property="@(l => l.Availability)" Title="Disponibilidad" />
+            <PropertyColumn Property="@(l => l.ModifiedDate)" Format="dd/MM/yyyy" Title="Fecha" />
+
+            <TemplateColumn Class="text-center" Title="Acciones">
+                <a href="/Location/Edit/@context.LocationId"
+                       class="btn btn-sm btn-outline-primary">
+                    <span class="bi bi-pencil"></span> Modificar
+                </a>
+            </TemplateColumn>
+
+        </QuickGrid>
+
+        <Paginator State="@pages" />
+
+    </div>
+
 </div>
 
 @code {

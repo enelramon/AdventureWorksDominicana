@@ -1,0 +1,86 @@
+﻿/* CONTENEDOR */
+.country-index-container {
+    padding: 20px;
+}
+
+/* CARD GENERAL */
+.country-card {
+    border-radius: 20px;
+    padding: 20px;
+}
+
+/* HEADER */
+.country-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+    .country-header h3 {
+        margin: 0;
+        color: #01398C;
+    }
+
+    .country-header span {
+        font-size: 0.9rem;
+        color: #6b7280;
+    }
+
+/* 🔥 FILTROS (AQUÍ ESTABA EL ERROR) */
+.country-filters {
+    background-color: #F5F5F5;
+    border: 2px solid #E6E6E6;
+    padding: 15px;
+    border-radius: 15px;
+    margin-bottom: 20px;
+}
+
+    /* LABELS */
+    .country-filters label {
+        font-size: 0.85rem;
+        color: #374151;
+    }
+
+    /* INPUTS */
+    .country-filters .form-control,
+    .country-filters .form-select {
+        border-radius: 10px;
+        border: 1px solid #dbeafe;
+        background-color: white; /* 👈 inputs blancos sobre fondo gris */
+    }
+
+        .country-filters .form-control:focus,
+        .country-filters .form-select:focus {
+            border-color: #466EDB;
+            box-shadow: 0 0 0 2px rgba(70,110,219,0.15);
+        }
+
+/* TABLA */
+.country-table {
+    background-color: #F5F5F5;
+    border: 2px solid #E6E6E6;
+    padding: 15px;
+    border-radius: 15px;
+}
+
+/* BOTONES */
+.country-index-container .btn-primary {
+    background: #466EDB;
+    border: none;
+    border-radius: 10px;
+}
+
+    .country-index-container .btn-primary:hover {
+        background: #01398C;
+    }
+
+.country-index-container .btn-outline-primary {
+    border-color: #466EDB;
+    color: #466EDB;
+}
+
+    .country-index-container .btn-outline-primary:hover {
+        background: #466EDB;
+        color: white;
+    }

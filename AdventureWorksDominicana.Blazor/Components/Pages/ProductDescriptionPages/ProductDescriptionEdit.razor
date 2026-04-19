@@ -7,39 +7,82 @@
 @inject NavigationManager navigationManager;
 @rendermode InteractiveServer
 
-<EditForm Model="ProductDesc" FormName="editarDesc" OnValidSubmit="Guardar">
-    <DataAnnotationsValidator />
+<div class="product-description-edit-container">
 
-    <div class="container pb-5">
-        <div class="card shadow-lg">
-            <div class="card-header text-center">
-                <h4>Modificar Texto Descriptivo</h4>
-            </div>
-            <div class="card-body">
-                
-                <h5 class="pb-3 text-primary border-bottom">Contenido Comercial</h5>
-                
-                <div class="mb-3">
-                    <label><strong>ID Descripción</strong></label>
-                    <input class="form-control" type="text" value="@ProductDesc.ProductDescriptionId" disabled />
-                </div>
-
-                <div class="mb-3">
-                    <label><strong>Párrafo de Descripción *</strong></label>
-                    <textarea class="form-control" rows="5" maxlength="400" @bind="ProductDesc.Description"></textarea>
-                    <ValidationMessage For="(() => ProductDesc.Description)" />
-                    <small class="text-danger">¡Atención! Cualquier cambio aquí se reflejará automáticamente en todos los Modelos vinculados.</small>
-                </div>
-
-            </div>
-            <div class="card-footer text-center">
-                <a class="btn btn-secondary bi bi-arrow-left" href="/ProductDescription/Index"> Volver</a>
-                <button class="btn btn-primary bi bi-floppy" type="submit"> Modificar</button>
-                <button class="btn btn-danger bi bi-trash" type="button" @onclick="Eliminar"> Eliminar</button>
-            </div>
+    <!-- HEADER -->
+    <div class="product-description-edit-header">
+        <div>
+            <h3>Modificar Descripción</h3>
+            <span>Edición de contenido comercial existente</span>
         </div>
     </div>
-</EditForm>
+
+    <!-- FORM -->
+    <div class="product-description-edit-form">
+        <EditForm Model="ProductDesc" OnValidSubmit="Guardar">
+            <DataAnnotationsValidator />
+
+            <div class="card shadow-lg">
+                <div class="card-body">
+
+                    <!-- SECCIÓN -->
+                    <h5 class="section-title">
+                        <i class="bi bi-file-text"></i> Contenido Comercial
+                    </h5>
+
+                    <!-- ID -->
+                    <div class="mb-3">
+                        <label class="form-label">
+                            <strong>ID Descripción</strong>
+                        </label>
+
+                        <input class="form-control"
+                               value="@ProductDesc.ProductDescriptionId"
+                               disabled />
+                    </div>
+
+                    <!-- DESCRIPCIÓN -->
+                    <div class="mb-3">
+                        <label class="form-label">
+                            <strong>Párrafo de Descripción</strong>
+                        </label>
+
+                        <textarea class="form-control"
+                                  rows="5"
+                                  maxlength="400"
+                                      @bind="ProductDesc.Description">
+                        </textarea>
+
+                            <ValidationMessage For="(() => ProductDesc.Description)" />
+
+                            <small class="text-danger">
+                                ¡Atención! Cualquier cambio aquí se reflejará automáticamente en todos los modelos vinculados.
+                            </small>
+                        </div>
+
+                    </div>
+
+                    <!-- FOOTER -->
+                    <div class="card-footer text-center">
+
+                        <a class="btn btn-secondary bi bi-arrow-left" href="/ProductDescription/Index">
+                            Volver
+                        </a>
+
+                        <button class="btn btn-primary bi bi-floppy" type="submit">
+                            Modificar
+                        </button>
+
+                        <button class="btn btn-danger bi bi-trash" type="button" @onclick="Eliminar">
+                            Eliminar
+                        </button>
+
+                    </div>
+                </div>
+            </EditForm>
+        </div>
+
+    </div>
 
 @code {
     [Parameter]

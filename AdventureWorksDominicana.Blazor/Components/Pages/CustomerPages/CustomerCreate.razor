@@ -9,62 +9,104 @@
 @inject NavigationManager navigationManager
 @inject Contexto contexto
 
-<EditForm Model="customer" OnValidSubmit="Guardar">
-    <DataAnnotationsValidator />
-    <div class="container">
-        <div class="card shadow-lg">
-            <div class="card-header d-flex justify-content-between">
-                <h4>Crear Customer</h4>
-            </div>
-            <div class="card-body">
-                <div class="mb-3">
-                    <label class="form-label"><strong>Ultima fecha de modificaci&oacute;n:</strong></label>
-                    <label class="form-label">@customer.ModifiedDate</label>
-                </div>
-                <div class="mb-3">
-                    <label class="form-label"><strong>Person</strong></label>
-                    <InputSelect class="form-select" @bind-Value="customer.PersonId">
-                        <option value="0">Seleccione una persona...</option>
-                        @foreach (var p in ListaPeople)
-                        {
-                            <option value="@p.BusinessEntityId">@p.FirstName @p.LastName</option>
-                        }
-                    </InputSelect>
-                </div>
-                <div class="mb-3">
-                    <label class="form-label"><strong>Store</strong></label>
-                    <InputSelect class="form-select" @bind-Value="customer.StoreId">
-                        <option value="0">Seleccione una tienda...</option>
-                        @foreach (var s in ListaStores)
-                        {
-                            <option value="@s.BusinessEntityId">@s.Name</option>
-                        }
-                    </InputSelect>
-                </div>
+<div class="customer-form-container">
 
-                <div class="mb-3">
-                    <label class="form-label"><strong>Territory</strong></label>
-                    <InputSelect class="form-select" @bind-Value="customer.TerritoryId">
-                        <option value="0">Seleccione un territorio...</option>
-                        @foreach (var t in ListaTerritories)
-                        {
-                            <option value="@t.TerritoryId">@t.Name</option>
-                        }
-                    </InputSelect>
-                    <ValidationMessage For="@(() => customer.TerritoryId)" />
-                </div>
-                <div class="mb-3">
-                    <label class="form-label">El <strong>Account Number </strong>ser&aacute; auto generado al completar el registro.</label>
-                </div>
-            </div>
-            <div class="card-footer text-center">
-                <a class="btn btn-secondary bi bi-arrow-left" href="/Customer/Index"> Volver</a>
-                <button class="btn btn-primary bi bi-floppy" type="submit"> Guardar</button>
-            </div>
+    <!-- HEADER -->
+    <div class="customer-form-header">
+        <div>
+            <h3>Crear Customer</h3>
+            <span>Registro de nuevos clientes</span>
         </div>
     </div>
-</EditForm>
 
+    <!-- FORM -->
+    <div class="customer-form">
+
+        <EditForm Model="customer" OnValidSubmit="Guardar">
+            <DataAnnotationsValidator />
+
+            <div class="card shadow-lg">
+                <div class="card-body">
+
+                    <!-- SECCIÓN -->
+                    <h5 class="section-title">
+                        <i class="bi bi-person"></i> Información General
+                    </h5>
+
+                    <!-- FECHA -->
+                    <div class="mb-3">
+                        <label class="form-label">
+                            <strong>Última fecha de modificación</strong>
+                        </label>
+                        <input class="form-control" value="@customer.ModifiedDate" disabled />
+                    </div>
+
+                    <!-- PERSON -->
+                    <div class="mb-3">
+                        <label class="form-label"><strong>Person</strong></label>
+                        <InputSelect class="form-select" @bind-Value="customer.PersonId">
+                            <option value="0">Seleccione una persona...</option>
+                            @foreach (var p in ListaPeople)
+                            {
+                                <option value="@p.BusinessEntityId">@p.FirstName @p.LastName</option>
+                            }
+                        </InputSelect>
+                    </div>
+
+                    <!-- STORE -->
+                    <div class="mb-3">
+                        <label class="form-label"><strong>Store</strong></label>
+                        <InputSelect class="form-select" @bind-Value="customer.StoreId">
+                            <option value="0">Seleccione una tienda...</option>
+                            @foreach (var s in ListaStores)
+                            {
+                                <option value="@s.BusinessEntityId">@s.Name</option>
+                            }
+                        </InputSelect>
+                    </div>
+
+                    <!-- TERRITORY -->
+                    <div class="mb-3">
+                        <label class="form-label"><strong>Territory</strong></label>
+                        <InputSelect class="form-select" @bind-Value="customer.TerritoryId">
+                            <option value="0">Seleccione un territorio...</option>
+                            @foreach (var t in ListaTerritories)
+                            {
+                                <option value="@t.TerritoryId">@t.Name</option>
+                            }
+                        </InputSelect>
+                        <ValidationMessage For="@(() => customer.TerritoryId)" />
+                    </div>
+
+                    <!-- INFO -->
+                    <div class="mb-3">
+                        <small class="text-muted">
+                            El <strong>Account Number</strong> será auto generado al completar el registro.
+                        </small>
+                    </div>
+
+                </div>
+
+                <!-- FOOTER -->
+                <div class="card-footer text-center">
+
+                    <a class="btn btn-secondary bi bi-arrow-left"
+                           href="/Customer/Index">
+                        Volver
+                    </a>
+
+                    <button class="btn btn-primary bi bi-floppy"
+                            type="submit">
+                        Guardar
+                    </button>
+
+                </div>
+            </div>
+
+        </EditForm>
+
+    </div>
+</div>
 @code {
     private Customer? customer = new Customer();
     private List<Person> ListaPeople = new();

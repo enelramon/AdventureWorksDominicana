@@ -58,3 +58,21 @@ h1:focus {
 .form-floating > .form-control-plaintext:focus::placeholder, .form-floating > .form-control:focus::placeholder {
     text-align: start;
 }
+@media print {
+    .navbar, .card-header .btn-group, .card-footer, nav, .sidebar {
+        display: none !important;
+    }
+
+    .card {
+        border: none !important;
+        box-shadow: none !important;
+    }
+
+    body {
+        font-size: 12px;
+    }
+
+    .table {
+        font-size: 11px;
+    }
+}

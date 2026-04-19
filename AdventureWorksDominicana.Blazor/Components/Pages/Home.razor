@@ -1,6 +1,9 @@
 ﻿@page "/Home/Page"
 @rendermode InteractiveServer
 
+@using System.Security.Claims
+@using AdventureWorksDominicana.Data.Models
+@using AdventureWorksDominicana.Services
 @inject ProductService productService
 @inject ProductCategoryService productCategoryService
 @inject ShoppingCartItemService shoppingCartItemService
@@ -10,9 +13,19 @@
 
 <PageTitle>AdventureWorks - Tienda de Bicicletas</PageTitle>
 
+@* --- BOTÓN FLOTANTE DEL CARRITO --- *@
+<div class="cart-floating-trigger">
+    <a href="/ShoppingCart" class="cart-button">
+        <i class="bi bi-cart3"></i>
+        @if (CartCount > 0)
+        {
+            <span class="cart-badge">@CartCount</span>
+        }
+    </a>
+</div>
+
 <div class="home-container">
     
-    <!-- ==================== HERO BANNER ==================== -->
     <div class="hero-banner">
         <div class="hero-content">
             <h1>Pedalea hacia la aventura</h1>
@@ -38,7 +51,6 @@
         </div>
     </div>
 
-    <!-- ==================== CATEGORÍAS DESTACADAS ==================== -->
     <section class="categories-section">
         <h2>Categorías destacadas</h2>
         <div class="categories-grid">
@@ -69,7 +81,6 @@
         </div>
     </section>
 
-    <!-- ==================== PRODUCTOS DESTACADOS ==================== -->
     <section class="featured-section">
         <div class="section-header">
             <h2>Productos destacados</h2>
@@ -97,13 +108,16 @@
                         }
                     </div>
                     <div class="product-info">
-                        <h4>@product.Name</h4>
+                        <h4 style="color: #0d6efd;">@product.Name</h4>
                         <div class="product-category">
                             @(product.ProductSubcategory?.ProductCategory?.Name ?? "General")
                         </div>
                         <div class="product-price">
                             RD$ @product.ListPrice.ToString("N2")
                         </div>
+
+                        @* --- SE ELIMINÓ LA SECCIÓN VISUAL DE STOCK AQUÍ --- *@
+
                         <button class="btn-add" @onclick="() => AddToCart(product.ProductId)">
                             <i class="bi bi-cart-plus"></i> Agregar
                         </button>
@@ -113,39 +127,29 @@
         </div>
     </section>
 
-    <!-- ==================== OFERTAS / PROMOCIONES ==================== -->
     <section class="offers-section">
         <div class="offer-card">
-            <div class="offer-icon">
-                <i class="bi bi-truck"></i>
-            </div>
+            <div class="offer-icon"><i class="bi bi-truck"></i></div>
             <h3>Envío gratis</h3>
             <p>En compras superiores a <strong>RD$5,000</strong></p>
         </div>
         <div class="offer-card">
-            <div class="offer-icon">
-                <i class="bi bi-shield-check"></i>
-            </div>
+            <div class="offer-icon"><i class="bi bi-shield-check"></i></div>
             <h3>Garantía extendida</h3>
             <p>2 años en todos nuestros productos</p>
         </div>
         <div class="offer-card">
-            <div class="offer-icon">
-                <i class="bi bi-credit-card"></i>
-            </div>
+            <div class="offer-icon"><i class="bi bi-credit-card"></i></div>
             <h3>Pago seguro</h3>
             <p>Transacciones 100% protegidas</p>
         </div>
         <div class="offer-card">
-            <div class="offer-icon">
-                <i class="bi bi-headset"></i>
-            </div>
+            <div class="offer-icon"><i class="bi bi-headset"></i></div>
             <h3>Soporte 24/7</h3>
             <p>Atención al cliente siempre disponible</p>
         </div>
     </section>
 
-    <!-- ==================== BANNER PROMOCIONAL ==================== -->
     <div class="promo-banner">
         <div class="promo-content">
             <h3>¡Oferta especial de temporada!</h3>
@@ -154,38 +158,27 @@
         </div>
     </div>
 
-    <!-- ==================== TESTIMONIOS ==================== -->
     <section class="testimonials-section">
         <h2>Lo que dicen nuestros clientes</h2>
         <div class="testimonials-grid">
             <div class="testimonial-card">
                 <div class="rating">★★★★★</div>
                 <p>"Excelente calidad, la bicicleta llegó en perfectas condiciones y antes de lo esperado. Muy recomendados."</p>
-                <div class="customer">
-                    <strong>Juan Pérez</strong>
-                    <span>Comprador verificado</span>
-                </div>
+                <div class="customer"><strong>Juan Pérez</strong><span>Comprador verificado</span></div>
             </div>
             <div class="testimonial-card">
                 <div class="rating">★★★★★</div>
                 <p>"El servicio al cliente es increíble. Me ayudaron a elegir la bicicleta perfecta para mis necesidades."</p>
-                <div class="customer">
-                    <strong>María Gómez</strong>
-                    <span>Compradora verificada</span>
-                </div>
+                <div class="customer"><strong>María Gómez</strong><span>Compradora verificada</span></div>
             </div>
             <div class="testimonial-card">
                 <div class="rating">★★★★☆</div>
                 <p>"Buenos productos, relación calidad-precio excelente. Volveré a comprar sin duda."</p>
-                <div class="customer">
-                    <strong>Carlos Rodríguez</strong>
-                    <span>Comprador verificado</span>
-                </div>
+                <div class="customer"><strong>Carlos Rodríguez</strong><span>Comprador verificado</span></div>
             </div>
         </div>
     </section>
 
-    <!-- ==================== NEWSLETTER ==================== -->
     <div class="newsletter-section">
         <div class="newsletter-content">
             <h3>Suscríbete a nuestro newsletter</h3>
@@ -196,33 +189,51 @@
             </div>
         </div>
     </div>
-
 </div>
+
+<style>
+    /* Estilos para el carrito y estados de stock */
+    .cart-floating-trigger { position: fixed; top: 20px; right: 30px; z-index: 3000; }
+    .cart-button { background: #0d6efd; color: white; width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; text-decoration: none; box-shadow: 0 4px 15px rgba(0,0,0,0.3); transition: 0.3s; position: relative; }
+    .cart-button i { font-size: 1.8rem; }
+    .cart-badge { position: absolute; top: 0; right: 0; background: #dc3545; color: white; font-size: 0.8rem; font-weight: bold; padding: 4px 8px; border-radius: 50%; border: 2px solid white; transform: translate(25%, -25%); }
+    .btn-add:disabled { background-color: #6c757d; border-color: #6c757d; opacity: 0.7; cursor: not-allowed; }
+</style>
 
 @code {
     private List<Product> FeaturedProducts { get; set; } = new();
     private string newsletterEmail = string.Empty;
     private ClaimsPrincipal? User { get; set; }
     private string? UserEmail { get; set; }
+    private int CartCount { get; set; } = 0;
 
     protected override async Task OnInitializedAsync()
     {
-        // Obtener usuario logueado
         var authState = await authenticationStateProvider.GetAuthenticationStateAsync();
         User = authState.User;
         if (User.Identity?.IsAuthenticated == true)
         {
             UserEmail = User.FindFirst(ClaimTypes.Email)?.Value;
+            await UpdateCartCount();
         }
 
         FeaturedProducts = await productService.GetTopFeaturedProducts(8);
+    }
+
+    private async Task UpdateCartCount()
+    {
+        if (!string.IsNullOrEmpty(UserEmail))
+        {
+            var items = await shoppingCartItemService.GetList(x => x.ShoppingCartId == UserEmail);
+            CartCount = items.Sum(i => i.Quantity);
+        }
     }
 
     private async Task AddToCart(int productId)
     {
         if (string.IsNullOrEmpty(UserEmail))
         {
-            toastService.ShowWarning("Debes iniciar sesión para agregar productos al carrito");
+            toastService.ShowWarning("Debes iniciar sesión para agregar productos");
             navigationManager.NavigateTo("/Account/Login");
             return;
         }
@@ -237,7 +248,12 @@
                 DateCreated = DateTime.Now,
                 ModifiedDate = DateTime.Now
             };
+            
             await shoppingCartItemService.Guardar(cartItem);
+
+            
+
+            await UpdateCartCount();
             toastService.ShowSuccess("Producto añadido al carrito");
         }
         catch (Exception ex)
@@ -254,8 +270,7 @@
             toastService.ShowWarning("Ingresa un correo válido");
             return;
         }
-        // Lógica para suscribir a newsletter
-        toastService.ShowSuccess("¡Suscripción exitosa! Recibirás nuestras ofertas");
+        toastService.ShowSuccess("¡Suscripción exitosa!");
         newsletterEmail = string.Empty;
     }
 }

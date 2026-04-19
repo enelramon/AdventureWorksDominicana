@@ -7,74 +7,98 @@
 @inject ToastService toast
 
 <PageTitle>Editar Moneda</PageTitle>
-<EditForm Model="@currency" OnValidSubmit="Guardar">
-	<DataAnnotationsValidator />
-	<div class="container">
-		<div class="card shadow-lg">
-			<div class="card-header">
-				<h5 class="card-title text-black mb-0">Editar Registro de Moneda</h5>
-			</div>
-        
-			<div class="card-body">
-				<div class="row mb-3  d-flex gap-2">
-					<div>
-						<label class="form-label fw-bold">Código de Moneda</label>
-						<InputText class="form-control  form-control-sm w-25" @bind-Value="currency.CurrencyCode" disabled />
-					</div>
-                        
-					<div>
-						<label class="form-label fw-bold">Nombre</label>
-						<InputText class="form-control  form-control-sm w-25" @bind-Value="currency.Name" placeholder="Ej: Peso Dominicano" />
-						<ValidationMessage For="@(() => currency.Name)" />
-					</div>
-				</div>
-				<div class="mt-4 d-flex justify-content-center gap-2">
-                        
-					<a href="Currency/Index" class="btn btn-secondary">
-						<i class="bi bi-arrow-left"></i> Volver
-					</a>
 
-					<button type="submit" class="btn btn-primary">
-						<i class="bi bi-floppy"></i> Modificar
-					</button>
-				</div>
-			</div>
-		</div>
-	</div>
-</EditForm>
+<div class="product-container">
+
+    <!-- HEADER -->
+    <div class="product-header">
+        <div>
+            <h3>Editar Moneda</h3>
+            <span>Modificación de moneda existente</span>
+        </div>
+    </div>
+
+    <!-- FORM -->
+    <div class="product-form">
+        <EditForm Model="@currency" OnValidSubmit="Guardar">
+            <DataAnnotationsValidator />
+
+            <div class="card shadow-lg">
+                <div class="card-body">
+
+                    <!-- SECCIÓN -->
+                    <h5 class="section-title">
+                        <i class="bi bi-currency-dollar"></i> Información General
+                    </h5>
+
+                    <!-- CÓDIGO -->
+                    <div class="mb-3">
+                        <label class="form-label"><strong>Código de Moneda</strong></label>
+                        <InputText class="form-control"
+                                   @bind-Value="currency.CurrencyCode"
+                                   disabled />
+                    </div>
+
+                    <!-- NOMBRE -->
+                    <div class="mb-3">
+                        <label class="form-label"><strong>Nombre</strong></label>
+                        <InputText class="form-control"
+                                   @bind-Value="currency.Name"
+                                   placeholder="Ej: Peso Dominicano" />
+                        <ValidationMessage For="@(() => currency.Name)" />
+                    </div>
+
+                </div>
+
+                <!-- FOOTER -->
+                <div class="card-footer text-center">
+
+                    <a href="/Currency/Index" class="btn btn-secondary bi bi-arrow-left">
+                        Volver
+                    </a>
+
+                    <button type="submit" class="btn btn-primary bi bi-floppy">
+                        Modificar
+                    </button>
+
+                </div>
+            </div>
+        </EditForm>
+    </div>
+</div>
 
 @code {
-	[Parameter]
-	public string CurrencyCode { get; set; } = null!;
+    [Parameter]
+    public string CurrencyCode { get; set; } = null!;
 
-	private Currency currency = new Currency();
+    private Currency currency = new Currency();
 
-	protected override async Task OnInitializedAsync()
-	{
-		currency = await CurrencyService.Buscar(CurrencyCode);
+    protected override async Task OnInitializedAsync()
+    {
+        currency = await CurrencyService.Buscar(CurrencyCode);
         
-		if (currency == null)
-		{
-			toast.ShowError("No se encontró la moneda especificada.");
-		}
-	}
+        if (currency == null)
+        {
+            toast.ShowError("No se encontró la moneda especificada.");
+        }
+    }
 
-	private async Task Guardar()
-	{
-		if (currency != null)
-		{
-			var guardo = await CurrencyService.Guardar(currency);
+    private async Task Guardar()
+    {
+        if (currency != null)
+        {
+            var guardo = await CurrencyService.Guardar(currency);
             
-			if (guardo)
-			{
-				toast.ShowSuccess("Moneda actualizada correctamente.");
+            if (guardo)
+            {
+                toast.ShowSuccess("Moneda actualizada correctamente.");
 
-			}
-			else
-			{
-				toast.ShowError("Hubo un error al intentar actualizar la moneda.");
-			}
-		}
-	}
+            }
+            else
+            {
+                toast.ShowError("Hubo un error al intentar actualizar la moneda.");
+            }
+        }
+    }
 
 }

@@ -1,0 +1,112 @@
+﻿/* CONTENEDOR */
+.store-container {
+    max-width: 1200px;
+    margin: auto;
+    padding: 20px;
+}
+
+/* HEADER */
+.store-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+    .store-header h3 {
+        margin: 0;
+        color: #01398C;
+    }
+
+    .store-header span {
+        font-size: 0.9rem;
+        color: #6b7280;
+    }
+
+/* FILTROS */
+.store-filters {
+    background-color: #F5F5F5;
+    border: 2px solid #E6E6E6;
+    padding: 20px 24px;
+    border-radius: 20px;
+    margin-bottom: 24px;
+    box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 20px -6px rgba(0,0,0,0.05);
+    transition: all 0.3s ease;
+}
+
+    .store-filters:hover {
+        box-shadow: 0 10px 25px -5px rgba(0,0,0,0.15), 0 8px 20px -6px rgba(0,0,0,0.15);
+    }
+
+    .store-filters label {
+        font-size: 0.85rem;
+        color: #6b7280;
+    }
+
+    /* INPUTS */
+    .store-filters .form-control,
+    .store-filters .form-select {
+        border-radius: 10px;
+        border: 1px solid #dbeafe;
+    }
+
+        .store-filters .form-control:focus,
+        .store-filters .form-select:focus {
+            border-color: #466EDB;
+            box-shadow: 0 0 0 2px rgba(70,110,219,0.15);
+        }
+
+/* BOTONES */
+.btn-primary {
+    background: #466EDB;
+    border: none;
+}
+
+    .btn-primary:hover {
+        background: #01398C;
+    }
+
+.btn-outline-primary {
+    border-color: #466EDB;
+    color: #466EDB;
+}
+
+    .btn-outline-primary:hover {
+        background: #466EDB;
+        color: white;
+    }
+
+/* TABLA */
+.store-table {
+    background-color: #F5F5F5;
+    border: 2px solid #E6E6E6;
+    border-radius: 20px;
+    padding: 20px;
+    box-shadow: 0 10px 25px -5px rgba(0,0,0,0.15), 0 8px 20px -6px rgba(0,0,0,0.15);
+    transition: all 0.3s ease;
+}
+
+    .store-table:hover {
+        box-shadow: 0 10px 25px -5px rgba(0,0,0,0.25), 0 8px 20px -6px rgba(0,0,0,0.25);
+    }
+
+/* FOOTER */
+.store-footer {
+    margin-top: 15px;
+    text-align: right;
+}
+
+/* RESPONSIVE */
+@media (max-width: 768px) {
+    .store-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+
+    .store-filters .row {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+}

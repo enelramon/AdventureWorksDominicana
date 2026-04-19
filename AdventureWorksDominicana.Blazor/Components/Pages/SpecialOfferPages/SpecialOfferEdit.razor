@@ -9,34 +9,60 @@
 
 <PageTitle>Modificar Oferta Especial</PageTitle>
 
-<EditForm Model="Offer" OnValidSubmit="Guardar">
-    <DataAnnotationsValidator />
+<div class="specialoffer-edit-container">
 
-    <div class="container mt-4">
-        <div class="card shadow-lg">
-            <div class="card-header d-flex justify-content-between align-items-center">
-                <h5 class="card-title mb-0">Modificar Oferta Especial</h5>
-            </div>
+    <!-- HEADER -->
+    <div class="specialoffer-edit-header">
+        <div>
+            <h3>Modificar Oferta Especial</h3>
+            <span>Edición de promociones existentes</span>
+        </div>
+    </div>
 
-            <div class="card-body">
-                <div class="row g-3">
-                    <div class="col-md-12">
-                        <label class="form-label fw-bold">Descripción del Descuento</label>
-                        <InputText class="form-control" @bind-Value="Offer.Description" />
+    <!-- FORM -->
+    <div class="specialoffer-edit-form">
+        <EditForm Model="Offer" OnValidSubmit="Guardar">
+            <DataAnnotationsValidator />
+
+            <div class="card shadow-lg">
+                <div class="card-body">
+
+                    <!-- SECCIÓN -->
+                    <h5 class="section-title">
+                        <i class="bi bi-percent"></i> Información de la Oferta
+                    </h5>
+
+                    <!-- DESCRIPCIÓN -->
+                    <div class="mb-3">
+                        <label class="form-label">
+                            <strong>Descripción del Descuento</strong>
+                        </label>
+
+                        <InputText class="form-control"
+                                   @bind-Value="Offer.Description" />
+
                         <ValidationMessage For="(() => Offer.Description)" />
                     </div>
 
-                    <div class="col-md-4">
-                        <label class="form-label fw-bold">% Descuento (Ej: 15 = 15%)</label>
-                        <div class="input-group">
-                            <InputNumber class="form-control" step="0.01" @bind-Value="DiscountPorcentaje" min="0" max="100" />
-                            <span class="input-group-text">%</span>
-                        </div>
+                    <!-- DESCUENTO -->
+                    <div class="mb-3">
+                        <label class="form-label">
+                            <strong>% Descuento (Decimal)</strong>
+                        </label>
+
+                        <InputNumber class="form-control"
+                                     step="0.01"
+                                     @bind-Value="Offer.DiscountPct" />
+
                         <ValidationMessage For="(() => Offer.DiscountPct)" />
                     </div>
 
-                    <div class="col-md-4">
-                        <label class="form-label fw-bold">Tipo de Oferta</label>
+                    <!-- TIPO -->
+                    <div class="mb-3">
+                        <label class="form-label">
+                            <strong>Tipo de Oferta</strong>
+                        </label>
+
                         <InputSelect class="form-select" @bind-Value="Offer.Type">
                             <option value="">Seleccione...</option>
                             <option value="Sin Descuento">Sin Descuento</option>
@@ -46,62 +72,90 @@
                             <option value="Exceso de Inventario">Exceso de Inventario</option>
                             <option value="Nuevo Producto">Nuevo Producto</option>
                         </InputSelect>
+
                         <ValidationMessage For="(() => Offer.Type)" />
                     </div>
 
-                    <div class="col-md-4">
-                        <label class="form-label fw-bold">Categoría</label>
+                    <!-- CATEGORÍA -->
+                    <div class="mb-3">
+                        <label class="form-label">
+                            <strong>Categoría</strong>
+                        </label>
+
                         <InputSelect class="form-select" @bind-Value="Offer.Category">
                             <option value="">Seleccione...</option>
                             <option value="Customer">Customer</option>
                             <option value="Pre Seller">Pre Seller</option>
                         </InputSelect>
+
                         <ValidationMessage For="(() => Offer.Category)" />
                     </div>
 
-                    <div class="col-md-6">
-                        <label class="form-label fw-bold">Fecha Inicio</label>
-                        <InputDate class="form-control" @bind-Value="Offer.StartDate" />
-                        <ValidationMessage For="(() => Offer.StartDate)" />
+                    <!-- FECHAS -->
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">
+                                <strong>Fecha Inicio</strong>
+                            </label>
+
+                            <InputDate class="form-control" @bind-Value="Offer.StartDate" />
+                            <ValidationMessage For="(() => Offer.StartDate)" />
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">
+                                <strong>Fecha Fin</strong>
+                            </label>
+
+                            <InputDate class="form-control" @bind-Value="Offer.EndDate" />
+                            <ValidationMessage For="(() => Offer.EndDate)" />
+                        </div>
                     </div>
 
-                    <div class="col-md-6">
-                        <label class="form-label fw-bold">Fecha Fin</label>
-                        <InputDate class="form-control" @bind-Value="Offer.EndDate" />
-                        <ValidationMessage For="(() => Offer.EndDate)" />
+                    <!-- CANTIDADES -->
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">
+                                <strong>Cantidad Mínima</strong>
+                            </label>
+
+                            <InputNumber class="form-control" @bind-Value="Offer.MinQty" />
+                            <ValidationMessage For="(() => Offer.MinQty)" />
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">
+                                <strong>Cantidad Máxima</strong>
+                            </label>
+
+                            <InputNumber class="form-control" @bind-Value="Offer.MaxQty" />
+                            <ValidationMessage For="(() => Offer.MaxQty)" />
+                        </div>
                     </div>
 
-                    <div class="col-md-6">
-                        <label class="form-label fw-bold">Cantidad Mínima</label>
-                        <InputNumber class="form-control" @bind-Value="Offer.MinQty" />
-                        <ValidationMessage For="(() => Offer.MinQty)" />
-                    </div>
+                </div>
 
-                    <div class="col-md-6">
-                        <label class="form-label fw-bold">Cantidad Máxima</label>
-                        <InputNumber class="form-control" @bind-Value="Offer.MaxQty" />
-                        <ValidationMessage For="(() => Offer.MaxQty)" />
-                    </div>
+                <!-- FOOTER -->
+                <div class="card-footer text-center">
+
+                    <a class="btn btn-secondary bi bi-arrow-left" href="/SpecialOffer/Index">
+                        Volver
+                    </a>
+
+                    <button class="btn btn-primary bi bi-floppy" type="submit">
+                        Guardar
+                    </button>
+
+                    <button class="btn btn-danger bi bi-trash" type="button" @onclick="Eliminar">
+                        Eliminar
+                    </button>
+
                 </div>
             </div>
-
-            <div class="card-footer d-flex justify-content-center gap-2">
-                <a class="btn btn-secondary d-flex align-items-center gap-2" href="/SpecialOffer/Index">
-                    <i class="bi bi-arrow-left"></i>
-                    <span>Volver</span>
-                </a>
-                <button class="btn btn-primary d-flex align-items-center gap-2" type="submit">
-                    <i class="bi bi-floppy"></i>
-                    <span>Guardar Cambios</span>
-                </button>
-                <button class="btn btn-danger d-flex align-items-center gap-2" type="button" @onclick="Eliminar">
-                    <i class="bi bi-trash"></i>
-                    <span>Eliminar</span>
-                </button>
-            </div>
-        </div>
+        </EditForm>
     </div>
-</EditForm>
+
+</div>
 
 @code {
     [Parameter] public int OfferId { get; set; }

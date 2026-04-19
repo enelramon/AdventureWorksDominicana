@@ -5,64 +5,90 @@
 @inject SalesTerritoryService salesTerritoryService;
 @rendermode InteractiveServer
 
-<div class="container">
-    <div class="card shadow-lg">
-        <div class="card-header d-flex justify-content-between justify-content-center">
-            <h4>State Provinces</h4>
-            <a class="btn btn-primary bi bi-plus-square" href="/StateProvince/Create"> Crear</a>
-        </div>
-        <div class="card-body">
-            @* Encabezados *@
-            <div class="row">
-                <div class="col-3">
-                    <label>Desde:</label>
-                </div>
-                <div class="col-3">
-                    <label>Hasta:</label>
-                </div>
-                <div class="col-3">
-                    <label>Filtro:</label>
-                </div>
-                <div class="col-3">
-                    <label>Buscar:</label>
-                </div>
+<div class="state-index-container">
+
+    <div class="state-card">
+
+        <!-- HEADER -->
+        <div class="state-header">
+            <div>
+                <h3>State Provinces</h3>
+                <span>Listado de provincias y estados</span>
             </div>
 
-            @* Inputs *@
+            <a class="btn btn-primary bi bi-plus-square"
+                   href="/StateProvince/Create">
+                Crear
+            </a>
+        </div>
+
+        <!-- FILTROS -->
+        <div class="state-filters">
+
+            <div class="row">
+                <div class="col-3"><label>Desde</label></div>
+                <div class="col-3"><label>Hasta</label></div>
+                <div class="col-3"><label>Filtro</label></div>
+                <div class="col-3"><label>Buscar</label></div>
+            </div>
+
             <div class="row pb-3">
                 <div class="col-3">
                     <input class="form-control" type="datetime-local" @bind-value="FechaDesde" />
                 </div>
+
                 <div class="col-3">
                     <input class="form-control" type="datetime-local" @bind-value="FechaHasta" />
                 </div>
+
                 <div class="col-3">
                     <select class="form-select" @bind="Filtro">
-                        <option value="" disabled selected hidden>Seleccione un filtro...</option>
+                        <option value="">Seleccione...</option>
                         <option value="Nombre">Nombre</option>
-                        <option value="Codigo">C&oacute;digo</option>
-                        <option value="CodigoPais">C&oacute;digo Pa&iacute;s/Regi&oacute;n</option>
+                        <option value="Codigo">Código</option>
+                        <option value="CodigoPais">Código País/Región</option>
                     </select>
                 </div>
+
                 <div class="col-3">
                     <div class="input-group">
-                        <input class="form-control" type="text" @bind-value="ValorFiltro" placeholder="Buscar..." />
-                        <button class="btn btn-primary bi bi-search" type="button" @onclick="Filtrar"></button>
-                        <button class="btn btn-outline-primary bi bi-arrow-clockwise" type="button" @onclick="Restablecer"></button>
+                        <input class="form-control"
+                               type="text"
+                               @bind-value="ValorFiltro"
+                               placeholder="Buscar..." />
+
+                        <button class="btn btn-primary bi bi-search"
+                                type="button"
+                                @onclick="Filtrar"></button>
+
+                        <button class="btn btn-outline-primary bi bi-arrow-clockwise"
+                                type="button"
+                                @onclick="Restablecer"></button>
                     </div>
                 </div>
             </div>
 
+        </div>
+
+        <!-- TABLA -->
+        <div class="state-table">
+
             <div class="table-responsive">
-                <QuickGrid Class="table table-striped table-bordered table-hover" Pagination="@pages" Items="ListaStateProvince.AsQueryable()" ItemKey="@(s => s.StateProvinceId)">
-                    <PropertyColumn Property="@(s => s.StateProvinceId)" Sortable="true" Title="Id"></PropertyColumn>
-                    <PropertyColumn Property="@(s => s.StateProvinceCode)" Sortable="true" Title="C&oacute;digo"></PropertyColumn>
-                    <PropertyColumn Property="@(s => s.CountryRegionCode)" Sortable="true" Title="C&oacute;digo Pa&iacute;s/regi&oacute;n"></PropertyColumn>
-                    <PropertyColumn Property="@(s => s.Name)" Sortable="true" Title="Nombre"></PropertyColumn>
+                <QuickGrid Class="table table-striped table-bordered table-hover"
+                           Pagination="@pages"
+                           Items="ListaStateProvince.AsQueryable()"
+                           ItemKey="@(s => s.StateProvinceId)">
+
+                    <PropertyColumn Property="@(s => s.StateProvinceId)" Title="Id" Sortable="true" />
+                    <PropertyColumn Property="@(s => s.StateProvinceCode)" Title="Código" Sortable="true" />
+                    <PropertyColumn Property="@(s => s.CountryRegionCode)" Title="Código País/región" Sortable="true" />
+                    <PropertyColumn Property="@(s => s.Name)" Title="Nombre" Sortable="true" />
+
                     <TemplateColumn Context="options" Title="Territorio">
-                        @(ListaSalesTerritory.Find(s => s.TerritoryId == options.TerritoryId).Name ?? "Not found")
+                        @(ListaSalesTerritory.Find(s => s.TerritoryId == options.TerritoryId)?.Name ?? "Not found")
                     </TemplateColumn>
-                    <TemplateColumn class="text-center" Context="options" Title="¿Es Unico?">
+
+                    <TemplateColumn Class="text-center" Context="options" Title="¿Es Único?">
                         @if (EsUnico(options.CountryRegionCode, options.StateProvinceId))
                         {
                             <span class="bi bi-check-circle text-success"></span>
@@ -72,17 +98,23 @@
                             <span class="bi bi-x-circle text-danger"></span>
                         }
                     </TemplateColumn>
-                    <TemplateColumn Class="text-center" Context="options" Title="Acciones">
-                        <a href="/StateProvince/Edit/@options.StateProvinceId" class="btn btn-outline-primary bi bi-pencil-square"> Modificar</a>
-                    </TemplateColumn>
-                </QuickGrid>
-            </div>
-            @*Pagination*@
-            <Paginator State="@pages" />
-        </div>
-    </div>
-</div>
 
+                    <TemplateColumn Class="text-center" Context="options" Title="Acciones">
+                        <a href="/StateProvince/Edit/@options.StateProvinceId"
+                               class="btn btn-outline-primary btn-sm bi bi-pencil-square">
+                            Modificar
+                        </a>
+                    </TemplateColumn>
+
+                </QuickGrid>
+
+                <Paginator State="@pages" />
+            </div>
+        </div>
+
+    </div>
+
+</div>
 @code {
     public List<StateProvince> ListaStateProvince { get; set; } = new List<StateProvince>();
     public List<SalesTerritory> ListaSalesTerritory { get; set; } = new List<SalesTerritory>();

@@ -1,0 +1,153 @@
+﻿/* CONTENEDOR */
+.inventory-container {
+    max-width: 1200px;
+    margin: auto;
+    padding: 20px;
+}
+
+/* HEADER */
+.inventory-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+    .inventory-header h3 {
+        margin: 0;
+        color: #01398C;
+    }
+
+    .inventory-header span {
+        font-size: 0.9rem;
+        color: #6b7280;
+    }
+
+/* FILTROS */
+.inventory-filters {
+    margin-bottom: 20px;
+}
+
+/* BUSCADOR */
+.search-box {
+    position: relative;
+    max-width: 400px;
+}
+
+    .search-box input {
+        width: 100%;
+        padding: 10px 35px 10px 12px;
+        border-radius: 10px;
+        border: 1px solid #dbeafe;
+        background: #F5F5F5;
+    }
+
+        .search-box input:focus {
+            border-color: #466EDB;
+            box-shadow: 0 0 0 2px rgba(70,110,219,0.15);
+            outline: none;
+        }
+
+    .search-box i {
+        position: absolute;
+        right: 10px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #6b7280;
+    }
+
+/* TABLA */
+.inventory-table {
+    background-color: #F5F5F5;
+    border: 2px solid #E6E6E6;
+    border-radius: 20px;
+    padding: 20px;
+    box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1);
+}
+
+/* PRODUCTO */
+.product-info strong {
+    color: #111827;
+}
+
+.product-meta {
+    font-size: 0.8rem;
+    color: #6b7280;
+    display: flex;
+    gap: 8px;
+}
+
+/* BADGES */
+.badge {
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+    .badge.success {
+        background-color: #dcfce7;
+        color: #166534;
+    }
+
+    .badge.danger {
+        background-color: #fee2e2;
+        color: #991b1b;
+    }
+
+/* BOTONES AJUSTE */
+.adjust-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 6px;
+}
+
+.btn-adjust {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #f3f4f6;
+    transition: all 0.2s ease;
+}
+
+    .btn-adjust.minus:hover {
+        background: #fee2e2;
+        color: #dc2626;
+    }
+
+    .btn-adjust.plus:hover {
+        background: #dcfce7;
+        color: #16a34a;
+    }
+
+    .btn-adjust:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+
+/* BOTÓN PRINCIPAL */
+.btn-primary {
+    background: #466EDB;
+    border: none;
+}
+
+    .btn-primary:hover {
+        background: #01398C;
+    }
+
+/* RESPONSIVE */
+@media (max-width: 768px) {
+    .inventory-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+
+    .search-box {
+        max-width: 100%;
+    }
+}

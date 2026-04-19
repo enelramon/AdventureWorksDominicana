@@ -46,6 +46,14 @@
                     </div>
                 </div>
 
+                <div class="col-md-6 mb-3">
+                    <label class="form-label fw-bold">Frecuencia de Pago</label>
+                    <select class="form-select" @bind="InitialPayFrequency" required>
+                        <option value="1">Mensual</option>
+                        <option value="2">Quincenal</option>
+                    </select>
+                </div>
+
                 <div class="mb-4 mt-2">
                     <button type="button" class="btn btn-warning" @onclick="CalcularBorrador">
                         <i class="bi bi-calculator"></i> Procesar C&aacute;lculos
@@ -59,7 +67,7 @@
                         <h6 class="fw-bold text-dark"><i class="bi bi-exclamation-triangle-fill text-warning me-2"></i> Empleados Omitidos</h6>
                         <p class="small mb-2">Los siguientes empleados no fueron incluidos en este cálculo de nómina. Debe corregir sus perfiles antes de guardar:</p>
                         <ul class="mb-0 small text-danger fw-bold">
-                            @foreach(var error in ErroresDeCalculo)
+                            @foreach (var error in ErroresDeCalculo)
                             {
                                 <li>@error</li>
                             }
@@ -70,7 +78,7 @@
                 @if (NuevaNomina.PayrollDetails.Any())
                 {
                     <h5 class="fw-bold text-secondary mb-3">Previsualizaci&oacute;n de Pagos</h5>
-                    
+
                     <div class="table-responsive">
                         <QuickGrid Items="NuevaNomina.PayrollDetails.AsQueryable()" Class="table table-striped table-bordered table-hover" Pagination="@pagesBorrador">
                             <PropertyColumn Property="@(d => d.BusinessEntityId)" Title="Empleado ID" Sortable="true" />
@@ -97,17 +105,25 @@
 </EditForm>
 
 @code {
-    private Payroll NuevaNomina { get; set; } = new Payroll
-    {
-        PeriodStartDate = DateTime.Today,
-        PeriodEndDate = DateTime.Today.AddDays(15),
-        Status = PayrollStatus.Borrador
-    };
+    private byte InitialPayFrequency { get; set; }
+
+    private Payroll NuevaNomina { get; set; } = new();
+
 
     // lista para atrapar los errores
     private List<string> ErroresDeCalculo = new List<string>();
 
     private PaginationState pagesBorrador = new PaginationState { ItemsPerPage = 5 };
+
+    protected override async Task OnInitializedAsync()
+    {
+        InitialPayFrequency = 1;
+
+        NuevaNomina.PeriodEndDate = DateTime.Today.AddDays(15);
+        NuevaNomina.PeriodStartDate = DateTime.Today;
+        NuevaNomina.Status = PayrollStatus.Pendiente;
+        NuevaNomina.PayFrequency = InitialPayFrequency;
+    }
 
     private async Task CalcularBorrador()
     {
@@ -115,7 +131,7 @@
         {
             NuevaNomina.PayrollDetails.Clear();
             ErroresDeCalculo.Clear(); // Limpiamos errores anteriores
-            
+
             // la lista que devuelve el servicio
             ErroresDeCalculo = await payrollService.ProcesarNomina(NuevaNomina);
 

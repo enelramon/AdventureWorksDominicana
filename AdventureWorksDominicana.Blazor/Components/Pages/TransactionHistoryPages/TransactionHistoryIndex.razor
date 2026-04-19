@@ -7,70 +7,86 @@
 
 <PageTitle>Historial de Transacci&oacute;n</PageTitle>
 
-<div class="container-fluid mt-4">
-    <div class="card shadow-lg">
+<div class="transaction-container">
 
-        <div class="card-header bg-white d-flex justify-content-between align-items-center">
-            <h4 class="mb-0"> Registro Historial de Transacci&oacute;n</h4>
+    <!-- HEADER -->
+    <div class="transaction-header">
+        <div>
+            <h3>Historial de Transacciones</h3>
+            <span>Consulta y monitoreo de movimientos de productos</span>
         </div>
+    </div>
 
-        <div class="card-body">
+    <!-- FILTROS -->
+    <div class="transaction-filters">
 
-            <div class="row mb-4 align-items-end">
-                <div class="col-md-3">
-                    <label class="form-label">Desde</label>
-                    <input class="form-control" type="date" @bind="Desde" />
-                </div>
+        <div class="row g-3">
 
-                <div class="col-md-3">
-                    <label class="form-label ">Hasta</label>
-                    <input class="form-control" type="date" @bind="Hasta" />
-                </div>
-
-                <div class="col-md-3">
-                    <label class="form-label ">Filtrar por</label>
-                    <select class="form-select" @bind="Filtros">
-                        <option value="">Seleccione una opci&oacute;n</option>
-                        <option value="Id">Id</option>
-                        <option value="NombreProducto">Producto</option>
-                    </select>
-                </div>
-
-                <div class="col-md-3">
-                    <label class="form-label ">Buscar</label>
-                    <div class="input-group">
-                        <input class="form-control" type="text" placeholder="Buscar..." @bind="ValorFiltro" />
-                        <button class="btn btn-outline-primary" type="button" @onclick="Buscar">
-                            <i class="bi bi-search"></i>
-                        </button>
-                        <button class="btn btn-outline-secondary" type="button" title="Limpiar Filtros" @onclick="Restablecer">
-                            <i class="bi bi-arrow-counterclockwise"></i>
-                        </button>
-                    </div>
-                </div>
-            </div>
-            <div class="table-responsive">
-                <QuickGrid Items="listaTransacciones.AsQueryable()" Class="table table-striped table-bordered table-hover">
-                    <PropertyColumn Property="@(c => c.TransactionId)" Title="ID" />
-                    <PropertyColumn Property="@(c => c.TransactionDate.ToString("dd/MM/yyyy"))" Title="Fecha" />
-                    <PropertyColumn Property="@(c => c.ModifiedDate.ToString("dd/MM/yyyy"))" Title="Fecha Modificación" />
-
-                    <PropertyColumn Property="@(c => c.Product.Name)" Title="Producto" />
-                    <PropertyColumn Property="@(c => c.ActualCost)" Title="Costo Actual" />
-                </QuickGrid>
+            <div class="col-md-3">
+                <label class="form-label">Desde</label>
+                <input class="form-control" type="date" @bind="Desde" />
             </div>
 
+            <div class="col-md-3">
+                <label class="form-label">Hasta</label>
+                <input class="form-control" type="date" @bind="Hasta" />
+            </div>
+
+            <div class="col-md-3">
+                <label class="form-label">Filtrar por</label>
+                <select class="form-select" @bind="Filtros">
+                    <option value="">Seleccione una opción</option>
+                    <option value="Id">Id</option>
+                    <option value="NombreProducto">Producto</option>
+                </select>
+            </div>
+
+            <div class="col-md-3">
+                <label class="form-label">Buscar</label>
+                <div class="input-group">
+                    <input class="form-control"
+                           type="text"
+                           placeholder="Buscar..."
+                           @bind="ValorFiltro" />
+
+                    <button class="btn btn-primary" @onclick="Buscar">
+                        <i class="bi bi-search"></i>
+                    </button>
+
+                    <button class="btn btn-outline-primary" @onclick="Restablecer">
+                        <i class="bi bi-arrow-clockwise"></i>
+                    </button>
+                </div>
+            </div>
 
         </div>
 
-        <div class="card-footer text-end fw-bold bg-white">
-            Total de Registros: @listaTransacciones.Count
-        </div>
+    </div>
+
+    <!-- TABLA -->
+    <div class="transaction-table">
+
+        <QuickGrid Items="listaTransacciones.AsQueryable()"
+                   Class="table table-hover"
+                   Pagination="@pages">
+
+            <PropertyColumn Property="@(c => c.TransactionId)" Title="ID" />
+            <PropertyColumn Property="@(c => c.TransactionDate.ToString("dd/MM/yyyy"))" Title="Fecha" />
+            <PropertyColumn Property="@(c => c.ModifiedDate.ToString("dd/MM/yyyy"))" Title="Fecha Modificación" />
+
+            <PropertyColumn Property="@(c => c.Product.Name)" Title="Producto" />
+            <PropertyColumn Property="@(c => c.ActualCost)" Title="Costo Actual" />
+
+        </QuickGrid>
+
+        <Paginator State="@pages" />
     </div>
 </div>
 
 @code {
     private List<TransactionHistory> listaTransacciones = new();
+    private PaginationState pages = new PaginationState { ItemsPerPage = 10 };
+
     private DateTime? Desde;
     private DateTime? Hasta;
     private string Filtros = "";

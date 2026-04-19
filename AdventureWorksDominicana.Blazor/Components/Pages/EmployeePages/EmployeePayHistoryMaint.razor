@@ -5,6 +5,7 @@
 @using Microsoft.AspNetCore.Components.QuickGrid
 
 @rendermode InteractiveServer
+@inject PayrollParameterService PayrollParameterService
 @inject EmployeeService employeeService
 @inject EmployeePayHistoryService payHistoryService
 @inject ToastService toastService
@@ -46,8 +47,9 @@
                     </div>
 
                     <div class="col-md-4 mt-2">
-                        <label class="form-label fw-bold">Monto (RD$ / hora)</label>
-                        <InputNumber class="form-control" step="0.01" min="@(6.5m * TasaCambio)" max="@(200m * TasaCambio)" @bind-Value="MontoIngresadoDOP" placeholder="0.00" required />
+                        <label class="form-label fw-bold">Sueldo Bruto</label>
+                        <InputNumber class="form-control" step="0.01" @bind-Value="NuevoSueldo.Rate" placeholder="0.00"/>
+                        <ValidationMessage For="() => NuevoSueldo.Rate" />
                     </div>
 
                     <div class="col-md-4 mt-2">
@@ -73,8 +75,8 @@
                     
                     <PropertyColumn Property="@(p => p.RateChangeDate)" Title="Vigencia" Format="dd/MM/yyyy" Sortable="true" />
                     
-                    <TemplateColumn Title="Sueldo por Hora (RD$)">
-                        <span>RD$ @((context.Rate * TasaCambio).ToString("N2"))</span>
+                    <TemplateColumn Title="Sueldo Bruto (RD$)">
+                        <span>RD$ @(context.Rate.ToString("N2"))</span>  
                     </TemplateColumn>
 
                     <TemplateColumn Title="Frecuencia">
@@ -113,20 +115,34 @@
 </div>
 
 @code {
+
+
     [Parameter]
     public int EmployeeId { get; set; }
-    
+
     private string NombreEmpleado = "";
     private string mensajeError = string.Empty;
     private IQueryable<EmployeePayHistory> ListaPagos { get; set; } = Enumerable.Empty<EmployeePayHistory>().AsQueryable();
     private EmployeePayHistory NuevoSueldo { get; set; } = new();
     private PaginationState pages = new PaginationState { ItemsPerPage = 5 };
 
-    private const decimal TasaCambio = 60.50m;
-    private decimal MontoIngresadoDOP { get; set; }
+    private decimal SueldoMinimo { get; set; } 
+
+    private decimal SueldoMaximo { get; set; }    
+
 
     protected override async Task OnInitializedAsync()
     {
+        var parametros = await PayrollParameterService.ObtenerActive();
+        if (parametros == null)
+        {
+            mensajeError = "No hay parámetros de nómina activos. Contacte al administrador.";
+            return;
+        }
+
+        SueldoMinimo = parametros.MinimumWage;
+        SueldoMaximo = parametros.MaxWage;
+
         // Busco al empleado en la base de datos
         var emp = await employeeService.Buscar(EmployeeId);
         if (emp != null)
@@ -134,17 +150,16 @@
             NombreEmpleado = $"{emp.BusinessEntity.FirstName} {emp.BusinessEntity.LastName}";
             await CargarHistorial();
         }
-        
+
         // Inicializo el objeto para el formulario
         NuevoSueldo = new EmployeePayHistory
         {
             BusinessEntityId = EmployeeId,
             RateChangeDate = DateTime.Today,
-            PayFrequency = 1
+            PayFrequency = 1,
+            Rate = SueldoMinimo
         };
-        
-        // Calculo el sueldo inicial a mostrar usando la tasa de cambio
-        MontoIngresadoDOP = 6.5m * TasaCambio;
+
     }
 
     private async Task CargarHistorial()
@@ -159,21 +174,14 @@
         mensajeError = string.Empty;
 
         // Valido el monto ingresado contra los limites usando la tasa
-        if (MontoIngresadoDOP < (6.5m * TasaCambio) || MontoIngresadoDOP > (200m * TasaCambio))
-        {
-            mensajeError = $"El sueldo por hora debe estar entre RD$ {6.5m * TasaCambio:N2} y RD$ {200m * TasaCambio:N2}.";
-            return;
-        }
 
-        // Convierto a dolares para insertarlo en la base de datos
-        decimal montoConvertidoUSD = MontoIngresadoDOP / TasaCambio;
-
-        NuevoSueldo.Rate = montoConvertidoUSD;
+                
         NuevoSueldo.ModifiedDate = DateTime.Now;
 
         // Ejecuto el guardado
         var exito = await payHistoryService.Guardar(NuevoSueldo);
-        
+
+   
         if (exito)
         {
             toastService.ShowSuccess("Sueldo asignado correctamente.");
@@ -184,9 +192,9 @@
             {
                 BusinessEntityId = EmployeeId,
                 RateChangeDate = DateTime.Today,
-                PayFrequency = 1
+                PayFrequency = 1,
+                Rate = SueldoMinimo
             };
-            MontoIngresadoDOP = 6.5m * TasaCambio;
         }
         else
         {

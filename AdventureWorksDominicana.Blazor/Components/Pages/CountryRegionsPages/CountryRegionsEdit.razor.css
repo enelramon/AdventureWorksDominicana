@@ -1,0 +1,81 @@
+﻿/* CONTENEDOR */
+.country-edit-container {
+    max-width: 700px;
+    margin: auto;
+    padding: 20px;
+}
+
+/* HEADER */
+.country-edit-header {
+    margin-bottom: 20px;
+}
+
+    .country-edit-header h3 {
+        margin: 0;
+        color: #01398C;
+    }
+
+    .country-edit-header span {
+        font-size: 0.9rem;
+        color: #6b7280;
+    }
+
+/* FORM */
+.country-edit-form {
+    background-color: #F5F5F5;
+    border: 2px solid #E6E6E6;
+    border-radius: 20px;
+    padding: 20px;
+}
+
+    /* LABELS */
+    .country-edit-form .form-label {
+        font-size: 0.85rem;
+        color: #374151;
+    }
+
+    /* INPUTS */
+    .country-edit-form .form-control {
+        border-radius: 10px;
+        border: 1px solid #dbeafe;
+        background-color: white;
+    }
+
+        /* DISABLED INPUT */
+        .country-edit-form .form-control:disabled {
+            background-color: #e5e7eb;
+            cursor: not-allowed;
+        }
+
+        /* FOCUS */
+        .country-edit-form .form-control:focus {
+            border-color: #466EDB;
+            box-shadow: 0 0 0 2px rgba(70,110,219,0.15);
+        }
+
+/* FOOTER */
+.country-edit-footer {
+    margin-top: 20px;
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+}
+
+/* BOTONES */
+.country-edit-container .btn-primary {
+    background: #466EDB;
+    border: none;
+    border-radius: 10px;
+}
+
+    .country-edit-container .btn-primary:hover {
+        background: #01398C;
+    }
+
+.country-edit-container .btn-secondary {
+    border-radius: 10px;
+}
+
+.country-edit-container .btn-danger {
+    border-radius: 10px;
+}

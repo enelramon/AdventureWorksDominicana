@@ -18,7 +18,7 @@
         <div class="card-header d-flex justify-content-between align-items-center bg-light">
             <h5 class="card-title m-0">Detalle de N&oacute;mina #@PayrollId</h5>
             <div class="btn-group">
-                @if (Nomina != null && Nomina.Status == PayrollStatus.Borrador)
+                @if (Nomina != null && Nomina.Status == PayrollStatus.Pendiente)
                 {
                     <button class="btn btn-warning bi bi-check-circle" @onclick="AprobarNomina"> Aprobar</button>
                 }
@@ -31,6 +31,9 @@
                 {
                     <button class="btn btn-info text-white bi bi-file-earmark-arrow-down" @onclick="DescargarTXT"> TXT Banco</button>
                 }
+
+                <button class="btn btn-outline-secondary bi bi-printer" @onclick="Imprimir"> Imprimir</button>
+
                 <a class="btn btn-secondary bi bi-arrow-left" href="/Payroll/Index"> Volver</a>
             </div>
         </div>
@@ -56,7 +59,6 @@
                 <div class="row border-bottom pb-3 mb-4">
                     <div class="col-md-6">
                         <h3 class="fw-bold">AdventureWorks Dominicana</h3>
-                        <p class="text-muted mb-0">RNC: 1-01-00000-1</p>
                     </div>
                     <div class="col-md-6 text-md-end">
                         <h4 class="text-secondary fw-bold">REPORTE DE PAGO</h4>
@@ -138,7 +140,7 @@
 @code {
     [Parameter]
     public int PayrollId { get; set; }
-    
+
     private Payroll? Nomina;
     private string mensajeError = string.Empty;
 
@@ -146,7 +148,7 @@
     {
         // Agrego la busqueda de la nomina al cargar
         Nomina = await payrollService.Buscar(PayrollId);
-        
+
         if (Nomina == null)
         {
             toastService.ShowError("La nómina solicitada no existe.");
@@ -154,16 +156,21 @@
         }
     }
 
+    private async Task Imprimir()
+    {
+        await JS.InvokeVoidAsync("window.print");
+    }
+
     private async Task AprobarNomina()
     {
         if (Nomina == null) return;
-        
+
         mensajeError = string.Empty;
         // Cambio el estado a aprobada para habilitar el pago
         Nomina.Status = PayrollStatus.Aprobada;
-        
+
         var exito = await payrollService.Guardar(Nomina);
-        
+
         if (exito) toastService.ShowSuccess("La nómina ha sido aprobada correctamente.");
         else mensajeError = "No se pudo actualizar el estado de la nómina.";
     }
@@ -173,14 +180,14 @@
         try
         {
             if (Nomina == null) return;
-            
+
             mensajeError = string.Empty;
             // Establezco la fecha de pago y el estado final
             Nomina.Status = PayrollStatus.Pagada;
             Nomina.PaymentDate = DateTime.Now;
-            
+
             var exito = await payrollService.Guardar(Nomina);
-            
+
             if (exito) toastService.ShowSuccess("El pago ha sido procesado y registrado.");
             else mensajeError = "Error al intentar registrar el pago en el sistema.";
         }
@@ -197,7 +204,7 @@
             mensajeError = string.Empty;
             // Solicito el contenido formateado para el banco
             string contenidoTxt = await payrollService.GenerarArchivoTxtBanreservas(PayrollId);
-            
+
             if (string.IsNullOrEmpty(contenidoTxt))
             {
                 toastService.ShowWarning("No existen datos suficientes para generar el archivo.");

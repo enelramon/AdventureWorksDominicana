@@ -4,68 +4,90 @@
 @inject CountryRegionsService countryRegionsService;
 @rendermode InteractiveServer
 
-<div class="container">
-    <div class="card shadow-lg">
-        <div class="card-header">
-            <div class="d-flex justify-content-between">
+<div class="country-index-container">
+
+    <div class="country-card">
+
+        <!-- HEADER -->
+        <div class="country-header">
+            <div>
                 <h3>Country Regions</h3>
-                <a class="btn btn-primary bi bi-plus-square" href="/CountryRegions/Create"> Crear</a>
-            </div>
-        </div>
-        <div class="card-body">
-            @* Encabezados *@
-            <div class="row">
-                <div class="col-3">
-                    <label>Desde:</label>
-                </div>
-                <div class="col-3">
-                    <label>Hasta:</label>
-                </div>
-                <div class="col-3">
-                    <label>Filtro:</label>
-                </div>
-                <div class="col-3">
-                    <label>Buscar:</label>
-                </div>
+                <span>Listado de regiones por país</span>
             </div>
 
-            @* Inputs *@
+            <a class="btn btn-primary bi bi-plus-square"
+                   href="/CountryRegions/Create">
+                Crear
+            </a>
+        </div>
+
+        <!-- FILTROS -->
+        <div class="country-filters">
+
+            <div class="row">
+                <div class="col-3"><label>Desde</label></div>
+                <div class="col-3"><label>Hasta</label></div>
+                <div class="col-3"><label>Filtro</label></div>
+                <div class="col-3"><label>Buscar</label></div>
+            </div>
+
             <div class="row pb-3">
                 <div class="col-3">
                     <input class="form-control" type="datetime-local" @bind-value="FechaDesde" />
                 </div>
+
                 <div class="col-3">
                     <input class="form-control" type="datetime-local" @bind-value="FechaHasta" />
                 </div>
+
                 <div class="col-3">
                     <select class="form-select" @bind="Filtro">
-                        <option value="" disabled selected hidden>Seleccione un filtro...</option>
-                        <option value="CountryRegionCode">C&oacute;digo</option>
+                        <option value="">Seleccione...</option>
+                        <option value="CountryRegionCode">Código</option>
                         <option value="Nombre">Nombre</option>
                     </select>
                 </div>
+
                 <div class="col-3">
                     <div class="input-group">
                         <input class="form-control" type="text" @bind-value="ValorFiltro" placeholder="Buscar..." />
+
                         <button class="btn btn-primary bi bi-search" type="button" @onclick="Filtrar"></button>
                         <button class="btn btn-outline-primary bi bi-arrow-clockwise" type="button" @onclick="Restablecer"></button>
                     </div>
                 </div>
             </div>
 
-            <div class="table-responsive">
-                <QuickGrid Class="table table-striped table-bordered table-hover" Pagination="@pages" Items="ListaCountryRegions.AsQueryable()" ItemKey="@(s => s.CountryRegionCode)">
-                    <PropertyColumn Property="@(s => s.CountryRegionCode)" Sortable="true" Title="C&oacute;digo"></PropertyColumn>
-                    <PropertyColumn Property="@(s => s.Name)" Sortable="true" Title="Nombre"></PropertyColumn>
-                    <TemplateColumn Class="text-center" Context="options" Title="Acci&oacute;n">
-                        <a href="/CountryRegions/Edit/@options.CountryRegionCode" class="btn btn-outline-primary bi bi-pencil-square"> Modificar</a>
-                    </TemplateColumn>
-                </QuickGrid>
-            </div>
-            @*Pagination*@
-            <Paginator State="@pages" />
         </div>
+
+        <!-- TABLA -->
+        <div class="country-table">
+
+            <div class="table-responsive">
+                <QuickGrid Class="table table-striped table-bordered table-hover"
+                           Pagination="@pages"
+                           Items="ListaCountryRegions.AsQueryable()"
+                           ItemKey="@(s => s.CountryRegionCode)">
+
+                    <PropertyColumn Property="@(s => s.CountryRegionCode)" Title="Código" Sortable="true" />
+                    <PropertyColumn Property="@(s => s.Name)" Title="Nombre" Sortable="true" />
+
+                    <TemplateColumn Class="text-center" Context="options" Title="Acción">
+                        <a href="/CountryRegions/Edit/@options.CountryRegionCode"
+                               class="btn btn-outline-primary btn-sm bi bi-pencil-square">
+                            Modificar
+                        </a>
+                    </TemplateColumn>
+
+                </QuickGrid>
+
+                <Paginator State="@pages" />
+            </div>
+
+        </div>
+
     </div>
+
 </div>
 
 @code {

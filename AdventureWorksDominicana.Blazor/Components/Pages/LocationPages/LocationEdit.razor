@@ -12,78 +12,135 @@
 
 @if (location == null)
 {
-    <div class="container mt-4">
+    <div class="location-edit-container">
         <p>Cargando...</p>
     </div>
 }
 else
 {
-    <EditForm Model="location" OnValidSubmit="Guardar">
-        <DataAnnotationsValidator />
-        <div class="container mt-4">
-            <div class="card shadow-lg">
-                <div class="card-header">
-                    <h4 class="mb-0">Editar Ubicación</h4>
-                </div>
-                <div class="card-body">
+    <div class="location-edit-container">
 
-                    <div class="mb-3">
-                        <label class="form-label fw-bold">Nombre</label>
-                        <InputText class="form-control" @bind-Value="location.Name" maxlength="50" />
-                        <ValidationMessage For="() => location.Name" />
-                    </div>
-
-                    <div class="mb-3">
-                        <label class="form-label fw-bold">Tarifa de Costo</label>
-                        <InputNumber class="form-control" @bind-Value="location.CostRate" />
-                        <ValidationMessage For="() => location.CostRate" />
-                    </div>
-
-                    <div class="mb-3">
-                        <label class="form-label fw-bold">Disponibilidad</label>
-                        <InputNumber class="form-control" @bind-Value="location.Availability" />
-                        <ValidationMessage For="() => location.Availability" />
-                    </div>
-
-                    <div class="mb-3">
-                        <label class="form-label fw-bold">Última Modificación</label>
-                        <InputDate class="form-control" @bind-Value="location.ModifiedDate" readonly />
-                        <ValidationMessage For="() => location.ModifiedDate" />
-                    </div>
-
-                    @if (!string.IsNullOrWhiteSpace(mensaje))
-                    {
-                        <div class="alert alert-danger mt-3">
-                            @mensaje
-                        </div>
-                    }
-                </div>
-                
-                <div class="card-footer text-center d-flex justify-content-center gap-3">
-                    <a class="btn btn-secondary d-flex align-items-center gap-2" href="/Location/Index">
-                        <i class="bi bi-arrow-left"></i> Volver
-                    </a>
-                    <button type="submit" class="btn btn-primary d-flex align-items-center gap-2">
-                        <i class="bi bi-pencil-square"></i> Guardar
-                    </button>
-                    <button type="button" class="btn btn-danger d-flex align-items-center gap-2" @onclick="MostrarModalEliminar">
-                        <i class="bi bi-trash"></i> Eliminar
-                    </button>
-                </div>
+        <!-- HEADER -->
+        <div class="location-edit-header">
+            <div>
+                <h3>Editar Ubicación</h3>
+                <span>Modificación de ubicación existente</span>
             </div>
         </div>
-    </EditForm>
+
+        <!-- FORM -->
+        <div class="location-edit-form">
+            <EditForm Model="location" OnValidSubmit="Guardar">
+                <DataAnnotationsValidator />
+
+                <div class="card shadow-lg">
+                    <div class="card-body">
+
+                        <!-- SECCIÓN -->
+                        <h5 class="section-title">
+                            <i class="bi bi-pin-map"></i> Información General
+                        </h5>
+
+                        <!-- NOMBRE -->
+                        <div class="mb-3">
+                            <label class="form-label">
+                                <strong>Nombre</strong>
+                            </label>
+
+                            <InputText class="form-control"
+                                       maxlength="50"
+                                       @bind-Value="location.Name" />
+
+                            <ValidationMessage For="() => location.Name" />
+                        </div>
+
+                        <!-- COSTO -->
+                        <div class="mb-3">
+                            <label class="form-label">
+                                <strong>Tarifa de Costo</strong>
+                            </label>
+
+                            <InputNumber class="form-control"
+                                         @bind-Value="location.CostRate" />
+
+                            <ValidationMessage For="() => location.CostRate" />
+                        </div>
+
+                        <!-- DISPONIBILIDAD -->
+                        <div class="mb-3">
+                            <label class="form-label">
+                                <strong>Disponibilidad</strong>
+                            </label>
+
+                            <InputNumber class="form-control"
+                                         @bind-Value="location.Availability" />
+
+                            <ValidationMessage For="() => location.Availability" />
+                        </div>
+
+                        <!-- FECHA -->
+                        <div class="mb-3">
+                            <label class="form-label">
+                                <strong>Última Modificación</strong>
+                            </label>
+
+                            <InputDate class="form-control"
+                                       @bind-Value="location.ModifiedDate"
+                                       disabled />
+
+                            <ValidationMessage For="() => location.ModifiedDate" />
+                        </div>
+
+                        @if (!string.IsNullOrWhiteSpace(mensaje))
+                        {
+                            <div class="alert alert-danger mt-3">
+                                @mensaje
+                            </div>
+                        }
+
+                    </div>
+
+                    <!-- FOOTER -->
+                    <div class="card-footer text-center">
+
+                        <a class="btn btn-secondary bi bi-arrow-left"
+                               href="/Location/Index">
+                            Volver
+                        </a>
+
+                        <button type="submit"
+                                class="btn btn-primary bi bi-floppy">
+                            Guardar
+                        </button>
+
+                        <button type="button"
+                                class="btn btn-danger bi bi-trash"
+                                @onclick="MostrarModalEliminar">
+                            Eliminar
+                        </button>
+
+                    </div>
+                </div>
+            </EditForm>
+        </div>
+    </div>
 
     @if (mostrarModal)
     {
-        <div class="container mt-3">
+        <div class="location-edit-modal">
             <div class="alert alert-danger text-center shadow-sm">
-                <p class="fw-bold mb-3">¿Desea eliminar esta ubicación de forma permanente?</p>
-                <button class="btn btn-secondary me-2 d-inline-flex align-items-center gap-1" @onclick="CerrarModalEliminar">
-                    <i class="bi bi-x-circle"></i> Cancelar
+                <p class="fw-bold mb-3">
+                    ¿Desea eliminar esta ubicación de forma permanente?
+                </p>
+
+                <button class="btn btn-secondary me-2"
+                        @onclick="CerrarModalEliminar">
+                    Cancelar
                 </button>
-                <button class="btn btn-danger d-inline-flex align-items-center gap-1" @onclick="EliminarConfirmado">
-                    <i class="bi bi-check-circle"></i> Si, eliminar
+
+                <button class="btn btn-danger"
+                        @onclick="EliminarConfirmado">
+                    Sí, eliminar
                 </button>
             </div>
         </div>

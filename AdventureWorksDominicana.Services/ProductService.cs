@@ -36,6 +36,7 @@ public class ProductService(IDbContextFactory<Contexto> DbContextFactory) : ISer
         await using var contexto = await DbContextFactory.CreateDbContextAsync();
         var query = contexto.Products
             .AsNoTracking()
+            .Include(p => p.ProductInventories)
             .Include(p => p.ProductSubcategory).ThenInclude(p => p.ProductCategory)
             .Include(p => p.ProductModel).ThenInclude(d => d.ProductModelProductDescriptionCultures).ThenInclude(d => d.ProductDescription)
             .Include(p => p.ProductProductPhotos).ThenInclude(ppp => ppp.ProductPhoto)

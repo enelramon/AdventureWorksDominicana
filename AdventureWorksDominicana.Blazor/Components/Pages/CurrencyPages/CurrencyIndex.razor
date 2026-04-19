@@ -6,62 +6,80 @@
 
 <PageTitle>Currency Index</PageTitle>
 
-<div class="container">
-    <div class="card shadow-lg">
-        <div class="card-header d-flex justify-content-between align-items-center">
-            <h5 class="card-title text-black mb-0">Registro de Monedas</h5>
-            <a href="Currency/Create" class="btn btn-success">
-                <i class="bi bi-plus-square"></i> Crear
-            </a>
+<div class="product-container">
+
+    <!-- HEADER -->
+    <div class="product-header">
+        <div>
+            <h3>Monedas</h3>
+            <span>Gestión y consulta de monedas del sistema</span>
         </div>
-        
-        <div class="card-body">
-            <div class="row mb-3 align-items-end">
-                <div class="col-md-3">
-                    <label class="form-label">Desde</label>
-                    <input class="form-control" type="date" @bind="Desde" />
-                </div>
-                <div class="col-md-3">
-                    <label class="form-label">Hasta</label>
-                    <input class="form-control" type="date" @bind="Hasta" />
-                </div>
-                <div class="col-md-3">
-                    <label class="form-label">Filtrar por</label>
-                    <select class="form-select" @bind="Filtro">
-                        <option value="">Seleccione una opci&oacute;n</option>
-                        <option value="CurrencyCode">Código</option>
-                        <option value="Name">Nombre</option>
-                    </select>
-                </div>
-                <div class="col-md-3">
-                    <label class="form-label">Buscar</label>
-                    <div class="input-group">
-                        <input class="form-control" type="text" placeholder="Buscar..." @bind="ValorFiltro" />
-                        <button class="btn btn-outline-primary" type="button" @onclick="Buscar">
-                            <i class="bi bi-search"></i>
-                        </button>
-                        <button class="btn btn-outline-secondary" type="button" title="Limpiar Filtros" @onclick="Restablecer">
-                            <i class="bi bi-arrow-counterclockwise"></i>
-                        </button>
-                    </div>
+
+        <a href="Currency/Create" class="btn btn-primary">
+            <i class="bi bi-plus-square"></i> Crear
+        </a>
+    </div>
+
+    <!-- FILTROS -->
+    <div class="product-filters">
+        <div class="row g-3">
+
+            <div class="col-12 col-md-6 col-lg-3">
+                <label class="form-label">Desde</label>
+                <input class="form-control" type="date" @bind="Desde" />
+            </div>
+
+            <div class="col-12 col-md-6 col-lg-3">
+                <label class="form-label">Hasta</label>
+                <input class="form-control" type="date" @bind="Hasta" />
+            </div>
+
+            <div class="col-12 col-md-6 col-lg-3">
+                <label class="form-label">Filtro</label>
+                <select class="form-select" @bind="Filtro">
+                    <option value="">Seleccione...</option>
+                    <option value="CurrencyCode">Código</option>
+                    <option value="Name">Nombre</option>
+                </select>
+            </div>
+
+            <div class="col-12 col-md-6 col-lg-3">
+                <label class="form-label">Buscar</label>
+                <div class="input-group">
+                    <input class="form-control" type="text" placeholder="Buscar..." @bind="ValorFiltro" />
+                    <button class="btn btn-primary" type="button" @onclick="Buscar">
+                        <i class="bi bi-search"></i>
+                    </button>
+                    <button class="btn btn-outline-primary" type="button" @onclick="Restablecer">
+                        <i class="bi bi-arrow-clockwise"></i>
+                    </button>
                 </div>
             </div>
 
-            <div class="table-responsive mt-3">
-                <QuickGrid Items="ListaCurrency.AsQueryable()" Pagination="@pages" Class="table table-bordered table-hover align-middle">
-                    <PropertyColumn Property="@(d => d.CurrencyCode)" Title="Código" Sortable="true" />
-                    <PropertyColumn Property="@(d => d.Name)" Title="Nombre" Sortable="true" />
-                    <PropertyColumn Property="@(d => d.ModifiedDate)" Title="Fecha Modificación" Format="dd/MM/yyyy" Sortable="true" />
-                    <TemplateColumn Context="option" Title="Opción">
-                        <a href="Currency/Edit/@option.CurrencyCode" class="btn btn-primary btn-sm">
-                            <i class="bi bi-pencil"></i> Editar
-                        </a>
-                    </TemplateColumn>
-                </QuickGrid>
-                
-                <Paginator State="@pages" />
-            </div>
         </div>
+    </div>
+
+    <!-- TABLA -->
+    <div class="table-responsive product-table">
+
+        <QuickGrid Items="ListaCurrency.AsQueryable()"
+                   Pagination="@pages"
+                   Class="table table-hover align-middle">
+
+            <PropertyColumn Property="@(d => d.CurrencyCode)" Title="Código" />
+            <PropertyColumn Property="@(d => d.Name)" Title="Nombre" />
+            <PropertyColumn Property="@(d => d.ModifiedDate)" Title="Fecha Modificación" Format="dd/MM/yyyy" />
+
+            <TemplateColumn Context="option" Title="Acción">
+                <a href="Currency/Edit/@option.CurrencyCode" class="btn btn-sm btn-outline-primary">
+                    <i class="bi bi-pencil"></i> Modificar
+                </a>
+            </TemplateColumn>
+
+        </QuickGrid>
+
+        <Paginator State="@pages" />
+
     </div>
 </div>
 

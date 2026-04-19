@@ -1123,7 +1123,8 @@ namespace AdventureWorksDominicana.Data.Migrations.ContextoMigrations
 
                     b.Property<string>("Gender")
                         .IsRequired()
-                        .HasColumnType("nchar")
+                        .HasMaxLength(1)
+                        .HasColumnType("nchar(1)")
                         .IsFixedLength()
                         .HasComment("M = Male, F = Female");
 
@@ -1133,7 +1134,8 @@ namespace AdventureWorksDominicana.Data.Migrations.ContextoMigrations
 
                     b.Property<string>("JobTitle")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)")
                         .HasComment("Work title such as Buyer or Sales Representative.");
 
                     b.Property<string>("LoginId")
@@ -1145,7 +1147,8 @@ namespace AdventureWorksDominicana.Data.Migrations.ContextoMigrations
 
                     b.Property<string>("MaritalStatus")
                         .IsRequired()
-                        .HasColumnType("nchar")
+                        .HasMaxLength(1)
+                        .HasColumnType("nchar(1)")
                         .IsFixedLength()
                         .HasComment("M = Married, S = Single");
 
@@ -1512,6 +1515,9 @@ namespace AdventureWorksDominicana.Data.Migrations.ContextoMigrations
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
+                    b.Property<byte>("PayFrequency")
+                        .HasColumnType("tinyint");
+
                     b.Property<DateTime?>("PaymentDate")
                         .HasColumnType("date");
 
@@ -1586,6 +1592,9 @@ namespace AdventureWorksDominicana.Data.Migrations.ContextoMigrations
                         .HasColumnType("bit");
 
                     b.Property<decimal>("IsrAnnualExemption")
+                        .HasColumnType("money");
+
+                    b.Property<decimal>("MaxWage")
                         .HasColumnType("money");
 
                     b.Property<decimal>("MinimumWage")

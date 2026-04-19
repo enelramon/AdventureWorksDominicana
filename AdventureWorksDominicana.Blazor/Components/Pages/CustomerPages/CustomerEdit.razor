@@ -8,76 +8,128 @@
 @inject ToastService toastService
 @inject NavigationManager navigationManager
 @inject Contexto contexto
+@inject AuthenticationStateProvider authenticationStateProvider
 
 
 @if (customer == null)
 {
-    <p><em>Loading...</em></p>
+    <div class="customer-form-container">
+        <p><em>Cargando...</em></p>
+    </div>
 }
 else
 {
-    <EditForm Model="customer" OnValidSubmit="Guardar">
-        <DataAnnotationsValidator />
-        <div class="container">
-            <div class="card shadow-lg">
-                <div class="card-header d-flex justify-content-between">
-                    <h4>Editar Customer</h4>
-                </div>
-                <div class="card-body">
-                    <div class="mb-3">
-                        <label class="form-label"><strong>Ultima fecha de modificaci&oacute;n:</strong></label>
-                        <label class="form-label">@customer.ModifiedDate</label>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label"><strong>Person</strong></label>
-                        <InputSelect min="1" class="form-select" @bind-Value="customer.PersonId">
-                            <option value="">Seleccione una persona...</option>
-                            @foreach (var p in ListaPeople)
-                            {
-                                <option value="@p.BusinessEntityId">@p.FirstName @p.LastName</option>
-                            }
-                        </InputSelect>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label"><strong>Store</strong></label>
-                        <InputSelect min="1" class="form-select" @bind-Value="customer.StoreId">
-                            <option value="">Seleccione una tienda...</option>
-                            @foreach (var s in ListaStores)
-                            {
-                                <option value="@s.BusinessEntityId">@s.Name</option>
-                            }
-                        </InputSelect>
-                    </div>
+    <div class="customer-form-container">
 
-                    <div class="mb-3">
-                        <label class="form-label"><strong>Territory</strong></label>
-                        <InputSelect min="1" class="form-select" @bind-Value="customer.TerritoryId">
-                            <option value="">Seleccione un territorio...</option>
-                            @foreach (var t in ListaTerritories)
-                            {
-                                <option value="@t.TerritoryId">@t.Name</option>
-                            }
-                        </InputSelect>
-                        <ValidationMessage For="@(() => customer.TerritoryId)" />
-
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label"><strong>Account Number:</strong></label>
-                        <label class="form-label"> @customer.AccountNumber</label>
-                    </div>
-                </div>
-                <div class="card-footer text-center">
-                    <a class="btn btn-secondary bi bi-arrow-left" href="/Customer/Index"> Volver</a>
-                    <button class="btn btn-primary bi bi-floppy" type="submit"> Guardar</button>
-                    <AuthorizeView Roles="Admin">
-                        <Authorized Context="OtraCosa">
-                           <button class="btn btn-danger bi bi-trash" type="button" @onclick="Eliminar"> Eliminar</button>
-                        </Authorized>
-                    </AuthorizeView>
-                </div>
+        <!-- HEADER -->
+        <div class="customer-form-header">
+            <div>
+                <h3>Editar Customer</h3>
+                <span>Modificación de cliente existente</span>
             </div>
         </div>
-    </EditForm>
+
+        <!-- FORM -->
+        <div class="customer-form">
+
+            <EditForm Model="customer" OnValidSubmit="Guardar">
+                <DataAnnotationsValidator />
+
+                <div class="card shadow-lg">
+                    <div class="card-body">
+
+                        <!-- SECCIÓN -->
+                        <h5 class="section-title">
+                            <i class="bi bi-person"></i> Información General
+                        </h5>
+
+                        <!-- FECHA -->
+                        <div class="mb-3">
+                            <label class="form-label">
+                                <strong>Última fecha de modificación</strong>
+                            </label>
+                            <input class="form-control"
+                                   value="@customer.ModifiedDate"
+                                   disabled />
+                        </div>
+
+                        <!-- PERSON -->
+                        <div class="mb-3">
+                            <label class="form-label"><strong>Person</strong></label>
+                            <InputSelect class="form-select" @bind-Value="customer.PersonId">
+                                <option value="">Seleccione una persona...</option>
+                                @foreach (var p in ListaPeople)
+                                {
+                                    <option value="@p.BusinessEntityId">@p.FirstName @p.LastName</option>
+                                }
+                            </InputSelect>
+                        </div>
+
+                        <!-- STORE -->
+                        <div class="mb-3">
+                            <label class="form-label"><strong>Store</strong></label>
+                            <InputSelect class="form-select" @bind-Value="customer.StoreId">
+                                <option value="">Seleccione una tienda...</option>
+                                @foreach (var s in ListaStores)
+                                {
+                                    <option value="@s.BusinessEntityId">@s.Name</option>
+                                }
+                            </InputSelect>
+                        </div>
+
+                        <!-- TERRITORY -->
+                        <div class="mb-3">
+                            <label class="form-label"><strong>Territory</strong></label>
+                            <InputSelect class="form-select" @bind-Value="customer.TerritoryId">
+                                <option value="">Seleccione un territorio...</option>
+                                @foreach (var t in ListaTerritories)
+                                {
+                                    <option value="@t.TerritoryId">@t.Name</option>
+                                }
+                            </InputSelect>
+                            <ValidationMessage For="@(() => customer.TerritoryId)" />
+                        </div>
+
+                        <!-- ACCOUNT NUMBER -->
+                        <div class="mb-3">
+                            <label class="form-label">
+                                <strong>Account Number</strong>
+                            </label>
+                            <input class="form-control"
+                                   value="@customer.AccountNumber"
+                                   disabled />
+                        </div>
+
+                    </div>
+
+                    <!-- FOOTER -->
+                    <div class="card-footer text-center">
+
+                        <a class="btn btn-secondary bi bi-arrow-left"
+                               href="/Customer/Index">
+                            Volver
+                        </a>
+
+                        <button class="btn btn-primary bi bi-floppy"
+                                type="submit">
+                            Guardar
+                        </button>
+
+                        @if (canDelete)
+                        {
+                            <button class="btn btn-danger bi bi-trash"
+                                    type="button"
+                                    @onclick="Eliminar">
+                                Eliminar
+                            </button>
+                        }
+                    </div>
+                </div>
+
+            </EditForm>
+
+        </div>
+    </div>
 }
 
 @code {
@@ -86,11 +138,17 @@ else
     private List<Person> ListaPeople = new();
     private List<Store> ListaStores = new();
     private List<SalesTerritory> ListaTerritories = new();
+    private bool canDelete = false;
 
     protected override async Task OnInitializedAsync()
     {
         try
         {
+            var authState = await authenticationStateProvider.GetAuthenticationStateAsync();
+            var user = authState.User;
+
+            canDelete = user.IsInRole("Admin");
+
             ListaPeople = await contexto.People.OrderBy(p => p.BusinessEntityId).ToListAsync();
             ListaStores = await contexto.Stores.OrderBy(s => s.BusinessEntityId).ToListAsync();
             ListaTerritories = await contexto.SalesTerritories.OrderBy(t => t.TerritoryId).ToListAsync();

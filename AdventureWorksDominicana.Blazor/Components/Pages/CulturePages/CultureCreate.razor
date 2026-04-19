@@ -8,52 +8,96 @@
 
 <PageTitle>Crear Cultura</PageTitle>
 
-<EditForm Model="culture" FormName="crearCulture" OnValidSubmit="Guardar">
-    <DataAnnotationsValidator />
+<div class="culture-create-container">
 
-    <div class="container">
-        <div class="card shadow-lg">
-            <div class="card-header text-center">
-                <h4>Crear Cultura</h4>
-            </div>
-            <div class="card-body">
-                <h5 class="pb-3">Datos de la Cultura</h5>
-                
-                @* Culture ID *@
-                <div class="mb-3">
-                    <label><strong>ID de Cultura</strong></label>
-                    <input class="form-control" type="text" maxlength="6" @bind="culture.CultureId" placeholder="Escriba el ID de la cultura..." />
-                    <ValidationMessage For="(() => culture.CultureId)" />
-                </div>
-
-                @* Nombre *@
-                <div class="mb-3">
-                    <label><strong>Nombre</strong></label>
-                    <input class="form-control" type="text" maxlength="50" @bind="culture.Name" placeholder="Escriba el nombre de la cultura..." />
-                    <ValidationMessage For="(() => culture.Name)" />
-                </div>
-
-                @* Fecha de Modificación *@
-                <div class="mb-3">
-                    <label><strong>Fecha de Modificaci&oacute;n</strong></label>
-                    <input class="form-control" type="text" value="@culture.ModifiedDate.ToString("dd/MM/yyyy")" disabled />
-                    <ValidationMessage For="(() => culture.ModifiedDate)" />
-                </div>
-
-                @if (!string.IsNullOrWhiteSpace(mensaje))
-                {
-                    <div class="alert alert-danger mt-3">
-                        @mensaje
-                    </div>
-                }
-            </div>
-            <div class="card-footer text-center">
-                <a class="btn btn-secondary bi bi-arrow-left" href="/Culture/Index"> Volver</a>
-                <button class="btn btn-primary bi bi-floppy" type="submit"> Guardar</button>
-            </div>
+    <!-- HEADER -->
+    <div class="culture-create-header">
+        <div>
+            <h3>Crear Cultura</h3>
+            <span>Registro de nuevas culturas en el sistema</span>
         </div>
     </div>
-</EditForm>
+
+    <!-- FORM -->
+    <div class="culture-create-form">
+        <EditForm Model="culture" OnValidSubmit="Guardar">
+            <DataAnnotationsValidator />
+
+            <div class="card shadow-lg">
+                <div class="card-body">
+
+                    <!-- SECCIÓN -->
+                    <h5 class="section-title">
+                        <i class="bi bi-globe"></i> Datos de la Cultura
+                    </h5>
+
+                    <!-- ID -->
+                    <div class="mb-3">
+                        <label class="form-label">
+                            <strong>ID de Cultura</strong>
+                        </label>
+
+                        <input class="form-control"
+                               type="text"
+                               maxlength="6"
+                               @bind="culture.CultureId"
+                               placeholder="Ej: es-DO" />
+
+                        <ValidationMessage For="(() => culture.CultureId)" />
+                    </div>
+
+                    <!-- NOMBRE -->
+                    <div class="mb-3">
+                        <label class="form-label">
+                            <strong>Nombre</strong>
+                        </label>
+
+                        <input class="form-control"
+                               type="text"
+                               maxlength="50"
+                               @bind="culture.Name"
+                               placeholder="Ej: Español (República Dominicana)" />
+
+                        <ValidationMessage For="(() => culture.Name)" />
+                    </div>
+
+                    <!-- FECHA -->
+                    <div class="mb-3">
+                        <label class="form-label">
+                            <strong>Fecha de Modificación</strong>
+                        </label>
+
+                        <input class="form-control"
+                               value="@culture.ModifiedDate.ToString("dd/MM/yyyy")"
+                               disabled />
+                    </div>
+
+                    @if (!string.IsNullOrWhiteSpace(mensaje))
+                    {
+                        <div class="alert alert-danger mt-3">
+                            @mensaje
+                        </div>
+                    }
+
+                </div>
+
+                <!-- FOOTER -->
+                <div class="card-footer text-center">
+
+                    <a class="btn btn-secondary bi bi-arrow-left" href="/Culture/Index">
+                        Volver
+                    </a>
+
+                    <button class="btn btn-primary bi bi-floppy" type="submit">
+                        Guardar
+                    </button>
+
+                </div>
+            </div>
+        </EditForm>
+    </div>
+
+</div>
 
 @code {
     public Culture culture { get; set; } = new Culture();

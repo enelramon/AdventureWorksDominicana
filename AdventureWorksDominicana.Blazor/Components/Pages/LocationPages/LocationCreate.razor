@@ -10,64 +10,118 @@
 
 <Toasts class="p-3" AutoHide="true" Delay="5000" Placement="ToastsPlacement.TopRight" />
 
-<EditForm Model="location" OnValidSubmit="Guardar">
-    <DataAnnotationsValidator />
-    <div class="container mt-4">
-        <div class="card shadow-lg">
-            <div class="card-header">
-                <h4 class="mb-0">Registro de Ubicación</h4>
-            </div>
-            <div class="card-body">
-                
-                <div class="mb-3">
-                    <label class="form-label fw-bold">ID de Ubicación</label>
-                    <InputNumber class="form-control" @bind-Value="location.LocationId" />
-                    <ValidationMessage For="() => location.LocationId" />
-                </div>
+<div class="location-create-container">
 
-                <div class="mb-3">
-                    <label class="form-label fw-bold">Nombre</label>
-                    <InputText class="form-control" @bind-Value="location.Name" maxlength="50" />
-                    <ValidationMessage For="() => location.Name" />
-                </div>
-
-                <div class="mb-3">
-                    <label class="form-label fw-bold">Tarifa de Costo</label>
-                    <InputNumber class="form-control" @bind-Value="location.CostRate" />
-                    <ValidationMessage For="() => location.CostRate" />
-                </div>
-
-                <div class="mb-3">
-                    <label class="form-label fw-bold">Disponibilidad</label>
-                    <InputNumber class="form-control" @bind-Value="location.Availability" />
-                    <ValidationMessage For="() => location.Availability" />
-                </div>
-
-                <div class="mb-3">
-                    <label class="form-label fw-bold">Fecha de Modificación</label>
-                    <InputDate class="form-control" @bind-Value="location.ModifiedDate" />
-                    <ValidationMessage For="() => location.ModifiedDate" />
-                </div>
-
-                @if (!string.IsNullOrWhiteSpace(mensaje))
-                {
-                    <div class="alert alert-danger">
-                        @mensaje
-                    </div>
-                }
-            </div>
-            <div class="card-footer text-center d-flex justify-content-center gap-3">
-                <a class="btn btn-secondary d-flex align-items-center gap-2" href="/Location/Index">
-                    <i class="bi bi-arrow-left"></i> Volver
-                </a>
-                <button type="submit" class="btn btn-primary d-flex align-items-center gap-2">
-                    <i class="bi bi-floppy"></i> Guardar
-                </button>
-            </div>
+    <!-- HEADER -->
+    <div class="location-create-header">
+        <div>
+            <h3>Crear Ubicación</h3>
+            <span>Registro de nuevas ubicaciones</span>
         </div>
     </div>
-</EditForm>
 
+    <!-- FORM -->
+    <div class="location-create-form">
+        <EditForm Model="location" OnValidSubmit="Guardar">
+            <DataAnnotationsValidator />
+
+            <div class="card shadow-lg">
+                <div class="card-body">
+
+                    <!-- SECCIÓN -->
+                    <h5 class="section-title">
+                        <i class="bi bi-pin-map"></i> Información General
+                    </h5>
+
+                    <!-- ID -->
+                    <div class="mb-3">
+                        <label class="form-label">
+                            <strong>ID de Ubicación</strong>
+                        </label>
+
+                        <InputNumber class="form-control"
+                                     @bind-Value="location.LocationId" />
+
+                        <ValidationMessage For="() => location.LocationId" />
+                    </div>
+
+                    <!-- NOMBRE -->
+                    <div class="mb-3">
+                        <label class="form-label">
+                            <strong>Nombre</strong>
+                        </label>
+
+                        <InputText class="form-control"
+                                   maxlength="50"
+                                   @bind-Value="location.Name" />
+
+                        <ValidationMessage For="() => location.Name" />
+                    </div>
+
+                    <!-- COSTO -->
+                    <div class="mb-3">
+                        <label class="form-label">
+                            <strong>Tarifa de Costo</strong>
+                        </label>
+
+                        <InputNumber class="form-control"
+                                     @bind-Value="location.CostRate" />
+
+                        <ValidationMessage For="() => location.CostRate" />
+                    </div>
+
+                    <!-- DISPONIBILIDAD -->
+                    <div class="mb-3">
+                        <label class="form-label">
+                            <strong>Disponibilidad</strong>
+                        </label>
+
+                        <InputNumber class="form-control"
+                                     @bind-Value="location.Availability" />
+
+                        <ValidationMessage For="() => location.Availability" />
+                    </div>
+
+                    <!-- FECHA -->
+                    <div class="mb-3">
+                        <label class="form-label">
+                            <strong>Fecha de Modificación</strong>
+                        </label>
+
+                        <InputDate class="form-control"
+                                   @bind-Value="location.ModifiedDate" />
+
+                        <ValidationMessage For="() => location.ModifiedDate" />
+                    </div>
+
+                    @if (!string.IsNullOrWhiteSpace(mensaje))
+                    {
+                        <div class="alert alert-danger">
+                            @mensaje
+                        </div>
+                    }
+
+                </div>
+
+                <!-- FOOTER -->
+                <div class="card-footer text-center">
+
+                    <a class="btn btn-secondary bi bi-arrow-left"
+                           href="/Location/Index">
+                        Volver
+                    </a>
+
+                    <button type="submit"
+                            class="btn btn-primary bi bi-floppy">
+                        Guardar
+                    </button>
+
+                </div>
+            </div>
+        </EditForm>
+    </div>
+
+</div>
 @code {
     private Location location { get; set; } = new();
     private string mensaje = string.Empty;

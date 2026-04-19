@@ -1,0 +1,89 @@
+﻿/* CONTENEDOR */
+.currencyrate-form-container {
+    max-width: 900px;
+    margin: auto;
+    padding: 20px;
+}
+
+/* HEADER */
+.currencyrate-form-header {
+    margin-bottom: 20px;
+}
+
+    .currencyrate-form-header h3 {
+        margin: 0;
+        color: #01398C;
+    }
+
+    .currencyrate-form-header span {
+        font-size: 0.9rem;
+        color: #6b7280;
+    }
+
+/* BODY */
+.currencyrate-form-body {
+    margin-top: 20px;
+}
+
+    /* CARD */
+    .currencyrate-form-body .card {
+        background-color: #F5F5F5;
+        border: 2px solid #E6E6E6;
+        border-radius: 20px;
+        box-shadow: 0 10px 25px -5px rgba(0,0,0,0.05), 0 8px 20px -6px rgba(0,0,0,0.02);
+    }
+
+    .currencyrate-form-body .card-body {
+        padding: 24px;
+    }
+
+    .currencyrate-form-body .card-footer {
+        background: white;
+        border-top: 1px solid #e5e7eb;
+        border-radius: 0 0 20px 20px;
+        padding: 16px;
+    }
+
+/* SECCIÓN */
+.section-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #01398C;
+    margin-bottom: 16px;
+    padding-bottom: 8px;
+    border-bottom: 2px solid #e5e7eb;
+}
+
+/* LABELS */
+.currencyrate-form-body .form-label {
+    font-size: 0.85rem;
+    color: #374151;
+}
+
+/* INPUTS */
+.currencyrate-form-body .form-control,
+.currencyrate-form-body .form-select {
+    border-radius: 10px;
+    border: 1px solid #dbeafe;
+}
+
+    .currencyrate-form-body .form-control:focus,
+    .currencyrate-form-body .form-select:focus {
+        border-color: #466EDB;
+        box-shadow: 0 0 0 2px rgba(70,110,219,0.15);
+    }
+
+/* BOTONES */
+.currencyrate-form-body .btn-primary {
+    background: #466EDB;
+    border: none;
+    border-radius: 10px;
+}
+
+    .currencyrate-form-body .btn-primary:hover {
+        background: #01398C;
+    }
+
+.currencyrate-form-body .btn-secondary {
+    border-radius: 10px;
+}

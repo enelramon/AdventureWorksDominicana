@@ -12,115 +12,146 @@
 
 <PageTitle>Customers</PageTitle>
 
-<div class="container-fluid">
-    <div class="card shadow-lg">
-        <div class="card-header d-flex justify-content-between">
-            <h4>Customers</h4>
-            <a class="btn btn-primary" href="/Customer/Create"><i class="bi bi-plus-square"></i> Crear</a>
+<div class="customer-container">
+
+    <!-- HEADER -->
+    <div class="customer-header">
+        <div>
+            <h3>Customers</h3>
+            <span>Gestión y consulta de clientes</span>
         </div>
-        <div class="card-body">
-            <div class="row g-3 mb-3">
-                <div class="col-md-3">
-                    <label class="form-label">Desde</label>
-                </div>
-                <div class="col-md-3">
-                    <label class="form-label">Hasta</label>
-                </div>
-                <div class="col-md-3">
-                    <label class="form-label">Filtro</label>
-                </div>
-                <div class="col-md-3">
-                    <label class="form-label">Buscar</label>
+
+        <a class="btn btn-primary" href="/Customer/Create">
+            <i class="bi bi-plus-square"></i> Crear
+        </a>
+    </div>
+
+    <!-- FILTROS -->
+    <div class="customer-filters">
+
+        <div class="row g-3">
+
+            <div class="col-md-3">
+                <label class="form-label">Desde</label>
+                <InputDate class="form-control" @bind-Value="Desde" />
+            </div>
+
+            <div class="col-md-3">
+                <label class="form-label">Hasta</label>
+                <InputDate class="form-control" @bind-Value="Hasta" />
+            </div>
+
+            <div class="col-md-3">
+                <label class="form-label">Filtro</label>
+                <InputSelect class="form-select" @bind-Value="Filtros">
+                    <option disabled value="">Elige un filtro</option>
+                    <option value="Person">Person name</option>
+                    <option value="Store">Store name</option>
+                    <option value="Territory">Territory name</option>
+                </InputSelect>
+            </div>
+
+            <div class="col-md-3">
+                <label class="form-label">Buscar</label>
+                <div class="input-group">
+                    <InputText class="form-control"
+                               @bind-Value="ValorFiltro"
+                               placeholder="Buscar..." />
+
+                    <button class="btn btn-primary" @onclick="Buscar">
+                        <i class="bi bi-search"></i>
+                    </button>
+
+                    <button class="btn btn-outline-primary"
+                            @onclick="Restablecer">
+                        <i class="bi bi-arrow-clockwise"></i>
+                    </button>
                 </div>
             </div>
 
-            <div class="row g-3 mb-3 align-items-end">
-                <div class="col-md-3">
-                    <InputDate class="form-control" @bind-Value="Desde" />
-                </div>
-                <div class="col-md-3">
-                    <InputDate class="form-control" @bind-Value="Hasta" />
-                </div>
-                <div class="col-md-3">
-                    <InputSelect class="form-select" @bind-Value="Filtros">
-                        <option disabled value="">Elige un filtro</option>
-                        <option value="Person">Person name</option>
-                        <option value="Store">Store name</option>
-                        <option value="Territory">Territory name</option>
-                    </InputSelect>
-                </div>
-                <div class="col-md-3">
-                    <div class="d-flex">
-                        <InputText class="form-control me-2" @bind-Value="ValorFiltro" placeholder="Buscar..." />
-                        <button class="btn btn-primary me-2" @onclick="Buscar">
-                            <i class="bi bi-search"></i>
-                        </button>
-                        <button type="button" class="btn btn-outline-primary bi bi-arrow-counterclockwise" @onclick="Restablecer"></button>
-                    </div>
-                </div>
-            </div>
-
-            @if (ListaCustomers == null)
-            {
-                <p><em>Cargando...</em></p>
-            }
-            else if (!ListaCustomers.Any())
-            {
-                <p>No se encontraron customers.</p>
-            }
-            else
-            {
-                <div class="table table-striped table-bordered table-hover">
-                    <QuickGrid Items="ListaCustomers" Class="table table-striped table-bordered table-hover">
-                        <PropertyColumn Property="@(e => e.CustomerId)" Sortable="true" Title="ID" />
-                        <TemplateColumn Sortable="true" Title="Person">
-                            @if (context.Person != null)
-                            {
-                                @($"{context.Person.FirstName} {context.Person.LastName}")
-                            }
-                            else
-                            {
-                                <span class="text-muted">—</span>
-                            }
-                        </TemplateColumn>
-                        <TemplateColumn Sortable="true" Title="Store"> 
-                            @if (context.Store != null) {
-                                <span>@context.Store.Name</span>
-                            } else
-                            {
-                                <span class="text-muted">—</span>
-                            }
-                        </TemplateColumn>
-                        <TemplateColumn Sortable="true" Title="Territory">
-                            @if (context.Territory != null)
-                            {
-                                <span>@context.Territory.Name</span>
-                            }
-                            else
-                            {
-                                <span class="text-muted">—</span>
-                            }
-                        </TemplateColumn>
-                        <PropertyColumn Property="@(e => e.ModifiedDate)" Format="dd/MM/yyyy" Title="Fecha de modificacion" Sortable="true" />
-                        <TemplateColumn Title="Accion">
-                            <a class="btn btn-outline-primary btn-sm" href="/Customer/Edit/@context.CustomerId">
-                                <i class="bi bi-pencil-square"> Editar</i>
-                            </a>
-                        </TemplateColumn>
-                    </QuickGrid>
-                </div>
-            }
         </div>
 
-        <div class="card-footer text-end">
-            <strong>Conteo Registros: @ListaCustomers.Count()</strong>
-        </div>
+    </div>
+
+    <!-- TABLA -->
+    <div class="customer-table">
+
+        @if (ListaCustomers == null)
+        {
+            <p><em>Cargando...</em></p>
+        }
+        else if (!ListaCustomers.Any())
+        {
+            <p>No se encontraron customers.</p>
+        }
+        else
+        {
+            <QuickGrid Items="ListaCustomers"
+                       Class="table table-hover"
+                       Pagination="@pages">
+
+                <PropertyColumn Property="@(e => e.CustomerId)"
+                                Sortable="true"
+                                Title="ID" />
+
+                <TemplateColumn Sortable="true" Title="Person">
+                    @if (context.Person != null)
+                    {
+                        @($"{context.Person.FirstName} {context.Person.LastName}")
+                    }
+                    else
+                    {
+                        <span class="text-muted">—</span>
+                    }
+                </TemplateColumn>
+
+                <TemplateColumn Sortable="true" Title="Store">
+                    @if (context.Store != null)
+                    {
+                        <span>@context.Store.Name</span>
+                    }
+                    else
+                    {
+                        <span class="text-muted">—</span>
+                    }
+                </TemplateColumn>
+
+                <TemplateColumn Sortable="true" Title="Territory">
+                    @if (context.Territory != null)
+                    {
+                        <span>@context.Territory.Name</span>
+                    }
+                    else
+                    {
+                        <span class="text-muted">—</span>
+                    }
+                </TemplateColumn>
+
+                <PropertyColumn Property="@(e => e.ModifiedDate)"
+                                Format="dd/MM/yyyy"
+                                Title="Fecha de modificación"
+                                Sortable="true" />
+
+                <TemplateColumn Title="Acción" Class="text-center">
+                    <a class="btn btn-sm btn-outline-primary"
+                           href="/Customer/Edit/@context.CustomerId">
+                        <i class="bi bi-pencil"></i> Modificar
+                    </a>
+                </TemplateColumn>
+
+            </QuickGrid>
+
+            <Paginator State="@pages" />
+        }
+
     </div>
 </div>
 
 
 @code {
     private IQueryable<Customer> ListaCustomers = Enumerable.Empty<Customer>().AsQueryable();
+    private PaginationState pages = new PaginationState { ItemsPerPage = 5 };
+
     public string Filtros { get; set; } = string.Empty;
     public string ValorFiltro { get; set; } = string.Empty;
     public DateTime? Desde { get; set; }

@@ -6,33 +6,70 @@
 @inject NavigationManager navigationManager;
 @rendermode InteractiveServer
 
-<EditForm Model="CountryRegion" FormName="modificarCountryRegion" OnValidSubmit="Modificar">
-    <DataAnnotationsValidator />
-    <div class="container">
-        <div class="card shadow-lg">
-            <div class="card-header text-center">
-                <h3>Modificar Country Region</h3>
-            </div>
-            <div class="card-body">
-                <div class="mb-3">
-                    <label class="form-label"><strong>C&oacute;digo de pa&iacute;s</strong></label>
-                    <input class="form-control" type="text" maxlength="3" disabled readonly @bind-value="CountryRegion.CountryRegionCode" placeholder="Escriba el codigo del pais/region..." />
-                    <ValidationMessage For="(() => CountryRegion.CountryRegionCode)" />
-                </div>
-                <div class="mb-3">
-                    <label class="form-label"><strong>Nombre del pa&iacute;s/regi&oacute;n</strong></label>
-                    <input class="form-control" type="text" maxlength="100" @bind-value="CountryRegion.Name" placeholder="Escriba el nombre del pais/region..." />
-                    <ValidationMessage For="(() => CountryRegion.Name)" />
-                </div>
-            </div>
-            <div class="card-footer text-center">
-                <a class="btn btn-secondary bi bi-arrow-left" href="/CountryRegions/Index"> Volver</a>
-                <button class="btn btn-primary bi bi-floppy" type="submit"> Modificar</button>
-                <button class="btn btn-danger bi bi-trash" type="button" @onclick="Eliminar"> Eliminar</button>
-            </div>
+<div class="country-edit-container">
+
+    <!-- HEADER -->
+    <div class="country-edit-header">
+        <div>
+            <h3>Modificar Country Region</h3>
+            <span>Edición de región existente</span>
         </div>
     </div>
-</EditForm>
+
+    <EditForm Model="CountryRegion" FormName="modificarCountryRegion" OnValidSubmit="Modificar">
+        <DataAnnotationsValidator />
+
+        <!-- FORM -->
+        <div class="country-edit-form">
+
+            <!-- CÓDIGO -->
+            <div class="mb-3">
+                <label class="form-label"><strong>Código de país</strong></label>
+                <input class="form-control"
+                       type="text"
+                       maxlength="3"
+                       disabled
+                       readonly
+                       @bind-value="CountryRegion.CountryRegionCode" />
+                <ValidationMessage For="(() => CountryRegion.CountryRegionCode)" />
+            </div>
+
+            <!-- NOMBRE -->
+            <div class="mb-3">
+                <label class="form-label"><strong>Nombre del país/región</strong></label>
+                <input class="form-control"
+                       type="text"
+                       maxlength="100"
+                       @bind-value="CountryRegion.Name"
+                       placeholder="Ej: República Dominicana..." />
+                <ValidationMessage For="(() => CountryRegion.Name)" />
+            </div>
+
+            <!-- FOOTER -->
+            <div class="country-edit-footer">
+
+                <a class="btn btn-secondary bi bi-arrow-left"
+                       href="/CountryRegions/Index">
+                    Volver
+                </a>
+
+                <button class="btn btn-primary bi bi-floppy"
+                        type="submit">
+                    Modificar
+                </button>
+
+                <button class="btn btn-danger bi bi-trash"
+                        type="button"
+                        @onclick="Eliminar">
+                    Eliminar
+                </button>
+
+            </div>
+        </div>
+
+    </EditForm>
+
+</div>
 
 
 @code {

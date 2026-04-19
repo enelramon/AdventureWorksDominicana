@@ -6,32 +6,59 @@
 @inject NavigationManager navigationManager;
 @rendermode InteractiveServer
 
-<EditForm Model="CountryRegion" FormName="crearCountryRegion" OnValidSubmit="Guardar">
-    <DataAnnotationsValidator />
-    <div class="container">
-        <div class="card shadow-lg">
-            <div class="card-header text-center">
-                <h3>Crear Country Region</h3>
-            </div>
-            <div class="card-body">
-                <div class="mb-3">
-                    <label class="form-label"><strong>C&oacute;digo de pa&iacute;s</strong></label>
-                    <input class="form-control" type="text" maxlength="3" @bind-value="CountryRegion.CountryRegionCode" placeholder="Escriba el codigo del pais/region..." />
-                    <ValidationMessage For="(() => CountryRegion.CountryRegionCode)" />
-                </div>
-                <div class="mb-3">
-                    <label class="form-label"><strong>Nombre del pa&iacute;s/regi&oacute;n</strong></label>
-                    <input class="form-control" type="text" maxlength="50" @bind-value="CountryRegion.Name" placeholder="Escriba el nombre del pais/region..." />
-                    <ValidationMessage For="(() => CountryRegion.Name)" />
-                </div>
-            </div>
-            <div class="card-footer text-center">
-                <a class="btn btn-secondary bi bi-arrow-left" href="/CountryRegions/Index"> Volver</a>
-                <button class="btn btn-primary bi bi-floppy" type="submit"> Guardar</button>
-            </div>
+<div class="country-create-container">
+
+    <!-- HEADER -->
+    <div class="country-create-header">
+        <div>
+            <h3>Crear Country Region</h3>
+            <span>Registro de nueva región</span>
         </div>
     </div>
-</EditForm>
+
+    <EditForm Model="CountryRegion" FormName="crearCountryRegion" OnValidSubmit="Guardar">
+        <DataAnnotationsValidator />
+
+        <!-- FORM -->
+        <div class="country-create-form">
+
+            <!-- CÓDIGO -->
+            <div class="mb-3">
+                <label class="form-label"><strong>Código de país</strong></label>
+                <input class="form-control"
+                       type="text"
+                       maxlength="3"
+                       @bind-value="CountryRegion.CountryRegionCode"
+                       placeholder="Ej: USA, DOM..." />
+                <ValidationMessage For="(() => CountryRegion.CountryRegionCode)" />
+            </div>
+
+            <!-- NOMBRE -->
+            <div class="mb-3">
+                <label class="form-label"><strong>Nombre del país/región</strong></label>
+                <input class="form-control"
+                       type="text"
+                       maxlength="50"
+                       @bind-value="CountryRegion.Name"
+                       placeholder="Ej: República Dominicana..." />
+                <ValidationMessage For="(() => CountryRegion.Name)" />
+            </div>
+            
+            <!-- FOOTER -->
+            <div class="country-create-footer">
+                <a class="btn btn-secondary bi bi-arrow-left" href="/CountryRegions/Index">
+                    Volver
+                </a>
+
+                <button class="btn btn-primary bi bi-floppy" type="submit">
+                    Guardar
+                </button>
+            </div>
+        </div>
+
+    </EditForm>
+
+</div>
 
 
 @code {

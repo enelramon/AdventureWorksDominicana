@@ -8,75 +8,115 @@
 @inject NavigationManager navigationManager;
 @rendermode InteractiveServer
 
-<EditForm Model="StateProvince" FormName="crearStateProvince" OnValidSubmit="Guardar">
-    <DataAnnotationsValidator />
+<div class="state-create-container">
 
-    <div class="container">
-        <div class="card">
-            <div class="card-header text-center">
-                <h4>Crear StateProvince</h4>
-            </div>
-            <div class="card-body">
-                @* Nombre *@
-                <div class="mb-3">
-                    <label class="form-label"><strong>Nombre</strong></label>
-                    <input class="form-control" type="text" maxlength="50" @bind-value="StateProvince.Name" placeholder="Escriba el nombre..." />
-                    <ValidationMessage For="(() => StateProvince.Name)" />
-                </div>
-
-                @* StateProvince Code *@
-                <div class="mb-3">
-                    <label class="form-label"><strong>C&oacute;digo de Estado/Provincia</strong></label>
-                    <input class="form-control" type="text" maxlength="3" @bind="StateProvince.StateProvinceCode" @bind:after="ConvertirMayuscula" placeholder="Escriba el codigo..." />
-                    <ValidationMessage For="(() => StateProvince.StateProvinceCode)" />
-                </div>
-
-                @* CountryRegion Code *@
-                <div class="mb-3">
-                    <label class="form-label"><strong>C&oacute;digo de pa&iacute;s/regi&oacute;n</strong></label>
-                    <select class="form-select" @bind="@StateProvince.CountryRegionCode" @bind:after="CargarSalesTerritories">
-                        <option value="" disabled hidden selected>Seleccione un pa&iacute;s/regi&oacute;n...</option>
-                        @foreach (var countryRegion in ListaCountryRegion)
-                        {
-                            <option value="@countryRegion.CountryRegionCode">@countryRegion.Name (@countryRegion.CountryRegionCode)</option>
-                        }
-                    </select>
-                    <ValidationMessage For="(() => StateProvince.CountryRegionCode)" />
-                </div>
-
-                @* Sales Territory *@
-                <div class="mb-3">
-                    <label class="form-label"><strong>Territorio de Ventas</strong></label>
-                    <select class="form-select" @bind="@StateProvince.TerritoryId">
-                        @if (string.IsNullOrEmpty(StateProvince.CountryRegionCode))
-                        {
-                            <option value="0" disabled selected hidden>Primero seleccione un país</option>
-                        }
-                        else if (!ListaSalesTerritory.Any())
-                        {
-                            <option value="0" disabled selected hidden>
-                                No hay territorios disponibles para @ObtenerNombrePais(StateProvince.CountryRegionCode)
-                            </option>
-                        }
-                        else
-                        {
-                            <option value="0" disabled selected hidden>Seleccione un territorio...</option>
-                            @foreach (var territory in ListaSalesTerritory)
-                            {
-                                <option value="@territory.TerritoryId">@territory.Name</option>
-                            }
-                        }
-                    </select>
-                    <ValidationMessage For="(() => StateProvince.TerritoryId)" />
-                </div>
-            </div>
-            <div class="card-footer text-center">
-                <a class="btn btn-secondary bi bi-arrow-left" href="/StateProvince/Index"> Volver</a>
-                <button class="btn btn-primary bi bi-floppy"> Guardar</button>
-            </div>
+    <!-- HEADER -->
+    <div class="state-create-header">
+        <div>
+            <h3>Crear State Province</h3>
+            <span>Registro de nueva provincia/estado</span>
         </div>
     </div>
-</EditForm>
+
+    <EditForm Model="StateProvince" FormName="crearStateProvince" OnValidSubmit="Guardar">
+        <DataAnnotationsValidator />
+
+        <!-- FORM -->
+        <div class="state-create-form">
+
+            <!-- NOMBRE -->
+            <div class="mb-3">
+                <label class="form-label"><strong>Nombre</strong></label>
+                <input class="form-control"
+                       type="text"
+                       maxlength="50"
+                       @bind-value="StateProvince.Name"
+                       placeholder="Ej: Santo Domingo..." />
+                <ValidationMessage For="(() => StateProvince.Name)" />
+            </div>
+
+            <!-- CÓDIGO -->
+            <div class="mb-3">
+                <label class="form-label"><strong>Código de Estado/Provincia</strong></label>
+                <input class="form-control"
+                       type="text"
+                       maxlength="3"
+                       @bind="StateProvince.StateProvinceCode"
+                       @bind:after="ConvertirMayuscula"
+                       placeholder="Ej: SDQ..." />
+                <ValidationMessage For="(() => StateProvince.StateProvinceCode)" />
+            </div>
+
+            <!-- PAÍS -->
+            <div class="mb-3">
+                <label class="form-label"><strong>Código de país/región</strong></label>
+                <select class="form-select"
+                        @bind="StateProvince.CountryRegionCode"
+                        @bind:after="CargarSalesTerritories">
+
+                    <option value="">Seleccione un país/región...</option>
+
+                    @foreach (var countryRegion in ListaCountryRegion)
+                    {
+                        <option value="@countryRegion.CountryRegionCode">
+                            @countryRegion.Name (@countryRegion.CountryRegionCode)
+                        </option>
+                    }
+                </select>
+
+                <ValidationMessage For="(() => StateProvince.CountryRegionCode)" />
+            </div>
+
+            <!-- TERRITORIO -->
+            <div class="mb-3">
+                <label class="form-label"><strong>Territorio de Ventas</strong></label>
+                <select class="form-select" @bind="StateProvince.TerritoryId">
+
+                    @if (string.IsNullOrEmpty(StateProvince.CountryRegionCode))
+                    {
+                        <option value="0" disabled>Primero seleccione un país</option>
+                    }
+                    else if (!ListaSalesTerritory.Any())
+                    {
+                        <option value="0" disabled>
+                            No hay territorios disponibles para @ObtenerNombrePais(StateProvince.CountryRegionCode)
+                        </option>
+                    }
+                    else
+                    {
+                        <option value="0">Seleccione un territorio...</option>
+
+                        @foreach (var territory in ListaSalesTerritory)
+                        {
+                            <option value="@territory.TerritoryId">@territory.Name</option>
+                        }
+                    }
+
+                </select>
+
+                <ValidationMessage For="(() => StateProvince.TerritoryId)" />
+            </div>
+
+            <!-- FOOTER (dentro del form 👈 correcto) -->
+            <div class="state-create-footer">
+
+                <a class="btn btn-secondary bi bi-arrow-left"
+                       href="/StateProvince/Index">
+                    Volver
+                </a>
+
+                <button class="btn btn-primary bi bi-floppy"
+                        type="submit">
+                    Guardar
+                </button>
+
+            </div>
+
+        </div>
+
+    </EditForm>
+
+</div>
 
 @code {
     public StateProvince StateProvince { get; set; } = new StateProvince();

@@ -7,33 +7,66 @@
 @inject NavigationManager navigationManager;
 @rendermode InteractiveServer
 
-<EditForm Model="ProductDesc" FormName="crearDesc" OnValidSubmit="Guardar">
-    <DataAnnotationsValidator />
+<div class="product-description-create-container">
 
-    <div class="container pb-5">
-        <div class="card shadow-lg">
-            <div class="card-header text-center">
-                <h4>Nuevo Texto Descriptivo</h4>
-            </div>
-            <div class="card-body">
-                
-                <h5 class="pb-3 text-primary border-bottom">Contenido Comercial</h5>
-                
-                <div class="mb-3">
-                    <label><strong>Párrafo de Descripción *</strong></label>
-                    <textarea class="form-control" rows="5" maxlength="400" @bind="ProductDesc.Description" placeholder="Ej: Bicicleta de alto rendimiento diseñada para recorridos de montaña extremo..."></textarea>
-                    <ValidationMessage For="(() => ProductDesc.Description)" />
-                    <small class="text-muted">Evita mencionar colores o tamaños específicos, redacta pensando en la línea general del modelo.</small>
-                </div>
-
-            </div>
-            <div class="card-footer text-center">
-                <a class="btn btn-secondary bi bi-arrow-left" href="/ProductDescription/Index"> Volver</a>
-                <button class="btn btn-primary bi bi-floppy" type="submit"> Guardar Registro</button>
-            </div>
+    <!-- HEADER -->
+    <div class="product-description-create-header">
+        <div>
+            <h3>Nueva Descripción</h3>
+            <span>Registro de contenido comercial para productos</span>
         </div>
     </div>
-</EditForm>
+
+    <!-- FORM -->
+    <div class="product-description-create-form">
+        <EditForm Model="ProductDesc" OnValidSubmit="Guardar">
+            <DataAnnotationsValidator />
+
+            <div class="card shadow-lg">
+                <div class="card-body">
+
+                    <!-- SECCIÓN -->
+                    <h5 class="section-title">
+                        <i class="bi bi-file-text"></i> Contenido Comercial
+                    </h5>
+
+                    <!-- DESCRIPCIÓN -->
+                    <div class="mb-3">
+                        <label class="form-label">
+                            <strong>Párrafo de Descripción</strong>
+                        </label>
+
+                        <textarea class="form-control"
+                                  rows="5"
+                                  maxlength="400"
+                                  @bind="ProductDesc.Description"
+                                      placeholder="Ej: Bicicleta de alto rendimiento diseñada para recorridos de montaña extremo...">
+                        </textarea>
+
+                            <ValidationMessage For="(() => ProductDesc.Description)" />
+
+                            <small class="text-muted">
+                                Evita mencionar colores o tamaños específicos, redacta pensando en la línea general del modelo.
+                            </small>
+                        </div>
+
+                    </div>
+
+                    <!-- FOOTER -->
+                    <div class="card-footer text-center">
+                        <a class="btn btn-secondary bi bi-arrow-left" href="/ProductDescription/Index">
+                            Volver
+                        </a>
+
+                        <button class="btn btn-primary bi bi-floppy" type="submit">
+                            Guardar
+                        </button>
+                    </div>
+                </div>
+            </EditForm>
+        </div>
+
+    </div>
 
 @code {
     public ProductDescription ProductDesc { get; set; } = new ProductDescription();

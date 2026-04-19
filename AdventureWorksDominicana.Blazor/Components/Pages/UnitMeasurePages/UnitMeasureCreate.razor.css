@@ -1,0 +1,107 @@
+﻿/* CONTENEDOR */
+.unitmeasure-create-container {
+    max-width: 900px;
+    margin: auto;
+    padding: 20px;
+}
+
+/* HEADER */
+.unitmeasure-create-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+    .unitmeasure-create-header h3 {
+        margin: 0;
+        color: #01398C;
+    }
+
+    .unitmeasure-create-header span {
+        font-size: 0.9rem;
+        color: #6b7280;
+    }
+
+/* FORM */
+.unitmeasure-create-form {
+    margin-top: 20px;
+}
+
+    /* CARD */
+    .unitmeasure-create-form .card {
+        background-color: #F5F5F5;
+        border: 2px solid #E6E6E6;
+        border-radius: 20px;
+        box-shadow: 0 10px 25px -5px rgba(0,0,0,0.05), 0 8px 20px -6px rgba(0,0,0,0.02);
+    }
+
+    .unitmeasure-create-form .card-body {
+        padding: 24px;
+    }
+
+    .unitmeasure-create-form .card-footer {
+        background: white;
+        border-top: 1px solid #e5e7eb;
+        border-radius: 0 0 20px 20px;
+        padding: 16px;
+    }
+
+/* SECCIÓN */
+.section-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #01398C;
+    margin-bottom: 16px;
+    padding-bottom: 8px;
+    border-bottom: 2px solid #e5e7eb;
+}
+
+/* INPUTS */
+.unitmeasure-create-form .form-control {
+    width: 100%;
+    border-radius: 10px;
+    border: 1px solid #dbeafe;
+    padding: 8px 12px;
+    font-size: 0.9rem;
+}
+
+    .unitmeasure-create-form .form-control:focus {
+        border-color: #466EDB;
+        box-shadow: 0 0 0 2px rgba(70,110,219,0.15);
+    }
+
+/* BOTONES */
+.unitmeasure-create-form .btn-primary {
+    background: #466EDB;
+    border: none;
+    padding: 8px 20px;
+    border-radius: 10px;
+}
+
+    .unitmeasure-create-form .btn-primary:hover {
+        background: #01398C;
+    }
+
+.unitmeasure-create-form .btn-secondary {
+    background: #6b7280;
+    border: none;
+    color: white;
+    padding: 8px 20px;
+    border-radius: 10px;
+}
+
+    .unitmeasure-create-form .btn-secondary:hover {
+        background: #595C66;
+    }
+
+/* RESPONSIVE */
+@media (max-width: 768px) {
+    .unitmeasure-create-container {
+        padding: 15px;
+    }
+
+    .unitmeasure-create-form .card-body {
+        padding: 16px;
+    }
+}

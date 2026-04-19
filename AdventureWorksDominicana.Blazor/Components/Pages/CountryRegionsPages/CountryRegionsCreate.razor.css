@@ -1,0 +1,70 @@
+﻿/* CONTENEDOR */
+.country-create-container {
+    max-width: 700px;
+    margin: auto;
+    padding: 20px;
+}
+
+/* HEADER */
+.country-create-header {
+    margin-bottom: 20px;
+}
+
+    .country-create-header h3 {
+        margin: 0;
+        color: #01398C;
+    }
+
+    .country-create-header span {
+        font-size: 0.9rem;
+        color: #6b7280;
+    }
+
+/* FORM */
+.country-create-form {
+    background-color: #F5F5F5;
+    border: 2px solid #E6E6E6;
+    border-radius: 20px;
+    padding: 20px;
+}
+
+    /* LABELS */
+    .country-create-form .form-label {
+        font-size: 0.85rem;
+        color: #374151;
+    }
+
+    /* INPUTS */
+    .country-create-form .form-control {
+        border-radius: 10px;
+        border: 1px solid #dbeafe;
+        background-color: white;
+    }
+
+        .country-create-form .form-control:focus {
+            border-color: #466EDB;
+            box-shadow: 0 0 0 2px rgba(70,110,219,0.15);
+        }
+
+/* FOOTER */
+.country-create-footer {
+    margin-top: 20px;
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+}
+
+/* BOTONES */
+.country-create-container .btn-primary {
+    background: #466EDB;
+    border: none;
+    border-radius: 10px;
+}
+
+    .country-create-container .btn-primary:hover {
+        background: #01398C;
+    }
+
+.country-create-container .btn-secondary {
+    border-radius: 10px;
+}

@@ -10,88 +10,84 @@
 
 <PageTitle>Unidades de Medida</PageTitle>
 
-<div class="container mt-4">
-    <div class="card shadow-lg">
-        
-        <div class="card-header d-flex justify-content-between align-items-center">
-            <h5 class="card-title mb-0">Unidades de Medida</h5>
-            <a href="UnitMeasure/Create" class="btn btn-primary d-flex align-items-center gap-2">
-                <i class="bi bi-plus-square"></i>
-                <span>Crear</span>
-            </a>
+<div class="unitmeasure-container">
+
+    <!-- HEADER -->
+    <div class="unitmeasure-header">
+        <div>
+            <h3>Unidades de Medida</h3>
+            <span>Gestión y consulta de unidades</span>
         </div>
-        
-        <div class="card-body">
-            
-            <div class="row">
-                <div class="col-md-3">
-                    <label class="form-label fw-bold">Desde</label>
-                </div>
-                <div class="col-md-3">
-                    <label class="form-label fw-bold">Hasta</label>
-                </div>
-                <div class="col-md-3">
-                    <label class="form-label fw-bold">Filtro:</label>
-                </div>
-                <div class="col-md-3">
-                    <label class="form-label fw-bold">Buscar:</label>
+
+        <a class="btn btn-primary" href="/UnitMeasure/Create">
+            <i class="bi bi-plus-square"></i> Crear
+        </a>
+    </div>
+
+    <!-- FILTROS -->
+    <div class="unitmeasure-filters">
+        <div class="row g-3">
+
+            <div class="col-12 col-md-6 col-lg-3">
+                <label class="form-label">Desde</label>
+                <input class="form-control" type="date" @bind="StartDate" />
+            </div>
+
+            <div class="col-12 col-md-6 col-lg-3">
+                <label class="form-label">Hasta</label>
+                <input class="form-control" type="date" @bind="EndDate" />
+            </div>
+
+            <div class="col-12 col-md-6 col-lg-3">
+                <label class="form-label">Filtro</label>
+                <select class="form-select" @bind="Filtro">
+                    <option value="">Seleccione...</option>
+                    <option value="Codigo">Código</option>
+                    <option value="Nombre">Nombre</option>
+                </select>
+            </div>
+
+            <div class="col-12 col-md-6 col-lg-3">
+                <label class="form-label">Buscar</label>
+                <div class="input-group">
+                    <input class="form-control" @bind="ValorFiltro" placeholder="Buscar..." />
+
+                    <button class="btn btn-primary" @onclick="Buscar">
+                        <i class="bi bi-search"></i>
+                    </button>
+
+                    <button class="btn btn-outline-primary" @onclick="Restablecer">
+                        <i class="bi bi-arrow-clockwise"></i>
+                    </button>
                 </div>
             </div>
 
-            <div class="row mb-4">
-                <div class="col-md-3">
-                    <input class="form-control" type="date" @bind="StartDate" />
-                </div>
-                <div class="col-md-3">
-                    <input class="form-control" type="date" @bind="EndDate" />
-                </div>
-                <div class="col-md-3">
-                    <select class="form-select" @bind="Filtro">
-                        <option value="">Seleccione una opcion</option>
-                        <option value="Codigo">Código</option>
-                        <option value="Nombre">Nombre</option>
-                    </select>
-                </div>
-                <div class="col-md-3">
-                    <div class="input-group">
-                        <input class="form-control" type="text" placeholder="Buscar..." @bind="ValorFiltro" />
-                        <button class="btn btn-primary" type="button" @onclick="Buscar" title="Buscar">
-                            <i class="bi bi-search"></i>
-                        </button>
-                        <button class="btn btn-outline-primary" type="button" @onclick="Restablecer" title="Limpiar Filtros">
-                            <i class="bi bi-arrow-clockwise"></i>
-                        </button>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="table-responsive">
-                <QuickGrid Items="UnitsList.AsQueryable()" Pagination="@pages" Class="table table-striped table-bordered table-hover">
-                    <PropertyColumn Property="@(u => u.UnitMeasureCode)" Title="Código" Sortable="true" />
-                    <PropertyColumn Property="@(u => u.Name)" Title="Nombre" Sortable="true" />
-                    <PropertyColumn Property="@(u => u.ModifiedDate)" Title="Fecha" Format="dd/MM/yyyy" Sortable="true" />
-                    
-                    <TemplateColumn Title="Opciones" Align="Align.Center">
-                        <div class="d-flex justify-content-center gap-2">
-                            <a href="UnitMeasure/Edit/@context.UnitMeasureCode" class="btn btn-sm btn-outline-primary d-flex align-items-center gap-2" title="Modificar">
-                                <i class="bi bi-pencil"></i>
-                                <span>Modificar</span>
-                            </a>
-                        </div>
-                    </TemplateColumn>
-                </QuickGrid>
-                
-                <Paginator State="@pages" />
-            </div>
         </div>
+    </div>
 
-        <div class="card-footer text-end">
-            <strong>Conteo Registros: @UnitsList.Count</strong>
-        </div>
+    <!-- TABLA -->
+    <div class="table-responsive unitmeasure-table">
+
+        <QuickGrid Items="UnitsList.AsQueryable()" Pagination="@pages"
+                   Class="table table-hover">
+
+            <PropertyColumn Property="@(u => u.UnitMeasureCode)" Title="Código" />
+            <PropertyColumn Property="@(u => u.Name)" Title="Nombre" />
+            <PropertyColumn Property="@(u => u.ModifiedDate)" Format="dd/MM/yyyy" Title="Fecha" />
+
+            <TemplateColumn Class="text-center" Title="Acciones">
+                <a href="/UnitMeasure/Edit/@context.UnitMeasureCode"
+                       class="btn btn-sm btn-outline-primary">
+                    <span class="bi bi-pencil"></span> Modificar
+                </a>
+            </TemplateColumn>
+
+        </QuickGrid>
+
+        <Paginator State="@pages" />
 
     </div>
 </div>
-
 @code {
     private List<UnitMeasure> UnitsList = new List<UnitMeasure>();
     private PaginationState pages = new PaginationState { ItemsPerPage = 5 };

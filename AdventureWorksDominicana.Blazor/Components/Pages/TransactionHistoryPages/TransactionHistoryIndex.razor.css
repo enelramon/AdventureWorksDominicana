@@ -1,0 +1,110 @@
+﻿/* CONTENEDOR */
+.transaction-container {
+    max-width: 1200px;
+    margin: auto;
+    padding: 20px;
+}
+
+/* HEADER */
+.transaction-header {
+    margin-bottom: 20px;
+}
+
+    .transaction-header h3 {
+        margin: 0;
+        color: #01398C;
+    }
+
+    .transaction-header span {
+        font-size: 0.9rem;
+        color: #6b7280;
+    }
+
+/* FILTROS */
+.transaction-filters {
+    background-color: #F5F5F5;
+    border: 2px solid #E6E6E6;
+    padding: 20px;
+    border-radius: 20px;
+    margin-bottom: 24px;
+    box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 20px -6px rgba(0,0,0,0.05);
+}
+
+    .transaction-filters:hover {
+        box-shadow: 0 10px 25px -5px rgba(0,0,0,0.15), 0 8px 20px -6px rgba(0,0,0,0.15);
+    }
+
+    .transaction-filters .form-label {
+        font-size: 0.85rem;
+        color: #6b7280;
+    }
+
+    .transaction-filters .form-control,
+    .transaction-filters .form-select {
+        border-radius: 10px;
+        border: 1px solid #dbeafe;
+    }
+
+        .transaction-filters .form-control:focus,
+        .transaction-filters .form-select:focus {
+            border-color: #466EDB;
+            box-shadow: 0 0 0 2px rgba(70,110,219,0.15);
+        }
+
+    /* BOTONES */
+    .transaction-filters .btn-primary {
+        background: #466EDB;
+        border: none;
+    }
+
+        .transaction-filters .btn-primary:hover {
+            background: #01398C;
+        }
+
+    .transaction-filters .btn-outline-primary {
+        border-color: #466EDB;
+        color: #466EDB;
+    }
+
+        .transaction-filters .btn-outline-primary:hover {
+            background: #466EDB;
+            color: white;
+        }
+
+/* TABLA */
+.transaction-table {
+    background-color: #F5F5F5;
+    border: 2px solid #E6E6E6;
+    border-radius: 20px;
+    padding: 20px;
+    box-shadow: 0 10px 25px -5px rgba(0,0,0,0.15), 0 8px 20px -6px rgba(0,0,0,0.15);
+}
+
+    .transaction-table:hover {
+        box-shadow: 0 10px 25px -5px rgba(0,0,0,0.25), 0 8px 20px -6px rgba(0,0,0,0.25);
+    }
+
+    /* FILAS REDONDEADAS */
+    .transaction-table tbody tr td:first-child {
+        border-top-left-radius: 12px;
+        border-bottom-left-radius: 12px;
+    }
+
+    .transaction-table tbody tr td:last-child {
+        border-top-right-radius: 12px;
+        border-bottom-right-radius: 12px;
+    }
+
+/* FOOTER */
+.transaction-footer {
+    margin-top: 15px;
+    text-align: right;
+    font-size: 0.9rem;
+}
+
+/* RESPONSIVE */
+@media (max-width: 768px) {
+    .transaction-container {
+        padding: 15px;
+    }
+}
