@@ -35,6 +35,10 @@ public class StoreService(IDbContextFactory<Contexto> DbFactory) : IService<Stor
         {
             contexto.Entry(entidad.SalesPerson).State = EntityState.Unchanged;
         }
+        else
+        {
+            entidad.SalesPersonId = null;
+        }
         if (entidad.BusinessEntity == null && entidad.BusinessEntityId == 0)
         {
             var newBe = new BusinessEntity
@@ -76,6 +80,10 @@ public class StoreService(IDbContextFactory<Contexto> DbFactory) : IService<Stor
         if (entidad.SalesPerson != null)
         {
             contexto.Entry(entidad.SalesPerson).State = EntityState.Unchanged;
+        }
+        else
+        {
+            entidad.SalesPersonId = null;
         }
         if (entidad.BusinessEntity == null && entidad.BusinessEntityId == 0)
         {
