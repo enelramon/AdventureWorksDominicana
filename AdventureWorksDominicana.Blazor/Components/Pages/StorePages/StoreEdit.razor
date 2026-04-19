@@ -67,7 +67,7 @@
                         <InputSelect class="form-select"
                                      @bind-Value="Store.SalesPersonId">
                             <option value="">Seleccione...</option>
-                            <option value="">Ninguno</option>
+                            <option value="">Sin vendedor asignado</option>
 
                             @foreach (var sp in ListaSalesPerson)
                             {
@@ -76,8 +76,6 @@
                                 </option>
                             }
                         </InputSelect>
-
-                        <ValidationMessage For="(() => Store.SalesPersonId)" />
                     </div>
 
                     <!-- DEMOGRAPHICS -->
@@ -168,8 +166,8 @@
         }
         else
         {
-            toastService.ShowError("El campo sales person no puede estar vacío. Seleccione una opción válida");
-            return;
+            Store.SalesPersonId = null;
+            Store.SalesPerson = null;
         }
 
         Store.ModifiedDate = DateTime.Now;
