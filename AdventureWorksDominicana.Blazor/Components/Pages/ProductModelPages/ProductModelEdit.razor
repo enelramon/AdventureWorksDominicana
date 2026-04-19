@@ -1,6 +1,7 @@
 @page "/ProductModel/Edit/{Id:int}"
 @attribute [Authorize(Roles = "Admin, ProductionManager")]
 @using System.Xml.Serialization
+@using System.Xml
 @using System.IO
 @inject NavigationManager navigationManager
 @inject ToastService toastService
@@ -9,53 +10,51 @@
 @inject CultureService cultureService
 @rendermode InteractiveServer
 
-<PageTitle>Editar Modelo</PageTitle>
+<PageTitle>Editar Modelo - AdventureWorks</PageTitle>
 
 @if (model == null)
 {
-    <p>Cargando...</p>
+    <div class="text-center mt-5">
+        <div class="spinner-border text-primary" role="status"></div>
+        <p>Cargando datos del modelo...</p>
+    </div>
 }
 else
 {
-    <EditForm Model="model" OnValidSubmit="Guardar">
+    <EditForm Model="model" OnValidSubmit="Guardar" FormName="EditProductModelForm">
         <DataAnnotationsValidator />
 
         <div class="container mt-4">
-            <div class="card shadow-lg">
-                <div class="card-header">
-                    <h4 class="mb-0">Editar Modelo de Producto</h4>
+            <div class="card shadow-lg border-0">
+                <div class="card-header bg-primary text-white shadow-sm">
+                    <h4 class="mb-0"><i class="bi bi-pencil-square"></i> Editar Modelo de Producto</h4>
                 </div>
 
                 <div class="card-body">
-                    <div class="mb-3">
-                        <label class="form-label fw-bold">ID Modelo</label>
-                        <InputNumber class="form-control" @bind-Value="model.ProductModelId" readonly />
-                    </div>
-
                     <div class="mb-3">
                         <label class="form-label fw-bold">Nombre del Modelo</label>
                         <InputText class="form-control" @bind-Value="model.Name" />
                         <ValidationMessage For="() => model.Name" />
                     </div>
 
-                    @* --- SECCIÓN CON DTOs --- *@
-                    <div class="row mb-3">
+                    <div class="row mb-4">
                         <div class="col-md-6">
-                            <label class="form-label fw-bold">Material (Catálogo)</label>
-                            <InputText class="form-control" @bind-Value="catalogDto.Material" />
+                            <label class="form-label fw-bold text-info">Material (Catalog XML)</label>
+                            <InputText class="form-control border-info" @bind-Value="catalogDto.Material" placeholder="Ej: Aluminum" />
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label fw-bold">Instrucciones de Configuración</label>
-                            <InputText class="form-control" @bind-Value="instructionsDto.SetupSummary" />
+                            <label class="form-label fw-bold text-info">Instrucciones (Instructions XML)</label>
+                            <InputText class="form-control border-info" @bind-Value="instructionsDto.SetupSummary" placeholder="Ej: Inspect before use" />
                         </div>
                     </div>
 
-                    <div class="border border-success p-3 mb-3">
-                        <h3 class="mb-3">Textos Comerciales</h3>
+                    @* Sección Maestro-Detalle *@
+                    <div class="p-3 mb-3 bg-light rounded border">
+                        <h5 class="mb-3 text-secondary">Descripciones por Idioma</h5>
                         <div class="row mb-3 g-2">
                             <div class="col-md-3">
                                 <select class="form-select" @bind="nuevaCulturaId">
-                                    <option value="">Cultura...</option>
+                                    <option value="">Seleccione Cultura...</option>
                                     @foreach (var c in ListaCulturas)
                                     {
                                         <option value="@c.CultureId">@c.Name</option>
@@ -63,80 +62,87 @@ else
                                 </select>
                             </div>
                             <div class="col-md-7">
-                                <InputTextArea class="form-control" rows="1" @bind-Value="nuevoTexto" placeholder="Descripción comercial..." />
+                                <InputTextArea class="form-control" rows="1" @bind-Value="nuevoTexto" placeholder="Nueva descripción comercial..." />
                             </div>
-                            <div class="col-md-2 text-center">
-                                <button type="button" class="btn btn-primary bi bi-plus" @onclick="AgregarDetalle"> Agregar</button>
+                            <div class="col-md-2">
+                                <button type="button" class="btn btn-success w-100" @onclick="AgregarDetalle"> <i class="bi bi-plus-lg"></i></button>
                             </div>
                         </div>
 
-                        <QuickGrid Items="model.ProductModelProductDescriptionCultures.AsQueryable()" Class="table table-striped table-bordered table-hover">
-                            <TemplateColumn Title="Idioma" Context="item">
-                                <span class="badge bg-secondary">@item.CultureId</span>
-                            </TemplateColumn>
-                            <TemplateColumn Title="Descripción" Context="item">
-                                @item.ProductDescription?.Description
-                            </TemplateColumn>
-                            <TemplateColumn Class="text-center" Title="Acción" Context="item">
-                                <button type="button" class="btn btn-danger btn-sm bi bi-trash" @onclick="(() => RemoverDetalle(item))"> Eliminar</button>
+                        <QuickGrid Items="model.ProductModelProductDescriptionCultures.AsQueryable()" Class="table table-sm table-hover border">
+                            <PropertyColumn Property="x => x.CultureId" Title="Cultura" />
+                            <TemplateColumn Title="Descripción">@context.ProductDescription?.Description</TemplateColumn>
+                            <TemplateColumn Title="Acción" Class="text-center">
+                                <button type="button" class="btn btn-outline-danger btn-sm" @onclick="(() => model.ProductModelProductDescriptionCultures.Remove(context))">
+                                    <i class="bi bi-trash"></i>
+                                </button>
                             </TemplateColumn>
                         </QuickGrid>
                     </div>
-
-                    <div class="mt-3 fw-bold">
-                        Total Idiomas: @model.ProductModelProductDescriptionCultures.Count
-                    </div>
-
-                    @if (!string.IsNullOrWhiteSpace(mensajeError))
-                    {
-                        <div class="alert alert-danger">@mensajeError</div>
-                    }
                 </div>
 
-                <div class="card-footer text-center">
-                    <a class="btn btn-secondary bi bi-arrow-left" href="/ProductModel/Index"> Volver</a>
-                    <button type="submit" class="btn btn-primary bi bi-file-earmark"> Guardar</button>
-                    <button type="button" class="btn btn-danger bi bi-trash" @onclick="MostrarConfirmacion"> Eliminar</button>
+                <div class="card-footer bg-white border-top-0 text-center pb-4">
+                    <hr />
+                    <a class="btn btn-secondary px-4 me-2" href="/ProductModel/Index">Cancelar</a>
+                    <button type="submit" class="btn btn-primary px-5 shadow">
+                        <i class="bi bi-save"></i> Guardar Cambios
+                    </button>
                 </div>
             </div>
-
-            @if (confirmarEliminar)
-            {
-                <div class="alert alert-danger mt-3">
-                    <p>¿Desea eliminar este modelo y todas sus asociaciones?</p>
-                    <button type="button" class="btn btn-secondary me-2" @onclick="CerrarConfirmacion"> Cancelar</button>
-                    <button type="button" class="btn btn-danger" @onclick="EliminarConfirmado"> Si, eliminar</button>
-                </div>
-            }
         </div>
     </EditForm>
 }
 
 @code {
     [Parameter] public int Id { get; set; }
-    private ProductModel? model;
-    private List<Culture> ListaCulturas = new();
-    private string nuevaCulturaId = "", nuevoTexto = "", mensajeError = "";
-    private bool confirmarEliminar = false;
 
-    // Instancias de DTOs
+    [SupplyParameterFromForm]
+    private ProductModel? model { get; set; }
+
+    private List<Culture> ListaCulturas = new();
+    private string nuevaCulturaId = "", nuevoTexto = "";
     private CatalogDto catalogDto = new();
     private InstructionsDto instructionsDto = new();
 
     protected override async Task OnInitializedAsync()
     {
-        model = await modelService.Buscar(Id);
         ListaCulturas = await cultureService.GetList(c => true);
-
-        // PASO EXTRA EN EDIT: Cargar los datos del XML a los DTOs al iniciar
-        if (model != null)
+        
+        if (model == null)
         {
-            catalogDto = DeserializarDesdeXml<CatalogDto>(model.CatalogDescription) ?? new();
-            instructionsDto = DeserializarDesdeXml<InstructionsDto>(model.Instructions) ?? new();
+            model = await modelService.Buscar(Id);
+            if (model != null)
+            {
+                catalogDto = DeserializarDesdeXml<CatalogDto>(model.CatalogDescription) ?? new();
+                instructionsDto = DeserializarDesdeXml<InstructionsDto>(model.Instructions) ?? new();
+            }
         }
     }
 
-    // Método para convertir XML de la base de datos a Objeto DTO
+    // --- SERIALIZACIÓN MANUAL "A PRUEBA DE BALAS" ---
+    private string? SerializarAXml<T>(T objeto)
+    {
+        if (objeto == null) return null;
+
+        try
+        {
+            if (objeto is CatalogDto c && !string.IsNullOrWhiteSpace(c.Material))
+            {
+                // Genera el XML exacto que AdventureWorks pide para CatalogDescription
+                return $"<ProductDescription xmlns=\"http://schemas.microsoft.com/sqlserver/2004/07/adventure-works/ProductModelDescription\"><Material>{c.Material}</Material></ProductDescription>";
+            }
+
+            if (objeto is InstructionsDto i && !string.IsNullOrWhiteSpace(i.SetupSummary))
+            {
+                // Genera el XML exacto para Instructions
+                return $"<root xmlns=\"http://schemas.microsoft.com/sqlserver/2004/07/adventure-works/ProductModelInstructions\"><Instructions>{i.SetupSummary}</Instructions></root>";
+            }
+        }
+        catch { return null; }
+
+        return null;
+    }
+
     private T? DeserializarDesdeXml<T>(string? xml) where T : class
     {
         if (string.IsNullOrWhiteSpace(xml)) return null;
@@ -149,39 +155,37 @@ else
         catch { return null; }
     }
 
-    // Método para convertir Objeto DTO a XML para guardar
-    private string SerializarAXml<T>(T objeto)
-    {
-        if (objeto == null) return string.Empty;
-        var serializer = new XmlSerializer(typeof(T));
-        using var sw = new StringWriter();
-        serializer.Serialize(sw, objeto);
-        return sw.ToString();
-    }
-
     private async Task Guardar()
     {
-        // Guardar los datos de los DTOs de vuelta al modelo como XML
-        model!.CatalogDescription = SerializarAXml(catalogDto);
-        model!.Instructions = SerializarAXml(instructionsDto);
+        if (model == null) return;
 
-        if (await modelService.Guardar(model!))
+        // Convertimos los DTOs a los strings XML limpios
+        model.CatalogDescription = SerializarAXml(catalogDto);
+        model.Instructions = SerializarAXml(instructionsDto);
+        model.ModifiedDate = DateTime.Now;
+
+        if (await modelService.Guardar(model))
         {
-            toastService.ShowSuccess("Modelo guardado.");
+            toastService.ShowSuccess("Cambios aplicados correctamente.");
             navigationManager.NavigateTo("/ProductModel/Index");
+        }
+        else
+        {
+            toastService.ShowError("Error al guardar en la base de datos.");
         }
     }
 
-    // (AgregarDetalle, RemoverDetalle, Eliminar) se mantienen igual
     private async Task AgregarDetalle()
     {
         if (string.IsNullOrWhiteSpace(nuevaCulturaId) || string.IsNullOrWhiteSpace(nuevoTexto)) return;
-        if (model!.ProductModelProductDescriptionCultures.Any(c => c.CultureId == nuevaCulturaId))
+        
+        var pDesc = new ProductDescription
         {
-            toastService.ShowWarning("Ya existe este idioma.");
-            return;
-        }
-        var pDesc = new ProductDescription { Description = nuevoTexto };
+            Description = nuevoTexto,
+            ModifiedDate = DateTime.Now,
+            Rowguid = Guid.NewGuid()
+        };
+
         if (await descriptionService.Guardar(pDesc))
         {
             model!.ProductModelProductDescriptionCultures.Add(new ProductModelProductDescriptionCulture
@@ -191,29 +195,15 @@ else
                 ProductDescription = pDesc
             });
             nuevoTexto = "";
-            toastService.ShowSuccess("Texto agregado.");
-            StateHasChanged();
+            toastService.ShowInfo("Traducción agregada localmente.");
         }
     }
 
-    private void RemoverDetalle(ProductModelProductDescriptionCulture item) => model!.ProductModelProductDescriptionCultures.Remove(item);
-    private void MostrarConfirmacion() => confirmarEliminar = true;
-    private void CerrarConfirmacion() => confirmarEliminar = false;
+    // --- DTOS SIMPLES ---
+    // Usamos etiquetas XmlElement para que la deserialización siga funcionando al cargar datos
+    [XmlRoot(ElementName = "ProductDescription", Namespace = "http://schemas.microsoft.com/sqlserver/2004/07/adventure-works/ProductModelDescription")]
+    public class CatalogDto { [XmlElement] public string Material { get; set; } = ""; }
 
-    private async Task EliminarConfirmado()
-    {
-        try
-        {
-            if (await modelService.Eliminar(Id))
-            {
-                toastService.ShowSuccess("Eliminado.");
-                navigationManager.NavigateTo("/ProductModel/Index");
-            }
-        }
-        catch (Exception ex) { toastService.ShowError(ex.Message); }
-    }
-
-    // DEFINICIÓN DE DTOs
-    public class CatalogDto { public string Material { get; set; } = ""; }
-    public class InstructionsDto { public string SetupSummary { get; set; } = ""; }
+    [XmlRoot(ElementName = "root", Namespace = "http://schemas.microsoft.com/sqlserver/2004/07/adventure-works/ProductModelInstructions")]
+    public class InstructionsDto { [XmlElement(ElementName = "Instructions")] public string SetupSummary { get; set; } = ""; }
 }
