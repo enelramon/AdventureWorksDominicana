@@ -13,11 +13,10 @@
 
 <div class="product-container">
 
-    <!-- HEADER -->
     <div class="product-header">
         <div>
             <h3>Detalle del producto</h3>
-            <span>Información completa del producto</span>
+            <span>Informacion completa del producto</span>
         </div>
 
         <button class="btn-back" @onclick="GoBack">
@@ -29,13 +28,33 @@
     {
         <div class="product-content">
 
-            <!-- IMAGEN -->
-            <div class="product-image">
-                <img src="https://www.svgrepo.com/show/486796/product-management.svg" />
-                <span class="product-color">@Product.Color</span>
+            <div class="product-image" style="background: white; border-radius: 12px; padding: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); text-align: center;">
+                @{
+                    var nexoFoto = Product.ProductProductPhotos?.FirstOrDefault(f => f.Primary == true) ?? Product.ProductProductPhotos?.FirstOrDefault();
+                    string imgUrl = "https://www.svgrepo.com/show/486796/product-management.svg";
+
+                    if (nexoFoto?.ProductPhoto != null)
+                    {
+                        if (nexoFoto.ProductPhoto.ThumbNailPhoto != null && nexoFoto.ProductPhoto.ThumbNailPhoto.Length > 0)
+                        {
+                            var base64 = Convert.ToBase64String(nexoFoto.ProductPhoto.ThumbNailPhoto);
+                            imgUrl = $"data:image/jpeg;base64,{base64}";
+                        }
+                        else if (!string.IsNullOrWhiteSpace(nexoFoto.ProductPhoto.LargePhotoFileName))
+                        {
+                            imgUrl = ResolverRutaImagen(nexoFoto.ProductPhoto.LargePhotoFileName);
+                        }
+                    }
+                }
+                
+                <img src="@imgUrl" alt="@Product.Name" style="object-fit: contain; width: 100%; max-height: 400px; border-radius: 8px;" />
+                
+                @if (!string.IsNullOrWhiteSpace(Product.Color))
+                {
+                    <span class="product-color" style="display: inline-block; margin-top: 15px;">@Product.Color</span>
+                }
             </div>
 
-            <!-- INFO -->
             <div class="product-info">
 
                 <span class="product-category">
@@ -46,7 +65,7 @@
 
                 <p class="product-description">
                     @(Product.ProductModel?.ProductModelProductDescriptionCultures
-                        .FirstOrDefault()?.ProductDescription?.Description ?? "Sin descripción")
+                        .FirstOrDefault()?.ProductDescription?.Description ?? "Sin descripcion")
                 </p>
 
                 <div class="product-price">
@@ -84,7 +103,6 @@
 
     protected override async Task OnInitializedAsync()
     {
-        // Usuario
         var authState = await authenticationStateProvider.GetAuthenticationStateAsync();
         User = authState.User;
         IsAuthenticated = User.Identity?.IsAuthenticated ?? false;
@@ -94,8 +112,8 @@
             UserEmail = User.FindFirst(ClaimTypes.Email)?.Value;
         }
 
-        // Producto
-        Product = await productService.Buscar(ProductId);
+        var productos = await productService.GetList(p => p.ProductId == ProductId);
+        Product = productos.FirstOrDefault();
     }
 
     private async Task Guardar(int productId)
@@ -112,13 +130,29 @@
                 ModifiedDate = DateTime.Now
             });
 
-            toastService.ShowSuccess("Producto añadido al carrito");
+            toastService.ShowSuccess("Producto anadido al carrito");
         }
         catch (Exception ex)
         {
             toastService.ShowError("Error al agregar producto");
             Console.WriteLine(ex.Message);
         }
+    }
+
+    private string ResolverRutaImagen(string? valor)
+    {
+        if (string.IsNullOrWhiteSpace(valor))
+            return "https://www.svgrepo.com/show/486796/product-management.svg";
+
+        if (valor.StartsWith("http://", StringComparison.OrdinalIgnoreCase) ||
+            valor.StartsWith("https://", StringComparison.OrdinalIgnoreCase) ||
+            valor.StartsWith("data:image", StringComparison.OrdinalIgnoreCase) ||
+            valor.StartsWith("/"))
+        {
+            return valor;
+        }
+
+        return $"/uploads/products/{valor}";
     }
 
     private void GoBack() => navigationManager.NavigateTo("/Sales");

@@ -10,20 +10,15 @@
 <PageTitle>ShoppingCart</PageTitle>
 
 <div class="cart-container">
-
-    <!-- HEADER -->
     <div class="cart-header">
         <div>
             <h3>Carrito de Compras</h3>
             <span>Revisa tus productos antes de finalizar</span>
         </div>
-
         <button class="btn btn-outline bi bi-arrow-left" @onclick="GoToSale"> Seguir comprando</button>
     </div>
 
     <div class="cart-content">
-
-        <!-- LISTA -->
         <div class="cart-items">
             @if (ShoppingCartItemList.Any())
             {
@@ -31,46 +26,32 @@
                 {
                     @if (s == null) return;
                     <div class="cart-item">
-
                         <div class="cart-item-img">
                             @{
                                 var nexoFoto = s.Product?.ProductProductPhotos.FirstOrDefault(f => f.Primary == true);
-                                string imgUrl = "https://www.svgrepo.com/show/486796/product-management.svg";
-                                if (nexoFoto != null && nexoFoto.ProductPhoto?.ThumbNailPhoto != null)
-                                {
-                                    var base64 = Convert.ToBase64String(nexoFoto.ProductPhoto.ThumbNailPhoto);
-                                    imgUrl = $"data:image/jpeg;base64,{base64}";
-                                }
+                                string imgUrl = ResolverRutaImagen(nexoFoto?.ProductPhoto?.LargePhotoFileName);
                             }
                             <img src="@imgUrl" alt="@(s.Product?.Name ?? "Product Image")" style="object-fit: cover; width: 100%; height: 100%; border-radius: 8px;" />
-                             <span>@(s.Product?.Color ?? "N/A")</span>   
+                            <span>@(s.Product?.Color ?? "N/A")</span>
                         </div>
 
                         <div class="cart-item-info">
-
                             <div class="cart-item-top">
                                 <span class="cart-category">
                                     @(s.Product?.ProductSubcategory?.ProductCategory?.Name ?? "N/A")
                                 </span>
-
-                                <i class="bi bi-trash cart-delete"
-                                   @onclick="() => DeleteItemCart(s.ShoppingCartItemId)"></i>
+                                <i class="bi bi-trash cart-delete" @onclick="() => DeleteItemCart(s.ShoppingCartItemId)"></i>
                             </div>
-
                             <div class="cart-name">@(s.Product?.Name ?? "N/A")</div>
-
                             <div class="cart-price">
                                 RD$ @(s.Product?.ListPrice.ToString("N2") ?? "N/A")
                             </div>
-
                             <div class="cart-quantity">
                                 <button @onclick="() => MinusQuantity(s.ShoppingCartItemId)">-</button>
                                 <span>@s.Quantity</span>
                                 <button @onclick="() => SumQuentity(s.ShoppingCartItemId)">+</button>
                             </div>
-
                         </div>
-
                     </div>
                 }
             }
@@ -78,44 +59,30 @@
             {
                 <div class="cart-empty">
                     <img src="/EmptyCart.png" />
-                    <h4>Tu carrito está vacío</h4>
-                    <button class="btn btn-outline" @onclick="GoToSale">
-                        Explorar productos
-                    </button>
+                    <h4>Tu carrito esta vacio</h4>
+                    <button class="btn btn-outline" @onclick="GoToSale"> Explorar productos</button>
                 </div>
             }
         </div>
 
-        <!-- RESUMEN -->
         @if (ShoppingCartItemList.Any())
         {
             <div class="cart-summary">
-
                 <h5>Resumen</h5>
-
                 <div class="summary-row">
                     <span>Productos</span>
                     <span>@ShoppingCartItemList.Sum(i => i.Quantity)</span>
                 </div>
-
                 <div class="summary-row">
                     <span>Subtotal</span>
-                    <span>
-                        RD$ @ShoppingCartItemList.Sum(i => i.Product.ListPrice * i.Quantity).ToString("N2")
-                    </span>
+                    <span>RD$ @ShoppingCartItemList.Sum(i => i.Product.ListPrice * i.Quantity).ToString("N2")</span>
                 </div>
-
                 <hr />
-
                 <div class="summary-total">
                     <span>Total</span>
-                    <span>
-                        RD$ @ShoppingCartItemList.Sum(i => i.Product.ListPrice * i.Quantity).ToString("N2")
-                    </span>
+                    <span>RD$ @ShoppingCartItemList.Sum(i => i.Product.ListPrice * i.Quantity).ToString("N2")</span>
                 </div>
-
                 <button class="btn btn-fill w-100 mt-3" @onclick="GoToCheckout">Finalizar compra</button>
-
             </div>
         }
     </div>
@@ -123,9 +90,7 @@
 
 @code {
     private List<ShoppingCartItem> ShoppingCartItemList = new List<ShoppingCartItem>();
-
     private ClaimsPrincipal? User { get; set; }
-    private string currencyRateId;
     private bool IsAuthenticated { get; set; }
     private string? UserEmail { get; set; }
     private List<Customer> userCurrent = new List<Customer>();
@@ -146,7 +111,7 @@
         var item = ShoppingCartItemList.FirstOrDefault(x => x.ShoppingCartItemId == itemId);
         if (item != null)
         {
-            if(item.Product?.ProductInventories?.FirstOrDefault()?.Quantity < item.Quantity + 1)
+            if (item.Product?.ProductInventories?.FirstOrDefault()?.Quantity < item.Quantity + 1)
             {
                 toastService.ShowWarning("Sin cantidad disponible");
                 return;
@@ -165,7 +130,7 @@
             {
                 item.Quantity -= 1;
                 await shoppingCartItemService.Guardar(item);
-            }  
+            }
         }
     }
 
@@ -178,7 +143,7 @@
     {
         try
         {
-            var eliminated = await shoppingCartItemService.Eliminar(itemId);
+            await shoppingCartItemService.Eliminar(itemId);
             toastService.ShowSuccess("Producto eliminado correctamente");
             await RefreshShoppingCart();
         }
@@ -187,6 +152,19 @@
             toastService.ShowError("Producto no pudo ser eliminado correctamente");
             Console.Write(ex.Message);
         }
+    }
+
+    private string ResolverRutaImagen(string? valor)
+    {
+        if (string.IsNullOrWhiteSpace(valor))
+            return "https://www.svgrepo.com/show/486796/product-management.svg";
+        if (valor.StartsWith("http://", StringComparison.OrdinalIgnoreCase) ||
+            valor.StartsWith("https://", StringComparison.OrdinalIgnoreCase) ||
+            valor.StartsWith("/"))
+        {
+            return valor;
+        }
+        return $"/uploads/products/{valor}";
     }
 
     private void GoToSale() => navigationManager.NavigateTo("/Sales");

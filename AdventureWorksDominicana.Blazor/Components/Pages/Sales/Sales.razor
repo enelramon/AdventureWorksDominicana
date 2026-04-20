@@ -39,7 +39,7 @@
 			</div>
 			<div class="input-group">
 				<select class="form-select" @bind="selectedCategoryId" @bind:after="FiltrarPorCategoria">
-					<option value="0">Todas las categorías</option>
+					<option value="0">Todas las categorias</option>
 					@foreach (var cat in Categorias)
 					{
 						<option value="@cat.ProductCategoryId">@cat.Name</option>
@@ -56,12 +56,7 @@
 					<div class="sale-product-img">
 						@{
 							var nexoFoto = p.ProductProductPhotos?.FirstOrDefault(f => f.Primary == true);
-							string imgUrl = "https://www.svgrepo.com/show/486796/product-management.svg";
-							if (nexoFoto != null && nexoFoto.ProductPhoto?.ThumbNailPhoto != null)
-							{
-								var base64 = Convert.ToBase64String(nexoFoto.ProductPhoto.ThumbNailPhoto);
-								imgUrl = $"data:image/jpeg;base64,{base64}";
-							}
+							string imgUrl = ResolverRutaImagen(nexoFoto?.ProductPhoto?.LargePhotoFileName);
 						}
 						<img src="@imgUrl" alt="@p.Name" />
 						<span>@(p?.Color ?? "N/A")</span>
@@ -73,17 +68,20 @@
 							<p>@(p?.Name ?? "N/A")</p>
 						</div>
 						<div class="sale-product-description">
-							<p>@(p?.ProductModel?.ProductModelProductDescriptionCultures?
-								.FirstOrDefault()?.ProductDescription?.Description ?? "Sin descripción")</p>
+							<p>
+								@(p?.ProductModel?.ProductModelProductDescriptionCultures?
+									.FirstOrDefault()?.ProductDescription?.Description ?? "Sin descripcion")
+							</p>
 						</div>
 						
-                        <div class="sale-product-price d-flex justify-content-between align-items-center">
+						<div class="sale-product-price d-flex justify-content-between align-items-center">
 							<span>RD$ @(p?.ListPrice.ToString("N2") ?? "N/A")</span>
 							<small class="text-primary fw-bold">Stock: @(p?.ProductInventories?.Sum(i => i.Quantity) ?? 0)</small>
 						</div>
-                        <button type="button" @onclick:stopPropagation @onclick="() => Guardar(p.ProductId)">
+						<button type="button" @onclick:stopPropagation
+								@onclick="() => Guardar(p.ProductId)">
 							<i class="bi bi-cart"></i>
-							<span>Añadir al Carrito</span>
+							<span>Anadir al Carrito</span>
 						</button>
 					</div>
 				</div>
@@ -101,15 +99,12 @@
 @code {
 	private List<Product> PagedProducts = new();
 	private List<ProductCategory> Categorias = new();
-
 	private int selectedCategoryId = 0;
 	private string searchTerm = string.Empty;
-
 	private int TotalRegisters = 1;
 	private int CurrentPage = 1;
 	private int PageSize = 12;
 	private int TotalPaginas => TotalRegisters == 0 ? 1 : (int)Math.Ceiling((double)TotalRegisters / PageSize);
-
 	private string? UserEmail { get; set; }
 	private int shoppingCount = 0;
 
@@ -125,7 +120,6 @@
 	{
 		var authState = await authenticationStateProvider.GetAuthenticationStateAsync();
 		var user = authState.User;
-
 		if (user.Identity?.IsAuthenticated == true)
 		{
 			UserEmail = user.FindFirst(ClaimTypes.Email)?.Value;
@@ -135,11 +129,10 @@
 	private async Task LoadCategories()
 	{
 		await using var contexto = await DbFactory.CreateDbContextAsync();
-        
 		Categorias = await contexto.ProductCategories
-			.Where(c => c.ProductSubcategories.Any(sc => 
-				sc.Products.Any(p => 
-					p.SellStartDate <= DateTime.Now && 
+			.Where(c => c.ProductSubcategories.Any(sc =>
+				sc.Products.Any(p =>
+					p.SellStartDate <= DateTime.Now &&
 					(p.SellEndDate == null || p.SellEndDate >= DateTime.Now) &&
 					p.ProductInventories.Any(i => i.Quantity >= 1)
 				)
@@ -156,7 +149,6 @@
 			p.ProductInventories.Any(i => i.Quantity >= 1)) &&
 			(selectedCategoryId == 0 || p.ProductSubcategory.ProductCategoryId == selectedCategoryId) &&
 			(string.IsNullOrEmpty(searchTerm) || p.Name.Contains(searchTerm));
-
 		var result = await productService.GetList(criterio, CurrentPage, PageSize);
 		PagedProducts = result.Items;
 		TotalRegisters = result.Total;
@@ -175,10 +167,9 @@
 	{
 		if (string.IsNullOrEmpty(UserEmail))
 		{
-			toastService.ShowWarning("Debe iniciar sesión para agregar productos al carrito");
+			toastService.ShowWarning("Debe iniciar sesion para agregar productos al carrito");
 			return;
 		}
-
 		try
 		{
 			var creado = await shoppingCartItemService.Guardar(new ShoppingCartItem
@@ -189,8 +180,7 @@
 				DateCreated = DateTime.Now,
 				ModifiedDate = DateTime.Now
 			});
-
-			toastService.ShowSuccess("Producto añadido al carrito");
+			toastService.ShowSuccess("Producto anadido al carrito");
 			await CountProductsShopping();
 		}
 		catch (InvalidOperationException ex)
@@ -199,7 +189,7 @@
 		}
 		catch (Exception ex)
 		{
-			toastService.ShowError("Producto no pudo ser añadido al carrito");
+			toastService.ShowError("Producto no pudo ser anadido al carrito");
 			Console.WriteLine(ex.Message);
 		}
 	}
@@ -213,7 +203,7 @@
 
 	private async Task FiltrarPorCategoria()
 	{
-		CurrentPage = 1; 
+		CurrentPage = 1;
 		await LoadProducts();
 	}
 
@@ -233,6 +223,19 @@
 			CurrentPage--;
 			await LoadProducts();
 		}
+	}
+
+	private string ResolverRutaImagen(string? valor)
+	{
+		if (string.IsNullOrWhiteSpace(valor))
+			return "https://www.svgrepo.com/show/486796/product-management.svg";
+		if (valor.StartsWith("http://", StringComparison.OrdinalIgnoreCase) ||
+			valor.StartsWith("https://", StringComparison.OrdinalIgnoreCase) ||
+			valor.StartsWith("/"))
+		{
+			return valor;
+		}
+		return $"/uploads/products/{valor}";
 	}
 
 	private void GoToProductDetail(int id) => navigationManager.NavigateTo($"/Product/Detail/{id}");

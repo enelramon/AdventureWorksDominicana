@@ -7,18 +7,16 @@
 @inject ProductSubcategoryService productSubcategoryService
 @inject ProductModelService productModelService
 @inject UnitMeasureService unitMeasureService
-@inject ProductPhotoService photoService
 @inject ToastService toastService
 @inject NavigationManager navigationManager
 @inject SpecialOfferProductService specialOfferProductService
 @inject SpecialOfferService specialOfferService
-
+@inject ProductPhotoService photoService
 
 <PageTitle>Crear Producto</PageTitle>
 
 <div class="product-container">
     
-    <!-- HEADER -->
     <div class="product-header">
         <div>
             <h3>Crear Producto</h3>
@@ -26,7 +24,6 @@
         </div>
     </div>
 
-    <!-- FORMULARIO -->
     <div class="product-form">
         <EditForm Model="Product" OnValidSubmit="Guardar">
             <DataAnnotationsValidator />
@@ -34,7 +31,6 @@
             <div class="card shadow-lg">
                 <div class="card-body">
 
-                    <!-- SECCIÓN: INFORMACIÓN BÁSICA -->
                     <h5 class="section-title">
                         <i class="bi bi-info-circle"></i> Información General
                     </h5>
@@ -99,7 +95,6 @@
                         </div>
                     </div>
 
-                    <!-- SECCIÓN: COSTOS Y PRECIOS -->
                     <h5 class="section-title mt-4">
                         <i class="bi bi-currency-dollar"></i> Costos y Precios
                     </h5>
@@ -128,7 +123,6 @@
                         <ValidationMessage For="(() => Product.DaysToManufacture)" />
                     </div>
 
-                    <!-- SECCIÓN: INVENTARIO -->
                     <h5 class="section-title mt-4">
                         <i class="bi bi-box-seam"></i> Inventario
                     </h5>
@@ -145,7 +139,6 @@
                         <ValidationMessage For="(() => Product.ReorderPoint)" />
                     </div>
 
-                    <!-- SECCIÓN: CLASIFICACIÓN -->
                     <h5 class="section-title mt-4">
                         <i class="bi bi-tags"></i> Clasificación
                     </h5>
@@ -203,39 +196,32 @@
                         </select>
                     </div>
 
-                    <!-- SECCIÓN: FECHAS -->
                     <h5 class="section-title mt-4">
-                        <i class="bi bi-calendar3"></i> Fechas
+                        <i class="bi bi-calendar-event"></i> Fechas
                     </h5>
 
                     <div class="mb-3">
-                        <label class="form-label"><strong>Inicio de ventas</strong></label>
+                        <label class="form-label"><strong>Inicio de venta</strong></label>
                         <input class="form-control" type="datetime-local" @bind="Product.SellStartDate" />
-                        <ValidationMessage For="(() => Product.SellStartDate)" />
                     </div>
 
                     <div class="mb-3">
-                        <label class="form-label"><strong>Fin de ventas</strong></label>
+                        <label class="form-label"><strong>Fin de venta</strong></label>
                         <input class="form-control" type="datetime-local" @bind="Product.SellEndDate" />
                     </div>
 
                     <div class="mb-3">
-                        <label class="form-label"><strong>Fecha discontinuación</strong></label>
+                        <label class="form-label"><strong>Fecha de descontinuación</strong></label>
                         <input class="form-control" type="datetime-local" @bind="Product.DiscontinuedDate" />
                     </div>
 
-                    <div class="mb-3">
-                        <label class="form-label"><strong>Fecha de modificación</strong></label>
-                        <input class="form-control" type="datetime-local" @bind="Product.ModifiedDate" disabled />
-                    </div>
-                    <!-- SECCIÓN: FOTOGRAFÍA PRINCIPAL -->
                     <h5 class="section-title mt-4">
-                        <i class="bi bi-camera"></i> Fotografía Principal <small class="text-muted">(opcional)</small>
+                        <i class="bi bi-camera"></i> Fotografía Principal
                     </h5>
 
                     <div class="row align-items-center">
                         <div class="col-md-4 text-center mb-3 mb-md-0">
-                            @if (UrlImagenPreview != null)
+                            @if (!string.IsNullOrWhiteSpace(UrlImagenPreview))
                             {
                                 <img src="@UrlImagenPreview" class="product-preview-img" />
                             }
@@ -248,13 +234,17 @@
                             }
                         </div>
                         <div class="col-md-8">
-                            <label class="form-label"><strong>Seleccionar imagen</strong></label>
-                            <InputFile class="form-control" OnChange="CargarFotoTemporal" accept="image/png, image/jpeg" />
-                            <small class="text-muted mt-2 d-block">Formatos: .jpg, .png. Tamaño máximo: 5MB</small>
+                            <label class="form-label"><strong>URL o ruta de imagen</strong></label>
+                            <input class="form-control" type="text" @bind="RutaImagenManual" placeholder="Ej: https://sitio.com/imagen.png o iphone.png" />
+                            <small class="text-muted mt-2 d-block">Puedes poner una URL completa o un nombre de archivo/ruta guardada.</small>
+
+                            <div class="mt-3 d-flex gap-2">
+                                <button type="button" class="btn btn-outline-secondary" @onclick="PrevisualizarRuta">Previsualizar</button>
+                                <button type="button" class="btn btn-outline-primary" @onclick="GuardarRutaTemporal">Usar imagen</button>
+                            </div>
                         </div>
                     </div>
 
-                    <!-- SECCIÓN: PROMOCIONES -->
                     <h5 class="section-title mt-4">
                         <i class="bi bi-percent"></i> Promociones Aplicadas
                     </h5>
@@ -298,9 +288,6 @@
                         Ofertas a aplicar: @OfertasSeleccionadas.Count
                     </div>
 
-
-
-
                 </div>
 
                 <div class="card-footer text-center">
@@ -322,18 +309,9 @@
     public List<SpecialOffer> OfertasSeleccionadas { get; set; } = new();
     public int OfertaSeleccionadaId { get; set; } = 0;
 
-
-    private IBrowserFile? ArchivoSeleccionado;
     private string? UrlImagenPreview;
-
-    private async Task CargarFotoTemporal(InputFileChangeEventArgs e)
-    {
-        ArchivoSeleccionado = e.File;
-        using var ms = new MemoryStream();
-        await ArchivoSeleccionado.OpenReadStream(5242880).CopyToAsync(ms);
-        var base64 = Convert.ToBase64String(ms.ToArray());
-        UrlImagenPreview = $"data:image/jpeg;base64,{base64}";
-    }
+    private string? RutaImagenManual;
+    private string? RutaImagenParaGuardar;
 
     protected override async Task OnInitializedAsync()
     {
@@ -345,12 +323,54 @@
         Product.StandardCost = 0;
         Product.ListPrice = 0;
         Product.SellStartDate = DateTime.Now;
+        Product.ModifiedDate = DateTime.Now;
+        Product.Rowguid = Guid.NewGuid();
 
         ListaSubcategorias = await productSubcategoryService.GetList(s => s.ProductSubcategoryId > 0);
         ListaModelos = await productModelService.GetList(m => m.ProductModelId > 0);
         ListaUnidades = await unitMeasureService.GetList(u => true);
         TodasLasOfertas = await specialOfferService.GetList(o => o.SpecialOfferId > 0);
+    }
 
+    private string ResolverRutaImagen(string? valor)
+    {
+        if (string.IsNullOrWhiteSpace(valor))
+            return string.Empty;
+
+        if (valor.StartsWith("http://", StringComparison.OrdinalIgnoreCase) ||
+            valor.StartsWith("https://", StringComparison.OrdinalIgnoreCase) ||
+            valor.StartsWith("/"))
+        {
+            return valor;
+        }
+
+        return $"/uploads/products/{valor}";
+    }
+
+    private Task PrevisualizarRuta()
+    {
+        if (string.IsNullOrWhiteSpace(RutaImagenManual))
+        {
+            toastService.ShowWarning("Escribe una URL o una ruta.");
+            return Task.CompletedTask;
+        }
+
+        UrlImagenPreview = ResolverRutaImagen(RutaImagenManual.Trim());
+        return Task.CompletedTask;
+    }
+
+    private Task GuardarRutaTemporal()
+    {
+        if (string.IsNullOrWhiteSpace(RutaImagenManual))
+        {
+            toastService.ShowWarning("Escribe una URL o una ruta.");
+            return Task.CompletedTask;
+        }
+
+        RutaImagenParaGuardar = RutaImagenManual.Trim();
+        UrlImagenPreview = ResolverRutaImagen(RutaImagenParaGuardar);
+        toastService.ShowSuccess("Imagen preparada para guardar.");
+        return Task.CompletedTask;
     }
 
     private void AgregarOferta()
@@ -375,17 +395,15 @@
         OfertasSeleccionadas.Remove(oferta);
     }
 
-
     public async Task Guardar()
     {
-        // Limpiar valores vacíos
         Product.WeightUnitMeasureCode = string.IsNullOrWhiteSpace(Product.WeightUnitMeasureCode) ? null : Product.WeightUnitMeasureCode;
         Product.SizeUnitMeasureCode = string.IsNullOrWhiteSpace(Product.SizeUnitMeasureCode) ? null : Product.SizeUnitMeasureCode;
         Product.ProductLine = string.IsNullOrWhiteSpace(Product.ProductLine) ? null : Product.ProductLine;
         Product.Class = string.IsNullOrWhiteSpace(Product.Class) ? null : Product.Class;
         Product.Style = string.IsNullOrWhiteSpace(Product.Style) ? null : Product.Style;
+        Product.ModifiedDate = DateTime.Now;
 
-        // Validar duplicados
         var duplicado = await productService.GetList(p =>
             (p.Name.ToLower().Trim() == Product.Name.ToLower().Trim()
              || p.ProductNumber.ToLower().Trim() == Product.ProductNumber.ToLower().Trim())
@@ -398,36 +416,28 @@
         }
 
         bool guardado = await productService.Guardar(Product);
-        if (guardado)
-        {
-            // EF Core ya popoló Product.ProductId con el ID generado por SQL
-            if (ArchivoSeleccionado != null)
-            {
-                using var ms = new MemoryStream();
-                await ArchivoSeleccionado.OpenReadStream(5242880).CopyToAsync(ms);
-                await photoService.AsignarFotoPrincipal(Product.ProductId, ms.ToArray(), ArchivoSeleccionado.Name);
-            }
 
-
-            // Vincular ofertas seleccionadas ahora que tenemos el ProductId
-            foreach (var oferta in OfertasSeleccionadas)
-            {
-                await specialOfferProductService.Guardar(new SpecialOfferProduct
-                {
-                    ProductId = Product.ProductId,
-                    SpecialOfferId = oferta.SpecialOfferId
-                });
-            }
-
-
-            toastService.ShowSuccess("Producto creado exitosamente.");
-            navigationManager.NavigateTo("/Product/Index");
-        }
-        else
+        if (!guardado)
         {
             toastService.ShowError("Ha ocurrido un error inesperado al guardar el producto.");
+            return;
         }
 
+        if (!string.IsNullOrWhiteSpace(RutaImagenParaGuardar))
+        {
+            await photoService.AsignarFotoPrincipal(Product.ProductId, RutaImagenParaGuardar);
+        }
 
+        foreach (var oferta in OfertasSeleccionadas)
+        {
+            await specialOfferProductService.Guardar(new SpecialOfferProduct
+            {
+                ProductId = Product.ProductId,
+                SpecialOfferId = oferta.SpecialOfferId
+            });
+        }
+
+        toastService.ShowSuccess("Producto creado exitosamente.");
+        navigationManager.NavigateTo("/Product/Index");
     }
 }

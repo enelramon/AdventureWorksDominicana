@@ -13,7 +13,6 @@
 
 <PageTitle>AdventureWorks - Tienda de Bicicletas</PageTitle>
 
-@* --- BOTÓN FLOTANTE DEL CARRITO --- *@
 <div class="cart-floating-trigger">
     <a href="/ShoppingCart" class="cart-button">
         <i class="bi bi-cart3"></i>
@@ -29,9 +28,9 @@
     <div class="hero-banner">
         <div class="hero-content">
             <h1>Pedalea hacia la aventura</h1>
-            <p>Descubre nuestra colección de bicicletas de montaña, ruta y urbana con hasta <strong>30% de descuento</strong></p>
+            <p>Descubre nuestra coleccion de bicicletas de montana, ruta y urbana con hasta <strong>30% de descuento</strong></p>
             <div class="hero-buttons">
-                <a href="/Sales" class="btn-hero-primary">Comprar ahora →</a>
+                <a href="/Sales" class="btn-hero-primary">Comprar ahora -></a>
                 <a href="/Sales" class="btn-hero-secondary">Ver ofertas</a>
             </div>
         </div>
@@ -52,11 +51,11 @@
     </div>
 
     <section class="categories-section">
-        <h2>Categorías destacadas</h2>
+        <h2>Categorias destacadas</h2>
         <div class="categories-grid">
             <a href="/Sales?category=Mountain" class="category-card">
                 <i class="bi bi-tree"></i>
-                <span>Montaña</span>
+                <span>Montana</span>
             </a>
             <a href="/Sales?category=Road" class="category-card">
                 <i class="bi bi-signpost-2"></i>
@@ -68,7 +67,7 @@
             </a>
             <a href="/Sales?category=Standard" class="category-card">
                 <i class="bi bi-bicycle"></i>
-                <span>Estándar</span>
+                <span>Estandar</span>
             </a>
             <a href="/Sales?category=Accessories" class="category-card">
                 <i class="bi bi-gear"></i>
@@ -84,7 +83,7 @@
     <section class="featured-section">
         <div class="section-header">
             <h2>Productos destacados</h2>
-            <a href="/Sales" class="view-all-link">Ver todos →</a>
+            <a href="/Sales" class="view-all-link">Ver todos -></a>
         </div>
         
         <div class="products-grid">
@@ -94,14 +93,9 @@
                     <div class="product-img">
                         @{
                             var nexoFoto = product.ProductProductPhotos?.FirstOrDefault(f => f.Primary == true);
-                            string imgUrl = "https://www.svgrepo.com/show/486796/product-management.svg";
-                            if (nexoFoto != null && nexoFoto.ProductPhoto?.ThumbNailPhoto != null)
-                            {
-                                var base64 = Convert.ToBase64String(nexoFoto.ProductPhoto.ThumbNailPhoto);
-                                imgUrl = $"data:image/jpeg;base64,{base64}";
-                            }
+                            string imgUrl = ResolverRutaImagen(nexoFoto?.ProductPhoto?.LargePhotoFileName);
                         }
-                        <img src="@imgUrl" alt="@product.Name" />
+                        <img src="@imgUrl" alt="@product.Name" style="object-fit: cover; width: 100%; height: 200px; border-radius: 8px 8px 0 0;" />
                         @if (product.ListPrice > 1000)
                         {
                             <span class="product-badge">Popular</span>
@@ -116,8 +110,6 @@
                             RD$ @product.ListPrice.ToString("N2")
                         </div>
 
-                        @* --- SE ELIMINÓ LA SECCIÓN VISUAL DE STOCK AQUÍ --- *@
-
                         <button class="btn-add" @onclick="() => AddToCart(product.ProductId)">
                             <i class="bi bi-cart-plus"></i> Agregar
                         </button>
@@ -130,13 +122,13 @@
     <section class="offers-section">
         <div class="offer-card">
             <div class="offer-icon"><i class="bi bi-truck"></i></div>
-            <h3>Envío gratis</h3>
+            <h3>Envio gratis</h3>
             <p>En compras superiores a <strong>RD$5,000</strong></p>
         </div>
         <div class="offer-card">
             <div class="offer-icon"><i class="bi bi-shield-check"></i></div>
-            <h3>Garantía extendida</h3>
-            <p>2 años en todos nuestros productos</p>
+            <h3>Garantia extendida</h3>
+            <p>2 anos en todos nuestros productos</p>
         </div>
         <div class="offer-card">
             <div class="offer-icon"><i class="bi bi-credit-card"></i></div>
@@ -146,15 +138,15 @@
         <div class="offer-card">
             <div class="offer-icon"><i class="bi bi-headset"></i></div>
             <h3>Soporte 24/7</h3>
-            <p>Atención al cliente siempre disponible</p>
+            <p>Atencion al cliente siempre disponible</p>
         </div>
     </section>
 
     <div class="promo-banner">
         <div class="promo-content">
-            <h3>¡Oferta especial de temporada!</h3>
+            <h3>Oferta especial de temporada!</h3>
             <p>Lleva tu bicicleta favorita con <strong>hasta 40% de descuento</strong> y recibe accesorios gratis</p>
-            <a href="/Sales" class="btn-promo">Aprovechar oferta →</a>
+            <a href="/Sales" class="btn-promo">Aprovechar oferta -></a>
         </div>
     </div>
 
@@ -163,28 +155,28 @@
         <div class="testimonials-grid">
             <div class="testimonial-card">
                 <div class="rating">★★★★★</div>
-                <p>"Excelente calidad, la bicicleta llegó en perfectas condiciones y antes de lo esperado. Muy recomendados."</p>
-                <div class="customer"><strong>Juan Pérez</strong><span>Comprador verificado</span></div>
+                <p>"Excelente calidad, la bicicleta llego en perfectas condiciones y antes de lo esperado. Muy recomendados."</p>
+                <div class="customer"><strong>Juan Perez</strong><span>Comprador verificado</span></div>
             </div>
             <div class="testimonial-card">
                 <div class="rating">★★★★★</div>
-                <p>"El servicio al cliente es increíble. Me ayudaron a elegir la bicicleta perfecta para mis necesidades."</p>
-                <div class="customer"><strong>María Gómez</strong><span>Compradora verificada</span></div>
+                <p>"El servicio al cliente es increible. Me ayudaron a elegir la bicicleta perfecta para mis necesidades."</p>
+                <div class="customer"><strong>Maria Gomez</strong><span>Compradora verificada</span></div>
             </div>
             <div class="testimonial-card">
                 <div class="rating">★★★★☆</div>
-                <p>"Buenos productos, relación calidad-precio excelente. Volveré a comprar sin duda."</p>
-                <div class="customer"><strong>Carlos Rodríguez</strong><span>Comprador verificado</span></div>
+                <p>"Buenos productos, relacion calidad-precio excelente. Volvere a comprar sin duda."</p>
+                <div class="customer"><strong>Carlos Rodriguez</strong><span>Comprador verificado</span></div>
             </div>
         </div>
     </section>
 
     <div class="newsletter-section">
         <div class="newsletter-content">
-            <h3>Suscríbete a nuestro newsletter</h3>
+            <h3>Suscribete a nuestro newsletter</h3>
             <p>Recibe ofertas exclusivas y novedades directamente en tu correo</p>
             <div class="newsletter-form">
-                <input type="email" class="form-control" placeholder="Tu correo electrónico" @bind="newsletterEmail" />
+                <input type="email" class="form-control" placeholder="Tu correo electronico" @bind="newsletterEmail" />
                 <button class="btn-newsletter" @onclick="SubscribeNewsletter">Suscribirme</button>
             </div>
         </div>
@@ -192,7 +184,6 @@
 </div>
 
 <style>
-    /* Estilos para el carrito y estados de stock */
     .cart-floating-trigger { position: fixed; top: 20px; right: 30px; z-index: 3000; }
     .cart-button { background: #0d6efd; color: white; width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; text-decoration: none; box-shadow: 0 4px 15px rgba(0,0,0,0.3); transition: 0.3s; position: relative; }
     .cart-button i { font-size: 1.8rem; }
@@ -233,7 +224,7 @@
     {
         if (string.IsNullOrEmpty(UserEmail))
         {
-            toastService.ShowWarning("Debes iniciar sesión para agregar productos");
+            toastService.ShowWarning("Debes iniciar sesion para agregar productos");
             navigationManager.NavigateTo("/Account/Login");
             return;
         }
@@ -251,14 +242,12 @@
             
             await shoppingCartItemService.Guardar(cartItem);
 
-            
-
             await UpdateCartCount();
-            toastService.ShowSuccess("Producto añadido al carrito");
+            toastService.ShowSuccess("Producto anadido al carrito");
         }
         catch (Exception ex)
         {
-            toastService.ShowError("Error al añadir producto");
+            toastService.ShowError("Error al anadir producto");
             Console.WriteLine(ex.Message);
         }
     }
@@ -267,10 +256,23 @@
     {
         if (string.IsNullOrEmpty(newsletterEmail))
         {
-            toastService.ShowWarning("Ingresa un correo válido");
+            toastService.ShowWarning("Ingresa un correo valido");
             return;
         }
-        toastService.ShowSuccess("¡Suscripción exitosa!");
+        toastService.ShowSuccess("Suscripcion exitosa!");
         newsletterEmail = string.Empty;
+    }
+
+    private string ResolverRutaImagen(string? valor)
+    {
+        if (string.IsNullOrWhiteSpace(valor))
+            return "https://www.svgrepo.com/show/486796/product-management.svg";
+        if (valor.StartsWith("http://", StringComparison.OrdinalIgnoreCase) ||
+            valor.StartsWith("https://", StringComparison.OrdinalIgnoreCase) ||
+            valor.StartsWith("/"))
+        {
+            return valor;
+        }
+        return $"/uploads/products/{valor}";
     }
 }

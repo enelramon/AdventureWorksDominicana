@@ -13,7 +13,6 @@
 @inject SpecialOfferProductService specialOfferProductService
 @inject SpecialOfferService specialOfferService
 
-
 <PageTitle>Editar Producto</PageTitle>
 
 <div class="product-container">
@@ -84,7 +83,6 @@
                             </select>
                         </div>
                     </div>
-
 
                     <div class="mb-3">
                         <label class="form-label"><strong>Peso</strong></label>
@@ -238,7 +236,7 @@
 
                     <div class="row align-items-center">
                         <div class="col-md-4 text-center mb-3 mb-md-0">
-                            @if (UrlImagenPreview != null)
+                            @if (!string.IsNullOrWhiteSpace(UrlImagenPreview))
                             {
                                 <img src="@UrlImagenPreview" class="product-preview-img" />
                             }
@@ -252,8 +250,13 @@
                         </div>
                         <div class="col-md-8">
                             <label class="form-label"><strong>Actualizar imagen</strong></label>
-                            <InputFile class="form-control" OnChange="CargarFotoTemporal" accept="image/png, image/jpeg" />
-                            <small class="text-muted mt-2 d-block">Formatos: .jpg, .png. Tamaño máximo: 5MB</small>
+                            <input class="form-control" type="text" @bind="RutaImagenManual" placeholder="Ej: https://sitio.com/imagen.png o iphone.png" />
+                            <small class="text-muted mt-2 d-block">Puedes poner una URL completa o un nombre de archivo/ruta guardada.</small>
+
+                            <div class="mt-3 d-flex gap-2">
+                                <button type="button" class="btn btn-outline-secondary" @onclick="PrevisualizarRuta">Previsualizar</button>
+                                <button type="button" class="btn btn-outline-primary" @onclick="GuardarRutaImagen">Guardar imagen</button>
+                            </div>
                         </div>
                     </div>
 
@@ -302,10 +305,6 @@
                     </div>
                 </div>
 
-
-
-
-
                 <div class="card-footer text-center">
                     <a class="btn btn-secondary bi bi-arrow-left" href="/Product/Index"> Volver</a>
                     <button class="btn btn-primary bi bi-floppy" type="submit"> Guardar</button>
@@ -329,9 +328,8 @@
     public List<SpecialOffer> TodasLasOfertas { get; set; } = new();
     public int OfertaSeleccionadaId { get; set; } = 0;
 
-
-    private IBrowserFile? ArchivoSeleccionado;
     private string? UrlImagenPreview;
+    private string? RutaImagenManual;
 
     protected override async Task OnInitializedAsync()
     {
@@ -350,26 +348,62 @@
         ListaUnidades = await unitMeasureService.GetList(u => true);
 
         var fotoExistente = await photoService.ObtenerFotoPrincipal(ProductId);
-        if (fotoExistente != null && fotoExistente.ThumbNailPhoto != null)
+        if (fotoExistente != null && !string.IsNullOrWhiteSpace(fotoExistente.LargePhotoFileName))
         {
-            var base64 = Convert.ToBase64String(fotoExistente.ThumbNailPhoto);
-            UrlImagenPreview = $"data:image/jpeg;base64,{base64}";
+            RutaImagenManual = fotoExistente.LargePhotoFileName;
+            UrlImagenPreview = ResolverRutaImagen(fotoExistente.LargePhotoFileName);
         }
 
         OfertasDelProducto = await specialOfferProductService.GetList(o => o.ProductId == ProductId);
         TodasLasOfertas = await specialOfferService.GetList(o => o.SpecialOfferId > 0);
-
     }
 
-    private async Task CargarFotoTemporal(InputFileChangeEventArgs e)
+    private string ResolverRutaImagen(string? valor)
     {
-        ArchivoSeleccionado = e.File;
-        using var ms = new MemoryStream();
-        await ArchivoSeleccionado.OpenReadStream(5242880).CopyToAsync(ms);
-        
-        var buffer = ms.ToArray();
-        var base64 = Convert.ToBase64String(buffer);
-        UrlImagenPreview = $"data:image/jpeg;base64,{base64}";
+        if (string.IsNullOrWhiteSpace(valor))
+            return string.Empty;
+
+        if (valor.StartsWith("http://", StringComparison.OrdinalIgnoreCase) ||
+            valor.StartsWith("https://", StringComparison.OrdinalIgnoreCase) ||
+            valor.StartsWith("/"))
+        {
+            return valor;
+        }
+
+        return $"/uploads/products/{valor}";
+    }
+
+    private Task PrevisualizarRuta()
+    {
+        if (string.IsNullOrWhiteSpace(RutaImagenManual))
+        {
+            toastService.ShowWarning("Escribe una URL o una ruta.");
+            return Task.CompletedTask;
+        }
+
+        UrlImagenPreview = ResolverRutaImagen(RutaImagenManual.Trim());
+        return Task.CompletedTask;
+    }
+
+    private async Task GuardarRutaImagen()
+    {
+        if (string.IsNullOrWhiteSpace(RutaImagenManual))
+        {
+            toastService.ShowWarning("Escribe una URL o una ruta.");
+            return;
+        }
+
+        bool resultado = await photoService.AsignarFotoPrincipal(ProductId, RutaImagenManual.Trim());
+
+        if (resultado)
+        {
+            UrlImagenPreview = ResolverRutaImagen(RutaImagenManual.Trim());
+            toastService.ShowSuccess("Imagen actualizada correctamente.");
+        }
+        else
+        {
+            toastService.ShowError("No se pudo guardar la ruta de la imagen.");
+        }
     }
 
     public async Task VincularOferta()
@@ -405,7 +439,6 @@
         }
     }
 
-
     public async Task Guardar()
     {
         if (string.IsNullOrWhiteSpace(Product.SizeUnitMeasureCode)) Product.SizeUnitMeasureCode = null;
@@ -420,13 +453,6 @@
         
         if (guardado)
         {
-            if (ArchivoSeleccionado != null)
-            {
-                using var ms = new MemoryStream();
-                await ArchivoSeleccionado.OpenReadStream(5242880).CopyToAsync(ms);
-                await photoService.AsignarFotoPrincipal(Product.ProductId, ms.ToArray(), ArchivoSeleccionado.Name);
-            }
-
             toastService.ShowSuccess("Producto modificado exitosamente.");
             navigationManager.NavigateTo("/Product/Index");
         }

@@ -1,17 +1,17 @@
 ﻿@page "/Product/Index"
 @attribute [Authorize(Roles = "Admin, ProductionManager, SalesManager")]
 
-@inject ProductService productService;
+@inject ProductService productService
 @inject AuthenticationStateProvider AuthStateProvider
+
 @rendermode InteractiveServer
 
 <div class="product-container">
 
-    <!-- HEADER -->
     <div class="product-header">
         <div>
             <h3>Productos</h3>
-            <span>Gestión y consulta de catálogo</span>
+            <span>Gestion y consulta de catalogo</span>
         </div>
 
         <AuthorizeView Roles="Admin, ProductionManager">
@@ -23,7 +23,6 @@
         </AuthorizeView>
     </div>
 
-    <!-- FILTROS -->
     <div class="product-filters">
         <div class="row g-3">
             <div class="col-12 col-md-6 col-lg-3">
@@ -42,7 +41,7 @@
                     <option value="">Seleccione...</option>
                     <option value="Nombre">Nombre</option>
                     <option value="Numero">SKU</option>
-                    <option value="Subcategoria">Subcategoría</option>
+                    <option value="Subcategoria">Subcategoria</option>
                 </select>
             </div>
 
@@ -61,7 +60,6 @@
         </div>
     </div>
 
-    <!-- TABLA -->
     <div class="table-responsive product-table">
 
         <QuickGrid Class="table table-hover" Items="ListaProducts.AsQueryable()" Pagination="@pages" ItemKey="@(p => p.ProductId)">
@@ -70,7 +68,7 @@
             <PropertyColumn Property="@(p => p.ProductNumber)" Title="SKU" />
             <PropertyColumn Property="@(p => p.Name)" Title="Nombre" />
 
-            <TemplateColumn Context="p" Title="Subcategoría">
+            <TemplateColumn Context="p" Title="Subcategoria">
                 @(p.ProductSubcategory?.Name ?? "N/A")
             </TemplateColumn>
 
@@ -120,7 +118,7 @@
 
         canEdit = user.IsInRole("Admin") || user.IsInRole("ProductionManager");
 
-        ListaProducts = await productService.GetListIndex(p => p.ProductId > 0);
+        ListaProducts = await productService.GetList(p => p.ProductId > 0);
         ListaProducts = ListaProducts.OrderByDescending(p => p.ModifiedDate).ToList();
     }
 
@@ -128,7 +126,6 @@
     {
         Expression<Func<Product, bool>> criterio = p => p.ProductId > 0;
 
-        // FILTROS DE FECHA (Usando ModifiedDate, vital para auditoría de productos)
         if (FechaDesde.HasValue && FechaHasta.HasValue)
         {
             DateTime fechaHastaStr = FechaHasta.Value.Date.AddDays(1).AddTicks(-1);
@@ -144,7 +141,6 @@
             criterio = criterio.And(p => p.ModifiedDate <= fechaHastaStr);
         }
 
-        // FILTROS DE TEXTO
         if (!string.IsNullOrEmpty(Filtro) && !string.IsNullOrEmpty(ValorFiltro))
         {
             if (Filtro == "Nombre")
@@ -157,12 +153,11 @@
             }
             else if (Filtro == "Subcategoria")
             {
-                // Validación de null conditional en expresiones requiere cuidado, pero como ya incluimos Subcategory en GetList:
                 criterio = criterio.And(p => p.ProductSubcategory != null && p.ProductSubcategory.Name.Trim().ToLower().Contains(ValorFiltro.ToLower()));
             }
         }
 
-        ListaProducts = await productService.GetListIndex(criterio);
+        ListaProducts = await productService.GetList(criterio);
         ListaProducts = ListaProducts.OrderByDescending(s => s.ModifiedDate).ToList();
     }
 

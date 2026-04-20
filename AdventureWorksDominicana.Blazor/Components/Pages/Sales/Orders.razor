@@ -1,6 +1,5 @@
 ﻿@page "/Orders"
 @attribute [Authorize(Roles = "Admin, Customer, SalesManager")]
-
 @rendermode InteractiveServer
 @inject SalesOrderHeaderService salesOrderHeaderService
 @inject NavigationManager navigationManager
@@ -10,42 +9,33 @@
 <PageTitle>Orders</PageTitle>
 
 <div class="orders-container">
-
     <div class="orders-header">
         <div>
-            <h3>Mis &oacute;rdenes</h3>
+            <h3>Mis ordenes</h3>
             <span>Historial de compras realizadas</span>
         </div>
-
         <button class="btn btn-outline bi bi-arrow-left" @onclick="GoToSale"> Seguir comprando</button>
     </div>
 
     <div class="orders-summary">
-
         <div class="summary-card">
-            <span>Total órdenes</span>
+            <span>Total ordenes</span>
             <h4>@SalesOrderHeadersList.Count</h4>
         </div>
-
         <div class="summary-card">
             <span>En proceso</span>
             <h4>@SalesOrderHeadersList.Count(o => o.Status == 1)</h4>
         </div>
-
         <div class="summary-card">
             <span>Total gastado</span>
             <h4>RD$ @SalesOrderHeadersList.Sum(o => o.TotalDue).ToString("N2")</h4>
         </div>
-
     </div>
 
     <div class="orders-list" style="max-height: 600px; overflow-y: auto; padding-right: 5px;">
-        
         <Virtualize Items="@SalesOrderHeadersList" Context="s">
             <div class="order-card" @onclick="() => GoToOrderReview(s.SalesOrderId)">
-
                 <div class="order-card-body">
-
                     <div class="order-top">
                         <div>
                             <span class="order-id">Orden #@s.SalesOrderId</span>
@@ -53,28 +43,20 @@
                                 @(s.OrderDate.ToString("dd MMM yyyy") ?? "Sin fecha")
                             </div>
                         </div>
-
                         <span class="order-status @(s.Status == 1 ? "status-processing" : s.Status == 2 ? "status-processing" : s.Status == 3 ? "status-completed" : "status-cancelled")">
                             @(s.Status == 1 ? "En proceso" : s.Status == 2 ? "Enviando" : s.Status == 3 ? "Completada" : "Cancelado")
                         </span>
                     </div>
-
                     <div class="order-total">
                         RD$ @s.TotalDue.ToString("N2")
                     </div>
-
                     <div class="order-actions d-flex gap-2">
-                        @if(s.Status != 4)
+                        @if (s.Status != 4)
                         {
-                            <button class="btn btn-sm btn-outline-danger" @onclick:stopPropagation="true" @onclick="() => ChangeCancelOrder(s)">
-                                Cancelar
-                            </button>
+                            <button class="btn btn-sm btn-outline-danger" @onclick:stopPropagation="true" @onclick="() => ChangeCancelOrder(s)"> Cancelar</button>
                         }
-                        <button class="btn btn-sm btn-outline">
-                            Ver detalles
-                        </button>
+                        <button class="btn btn-sm btn-outline"> Ver detalles</button>
                     </div>
-
                 </div>
             </div>
         </Virtualize>
@@ -83,7 +65,7 @@
         {
             <div class="text-center p-4 text-muted">
                 <i class="bi bi-box-seam fs-1 mb-2 d-block"></i>
-                <p>No tienes órdenes registradas.</p>
+                <p>No tienes ordenes registradas.</p>
             </div>
         }
     </div>
@@ -100,16 +82,12 @@
         var authState = await authenticationStateProvider.GetAuthenticationStateAsync();
         User = authState.User;
         IsAuthenticated = User.Identity?.IsAuthenticated ?? false;
-        
         if (IsAuthenticated)
         {
             UserEmail = User.FindFirst(ClaimTypes.Email)?.Value;
         }
-        
         var ordenes = await salesOrderHeaderService.GetList(s => s.Customer.Person.EmailAddresses.Any(e => e.EmailAddress1 == UserEmail));
-        
         SalesOrderHeadersList = ordenes.OrderByDescending(o => o.SalesOrderId).ToList();
-        
         await RefreshStatus();
     }
 
@@ -120,7 +98,6 @@
         foreach (var s in SalesOrderHeadersList)
         {
             if (s.ShipDate == null) continue;
-
             bool modificado = false;
             if (DateTime.Today == s.ShipDate.Value.Date && s.Status != 2)
             {
@@ -132,7 +109,6 @@
                 s.Status = 3;
                 modificado = true;
             }
-
             if (modificado)
             {
                 await salesOrderHeaderService.Guardar(s);
@@ -149,7 +125,7 @@
             await salesOrderHeaderService.Guardar(sale);
             toastService.ShowSuccess("Orden Cancelada");
         }
-        catch(Exception ex)
+        catch (Exception ex)
         {
             toastService.ShowError("Orden no pudo ser Cancelada");
         }

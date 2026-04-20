@@ -1,6 +1,5 @@
 ﻿@page "/Order/Review/{SalesOrderId:int}"
 @attribute [Authorize(Roles = "Admin, Customer, SalesManager")]
-
 @rendermode InteractiveServer
 @inject SalesOrderHeaderService salesOrderHeaderService
 @inject ProductService productService
@@ -9,13 +8,10 @@
 <PageTitle>Order Review</PageTitle>
 
 <div class="review-container">
-
-    <!-- TOP BAR -->
     <div class="review-topbar">
         <button class="btn btn-light" @onclick="GoToOrders">
             <i class="bi bi-arrow-left"></i>
         </button>
-
         <div class="review-title">
             <h4>Order #@SalesOrderHeaders.SalesOrderId</h4>
             <span>@(SalesOrderHeaders.ShipDate?.ToString("dd MMM yyyy") ?? "Sin fecha")</span>
@@ -23,97 +19,80 @@
     </div>
 
     <div class="review-body">
-
-        <!-- PRODUCTOS -->
         <div class="review-products">
             @foreach (var s in SalesOrderHeaders.SalesOrderDetails)
             {
                 <div class="review-product-card">
-
-                    
                     <div class="cart-item-img">
                         @{
                             Product product = s.SpecialOfferProduct.Product;
-                            // EXPLICACIÓN 1: Extraemos el brazo relacionador que marca la imagen como "True" (Primaria)
                             var nexoFoto = product.ProductProductPhotos.FirstOrDefault(f => f.Primary == true);
-                                
-                            // EXPLICACIÓN 2: Esto es un Fallback. Si el producto recién creado no se le subió foto, mostramos el gris
-                            string imgUrl = "https://www.svgrepo.com/show/486796/product-management.svg";
-                                
-                            // EXPLICACIÓN 3: Si sí hay foto binaria cargada en la BD, la convertimos a lenguaje Web (Base64)
-                            if (nexoFoto != null && nexoFoto.ProductPhoto?.ThumbNailPhoto != null)
-                            {
-                                var base64 = Convert.ToBase64String(nexoFoto.ProductPhoto.ThumbNailPhoto);
-                                imgUrl = $"data:image/jpeg;base64,{base64}";
-                            }
+                            string imgUrl = ResolverRutaImagen(nexoFoto?.ProductPhoto?.LargePhotoFileName);
                         }
                         <img src="@imgUrl" alt="@product.Name" style="object-fit: cover; width: 100%; height: 100%; border-radius: 8px;" />
-                            
                         @if (!string.IsNullOrWhiteSpace(product.Color))
                         {
                             <span>@product.Color</span>
                         }
                     </div>
-
                     <div class="review-product-info">
                         <span class="category">
                             @(s.SpecialOfferProduct.Product.ProductSubcategory?.ProductCategory?.Name ?? "N/A")
                         </span>
-
                         <p class="name">@s.SpecialOfferProduct.Product.Name</p>
-
                         <div class="details">
                             <span>Cant: @s.OrderQty</span>
                             <span>RD$ @s.LineTotal.ToString("N2")</span>
                         </div>
                     </div>
-
                 </div>
             }
         </div>
 
-        <!-- RESUMEN -->
         <div class="review-summary">
-
             <h5>Resumen</h5>
-
             <div class="summary-item">
                 <span>Subtotal</span>
                 <span>RD$ @SalesOrderHeaders.SubTotal.ToString("N2")</span>
             </div>
-
             <div class="summary-item">
                 <span>Impuestos</span>
                 <span>RD$ @SalesOrderHeaders.TaxAmt.ToString("N2")</span>
             </div>
-
             <div class="summary-item">
-                <span>Envío</span>
+                <span>Envio</span>
                 <span>RD$ @SalesOrderHeaders.Freight.ToString("N2")</span>
             </div>
-
             <hr />
-
             <div class="summary-total">
                 <span>Total</span>
                 <span>RD$ @SalesOrderHeaders.TotalDue.ToString("N2")</span>
             </div>
-
         </div>
-
     </div>
-
 </div>
 
 @code {
     [Parameter]
     public int SalesOrderId { get; set; }
-
     private SalesOrderHeader SalesOrderHeaders = new();
 
     protected override async Task OnInitializedAsync()
     {
         SalesOrderHeaders = await salesOrderHeaderService.Buscar(SalesOrderId);
+    }
+
+    private string ResolverRutaImagen(string? valor)
+    {
+        if (string.IsNullOrWhiteSpace(valor))
+            return "https://www.svgrepo.com/show/486796/product-management.svg";
+        if (valor.StartsWith("http://", StringComparison.OrdinalIgnoreCase) ||
+            valor.StartsWith("https://", StringComparison.OrdinalIgnoreCase) ||
+            valor.StartsWith("/"))
+        {
+            return valor;
+        }
+        return $"/uploads/products/{valor}";
     }
 
     private void GoToOrders() => navigationManager.NavigateTo("/Orders");
