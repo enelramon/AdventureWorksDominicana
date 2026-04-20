@@ -5,11 +5,11 @@ using AdventureWorksDominicana.Data.Models;
 using AdventureWorksDominicana.Services;
 using Blazored.Toast;
 using Microsoft.AspNetCore.Components.Authorization;
-using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
+
 
 builder.Services.AddDbContextFactory<Contexto>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("ConStr")));
@@ -17,9 +17,13 @@ builder.Services.AddDbContextFactory<Contexto>(options =>
 builder.Services.AddDbContext<SecurityContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("ConStr")));
 
+
 builder.Services.AddCascadingAuthenticationState();
 
+
 builder.Services.AddScoped<AuthenticationStateProvider, IdentityRevalidatingAuthenticationStateProvider>();
+
+
 builder.Services.AddScoped<IdentityRedirectManager>();
 
 builder.Services.AddAuthorization(options =>
@@ -50,15 +54,12 @@ builder.Services.AddIdentityCore<AspNetUser>(options =>
 
 builder.Services.AddSingleton<IEmailSender<AdventureWorksDominicana.Data.Models.AspNetUser>, SmtpEmailSender>();
 
+
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
-builder.Services.Configure<FormOptions>(options =>
-{
-    options.MultipartBodyLengthLimit = 10 * 1024 * 1024;
-});
-
 builder.Services.AddBlazorBootstrap();
+
 
 builder.Services.AddScoped<CurrencyService>();
 builder.Services.AddBlazoredToast();
@@ -105,10 +106,13 @@ builder.Services.AddScoped<EmployeePayHistoryService>();
 builder.Services.AddScoped<EmployeeDepartmentService>();
 builder.Services.AddScoped<SpecialOfferService>();
 builder.Services.AddScoped<UnitMeasureService>();
+
+
+
 builder.Services.AddScoped<BusinessEntityAddressService>();
 builder.Services.AddScoped<PersonCreditCardService>();
-
 var app = builder.Build();
+
 
 if (!app.Environment.IsDevelopment())
 {
@@ -118,60 +122,8 @@ if (!app.Environment.IsDevelopment())
 
 app.UseStatusCodePagesWithReExecute("/not-found", createScopeForStatusCodePages: true);
 app.UseHttpsRedirection();
-app.UseStaticFiles();
 app.UseAntiforgery();
 app.MapStaticAssets().AllowAnonymous();
-
-app.MapPost("/product/upload-photo/{productId:int}", async (
-    int productId,
-    HttpRequest request,
-    IWebHostEnvironment env,
-    ProductPhotoService photoService,
-    ILogger<Program> logger) =>
-{
-    try
-    {
-        if (!request.HasFormContentType)
-            return Results.Redirect($"/Product/Edit/{productId}?uploadError=FormatoInvalido");
-
-        var form = await request.ReadFormAsync();
-        var file = form.Files["file"];
-
-        if (file == null || file.Length == 0)
-            return Results.Redirect($"/Product/Edit/{productId}?uploadError=SinArchivo");
-
-        var extension = Path.GetExtension(file.FileName).ToLowerInvariant();
-        var extensionesPermitidas = new[] { ".jpg", ".jpeg", ".png", ".webp" };
-
-        if (!extensionesPermitidas.Contains(extension))
-            return Results.Redirect($"/Product/Edit/{productId}?uploadError=ExtensionNoPermitida");
-
-        if (file.Length > 5 * 1024 * 1024)
-            return Results.Redirect($"/Product/Edit/{productId}?uploadError=ArchivoMuyGrande");
-
-        var carpetaFisica = Path.Combine(env.WebRootPath, "uploads", "products");
-        if (!Directory.Exists(carpetaFisica))
-            Directory.CreateDirectory(carpetaFisica);
-
-        var nombreArchivo = $"{Guid.NewGuid()}{extension}";
-        var rutaFisica = Path.Combine(carpetaFisica, nombreArchivo);
-
-        await using (var stream = new FileStream(rutaFisica, FileMode.Create))
-        {
-            await file.CopyToAsync(stream);
-        }
-
-        await photoService.AsignarFotoPrincipal(productId, nombreArchivo);
-
-        return Results.Redirect($"/Product/Edit/{productId}?uploadOk=1");
-    }
-    catch (Exception ex)
-    {
-        logger.LogError(ex, "Error subiendo imagen para el producto {ProductId}", productId);
-        return Results.Redirect($"/Product/Edit/{productId}?uploadError=ErrorServidor");
-    }
-})
-.DisableAntiforgery();
 
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
