@@ -140,6 +140,14 @@
                             <ValidationMessage For="() => Employee.CurrentFlag" />
                         </div>
                     </div>
+                    <div class="col-md-12 mt-4 pt-3 border-top">
+                        <div class="form-check form-switch p-2 rounded" style="background-color: #f8f9fa;">
+                            <InputCheckbox class="form-check-input ms-0 me-2" @bind-Value="EsVendedorCorporativo" id="vendedorCheckEdit" disabled="@YaEsVendedor" />
+                            <label class="form-check-label fw-bold @(YaEsVendedor ? "text-muted" : "text-primary")" for="vendedorCheckEdit">
+                                <i class="bi bi-briefcase-fill me-1"></i> @(YaEsVendedor ? "El Empleado ya es Vendedor Corporativo B2B (Solo lectura)" : "¿Ascender a Vendedor Corporativo B2B?")
+                            </label>
+                        </div>
+                    </div>
                 </div>
 
             </div>
@@ -166,6 +174,8 @@
     private string DepartamentoActual = "Sin Asignar";
     private string SueldoActual = "0.00";
     private const decimal TasaCambio = 60.50m;
+    private bool EsVendedorCorporativo = false;
+    private bool YaEsVendedor = false;
 
     protected override async Task OnInitializedAsync()
     {
@@ -195,7 +205,11 @@
         {
             SueldoActual = (currentSueldo.Rate * TasaCambio).ToString("N2");
         }
+        // Evaluamos si él ya es un vendedor registrado en nuestro módulo B2B
+        YaEsVendedor = Employee.SalesPerson != null;
+        EsVendedorCorporativo = YaEsVendedor;
     }
+
 
     private async Task Guardar()
     {
@@ -211,8 +225,23 @@
         // Actualizo la fecha de modificacion
         Employee.ModifiedDate = DateTime.Now;
 
+        // Generar registro B2B en caso de que acaben de hacerle el ascenso (prender el switch por 1ra vez)
+        if (EsVendedorCorporativo && !YaEsVendedor)
+        {
+            Employee.SalesPerson = new SalesPerson
+            {
+                SalesQuota = null,
+                Bonus = 0.00m,
+                CommissionPct = 0.00m,
+                SalesYtd = 0.00m,
+                SalesLastYear = 0.00m,
+                Rowguid = Guid.NewGuid(),
+                ModifiedDate = DateTime.Now
+            };
+        }
         // Ejecuto el guardado
         bool modificado = await employeeService.Guardar(Employee);
+
         
         if (modificado)
         {
