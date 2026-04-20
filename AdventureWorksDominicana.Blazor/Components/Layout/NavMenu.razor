@@ -69,6 +69,40 @@
                     </div>
                 </div>
 
+                @* ========== SHIPPING MODULE ========== *@
+                <div class="accordion px-3 nav-item" id="accordionShipping">
+                    <div class="accordion-item bg-transparent border-0">
+                        <div class="accordion-header">
+                            <button class="accordion-button collapsed bg-transparent px-3" type="button" data-bs-toggle="collapse" data-bs-target="#collapseShipping">
+                                <span class="bi bi-truck-nav-menu"></span> <small>Shipping</small>
+                            </button>
+                        </div>
+                        <div id="collapseShipping" class="accordion-collapse collapse" data-bs-parent="#accordionShipping">
+                            <div class="accordion-body p-0 ps-3">
+                                <div class="nav-item pt-2">
+                                    <NavLink class="nav-link" href="/Shipping/Index">
+                                        <span class="bi bi-speedometer2 me-2" aria-hidden="true"></span>
+                                        <small>Shipping Dashboard</small>
+                                    </NavLink>
+                                </div>
+
+                                <div class="nav-item">
+                                    <NavLink class="nav-link" href="/Shipping/InTransit/Index">
+                                        <span class="bi bi-truck-flatbed me-2" aria-hidden="true"></span>
+                                        <small>En Tránsito</small>
+                                    </NavLink>
+                                </div>
+                                <div class="nav-item">
+                                    <NavLink class="nav-link" href="/ShipMethods">
+                                        <span class="bi bi-send-plus-nav-menu"></span> <small>Ship Methods</small>
+                                    </NavLink>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+
                 @* ========== PRODUCTS MODULE ========== *@
                 <div class="accordion px-3 nav-item" id="accordionProducts">
                     <div class="accordion-item bg-transparent border-0">
@@ -227,11 +261,6 @@
                                 <div class="nav-item pt-2">
                                     <NavLink class="nav-link" href="/Vendor/Index">
                                         <span class="bi bi-shop-nav-menu"></span> <small>Vendors</small>
-                                    </NavLink>
-                                </div>
-                                <div class="nav-item">
-                                    <NavLink class="nav-link" href="/ShipMethods">
-                                        <span class="bi bi-send-plus-nav-menu"></span> <small>Ship Methods</small>
                                     </NavLink>
                                 </div>
                                 <div class="nav-item">

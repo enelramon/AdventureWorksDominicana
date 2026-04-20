@@ -1,0 +1,146 @@
+﻿@page "/Shipping/InTransit/Index"
+@attribute [Authorize(Roles = "Admin,ShippingManager")]
+@rendermode InteractiveServer
+
+@using AdventureWorksDominicana.Data.Models
+@using Microsoft.AspNetCore.Components.QuickGrid
+@inject ShippingService shippingService
+
+<PageTitle>Envíos en Tránsito</PageTitle>
+
+<div class="container mb-5">
+    <div class="card shadow-lg">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">
+                <i class="bi bi-arrow-repeat me-2"></i>Envíos en Tránsito
+            </h5>
+            <a href="/Shipping/Index" class="btn btn-secondary btn-sm">
+                <i class="bi bi-arrow-left"></i> Volver al Dashboard
+            </a>
+        </div>
+
+        <div class="card-body">
+
+            @if (!string.IsNullOrWhiteSpace(mensajeError))
+            {
+                <div class="alert alert-danger">@mensajeError</div>
+            }
+
+            <h6 class="fw-bold mb-3">
+                <i class="bi bi-cart-check me-1"></i> Ventas en Tránsito (@ventas.Count)
+            </h6>
+
+            <div class="table-responsive mb-2">
+                <QuickGrid Items="ventas.AsQueryable()"
+                           Class="table table-hover table-bordered align-middle mb-0"
+                           Pagination="@paginacionVentas">
+                    <PropertyColumn Property="@(v => v.SalesOrderId)" Title="# Orden" />
+                    <TemplateColumn Title="Cliente">
+                        <span>@GetCliente(context)</span>
+                    </TemplateColumn>
+                    <PropertyColumn Property="@(v => v.OrderDate)" Title="Fecha Orden" Format="dd/MM/yyyy" />
+                    <TemplateColumn Title="Fecha Envío">
+                        <span>@(context.ShipDate?.ToString("dd/MM/yyyy") ?? "—")</span>
+                    </TemplateColumn>
+                    <TemplateColumn Title="Método">
+                        <span>@(context.ShipMethod?.Name ?? "—")</span>
+                    </TemplateColumn>
+                    <TemplateColumn Title="Flete" Align="Align.Right">
+                        <span>@context.Freight.ToString("C2")</span>
+                    </TemplateColumn>
+                    <TemplateColumn Title="Estado" Align="Align.Center">
+                        <span class="badge bg-light text-dark border">
+                            @GetEstadoVenta(context.Status)
+                        </span>
+                    </TemplateColumn>
+                </QuickGrid>
+            </div>
+
+            <div class="mb-4">
+                <Paginator State="@paginacionVentas" />
+            </div>
+
+            <hr />
+
+            <h6 class="fw-bold mb-3">
+                <i class="bi bi-truck me-1"></i> Compras en Tránsito (@compras.Count)
+            </h6>
+
+            <div class="table-responsive mb-2">
+                <QuickGrid Items="compras.AsQueryable()"
+                           Class="table table-hover table-bordered align-middle mb-0"
+                           Pagination="@paginacionCompras">
+                    <PropertyColumn Property="@(c => c.PurchaseOrderId)" Title="# Orden" />
+                    <TemplateColumn Title="Proveedor">
+                        <span>@(context.Vendor?.Name ?? "—")</span>
+                    </TemplateColumn>
+                    <PropertyColumn Property="@(c => c.OrderDate)" Title="Fecha Orden" Format="dd/MM/yyyy" />
+                    <TemplateColumn Title="Fecha Envío">
+                        <span>@(context.ShipDate?.ToString("dd/MM/yyyy") ?? "—")</span>
+                    </TemplateColumn>
+                    <TemplateColumn Title="Método">
+                        <span>@(context.ShipMethod?.Name ?? "—")</span>
+                    </TemplateColumn>
+                    <TemplateColumn Title="Flete" Align="Align.Right">
+                        <span>@context.Freight.ToString("C2")</span>
+                    </TemplateColumn>
+                    <TemplateColumn Title="Estado" Align="Align.Center">
+                        <span class="badge bg-light text-dark border">
+                            @GetEstadoCompra(context.Status)
+                        </span>
+                    </TemplateColumn>
+                </QuickGrid>
+            </div>
+
+            <div>
+                <Paginator State="@paginacionCompras" />
+            </div>
+
+        </div>
+    </div>
+</div>
+
+@code {
+    private List<SalesOrderHeader> ventas = new();
+    private List<PurchaseOrderHeader> compras = new();
+    private string mensajeError = "";
+
+    private PaginationState paginacionVentas = new PaginationState { ItemsPerPage = 10 };
+    private PaginationState paginacionCompras = new PaginationState { ItemsPerPage = 5 };
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            ventas = await shippingService.GetVentasEnTransito();
+            compras = await shippingService.GetComprasEnTransito();
+        }
+        catch (Exception ex)
+        {
+            mensajeError = $"Error al cargar los envíos en tránsito: {ex.Message}";
+        }
+    }
+
+    private string GetCliente(SalesOrderHeader o)
+    {
+        if (o.Customer?.Person != null)
+            return $"{o.Customer.Person.FirstName} {o.Customer.Person.LastName}";
+        return o.Customer?.Store?.Name ?? "N/A";
+    }
+
+    private string GetEstadoVenta(byte s) => s switch
+    {
+        1 => "En proceso",
+        2 => "Aprobada",
+        3 => "Pendiente",
+        4 => "Rechazada",
+        _ => "Desconocido"
+    };
+
+    private string GetEstadoCompra(byte s) => s switch
+    {
+        1 => "Pendiente",
+        2 => "Aprobada",
+        _ => "Desconocido"
+    };
+}

@@ -82,6 +82,7 @@ builder.Services.AddScoped<CustomerService>();
 builder.Services.AddScoped<SalesPersonService>();
 builder.Services.AddScoped<AddressService>();
 builder.Services.AddScoped<ShipMethodService>();
+builder.Services.AddScoped<ShippingService>();
 builder.Services.AddScoped<CurrencyRateService>();
 builder.Services.AddScoped<SpecialOfferProductService>();
 builder.Services.AddScoped<ProductDescriptionService>();
