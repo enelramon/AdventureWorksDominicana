@@ -3,6 +3,9 @@
 @using Microsoft.EntityFrameworkCore;
 @using AdventureWorksDominicana.Data.Context;
 @using AdventureWorksDominicana.Data.Models;
+@using AdventureWorksDominicana.Data.Models.DTOs;
+@using AdventureWorksDominicana.Blazor.Helpers;
+@rendermode InteractiveServer
 
 @inject StoreService storeService;
 @inject ToastService toastService;
@@ -27,7 +30,7 @@
             <div class="card shadow-lg">
                 <div class="card-body">
 
-                    <!-- SECCIÓN -->
+                    <!-- SECCIÓN GENERAL -->
                     <h5 class="section-title">
                         <i class="bi bi-shop"></i> Información General
                     </h5>
@@ -37,10 +40,7 @@
                         <label class="form-label">
                             <strong>ID</strong>
                         </label>
-
-                        <input class="form-control"
-                               value="@Store.BusinessEntityId"
-                               disabled />
+                        <input class="form-control" value="@Store.BusinessEntityId" disabled />
                     </div>
 
                     <!-- NOMBRE -->
@@ -48,13 +48,11 @@
                         <label class="form-label">
                             <strong>Nombre</strong>
                         </label>
-
                         <input class="form-control"
                                type="text"
                                maxlength="50"
                                @bind-value="Store.Name"
                                placeholder="Escriba el nombre..." />
-
                         <ValidationMessage For="(() => Store.Name)" />
                     </div>
 
@@ -63,12 +61,8 @@
                         <label class="form-label">
                             <strong>Sales Person</strong>
                         </label>
-
-                        <InputSelect class="form-select"
-                                     @bind-Value="Store.SalesPersonId">
+                        <InputSelect class="form-select" @bind-Value="Store.SalesPersonId">
                             <option value="">Seleccione...</option>
-                            <option value="">Ninguno</option>
-
                             @foreach (var sp in ListaSalesPerson)
                             {
                                 <option value="@sp.BusinessEntityId">
@@ -76,64 +70,54 @@
                                 </option>
                             }
                         </InputSelect>
-
                         <ValidationMessage For="(() => Store.SalesPersonId)" />
                     </div>
 
-                    <!-- DEMOGRAPHICS -->
-                    <div class="mb-3">
-                        <label class="form-label">
-                            <strong>Demographics (XML)</strong>
-                        </label>
+                    <!-- DEMOGRAPHICS (reemplazando el textarea de XML) -->
+                    <h5 class="section-title mt-4">
+                        <i class="bi bi-bar-chart"></i> Información Demográfica
+                    </h5>
 
-                        <textarea class="form-control textarea"
-                                  rows="4"
-                                  @bind="Store.Demographics"
-                                      placeholder="Información demográfica (xml)">
-                        </textarea>
-
-                            <ValidationMessage For="(() => Store.Demographics)" />
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label"><strong>Ventas Anuales ($)</strong></label>
+                            <InputNumber class="form-control" @bind-Value="demographicsDto.AnnualSales" />
                         </div>
-
-                        <!-- FECHA -->
-                        <div class="mb-3">
-                            <label class="form-label">
-                                <strong>Fecha de modificación</strong>
-                            </label>
-
-                            <input class="form-control"
-                                   type="datetime-local"
-                                   @bind-value="Store.ModifiedDate" />
-
-                            <ValidationMessage For="(() => Store.ModifiedDate)" />
+                        <div class="col-md-6">
+                            <label class="form-label"><strong>Nombre del Banco</strong></label>
+                            <InputText class="form-control" @bind-Value="demographicsDto.BankName" />
                         </div>
-
                     </div>
 
-                    <!-- FOOTER -->
-                    <div class="card-footer text-center">
-
-                        <a class="btn btn-secondary bi bi-arrow-left"
-                               href="/Store/Index">
-                            Volver
-                        </a>
-
-                        <button class="btn btn-primary bi bi-floppy"
-                                type="submit">
-                            Guardar
-                        </button>
-
-                        <button class="btn btn-danger bi bi-trash"
-                                type="button"
-                                @onclick="Eliminar">
-                            Eliminar
-                        </button>
-
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label"><strong>Año de Apertura</strong></label>
+                            <InputNumber class="form-control" @bind-Value="demographicsDto.YearOpened" />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label"><strong>Cantidad de Empleados</strong></label>
+                            <InputNumber class="form-control" @bind-Value="demographicsDto.NumberEmployees" />
+                        </div>
                     </div>
+
                 </div>
-            </EditForm>
-        </div>
+
+                <!-- FOOTER -->
+                <div class="card-footer text-center">
+                    <a class="btn btn-secondary bi bi-arrow-left" href="/Store/Index">
+                        Volver
+                    </a>
+                    <button class="btn btn-primary bi bi-floppy" type="submit">
+                        Guardar
+                    </button>
+                    <button class="btn btn-danger bi bi-trash" type="button" @onclick="Eliminar">
+                        Eliminar
+                    </button>
+                </div>
+            </div>
+        </EditForm>
     </div>
+</div>
 
 @code {
     [Parameter]
@@ -141,6 +125,7 @@
 
     public Store Store { get; set; } = new Store();
     public List<SalesPerson> ListaSalesPerson { get; set; } = new();
+    private StoreDemographicsDto demographicsDto = new();
 
     protected override async Task OnInitializedAsync()
     {
@@ -148,7 +133,11 @@
         if (store != null)
         {
             Store = store;
+            // Igual que en ProductModelEdit: cargamos el XML existente al DTO
+            // para que el usuario vea los datos actuales en las cajitas normales
+            demographicsDto = XmlHelper.DeserializarDesdeXml<StoreDemographicsDto>(Store.Demographics) ?? new();
         }
+
         try
         {
             ListaSalesPerson = await contexto.SalesPeople.OrderBy(s => s.BusinessEntityId).ToListAsync();
@@ -168,21 +157,35 @@
         }
         else
         {
-            toastService.ShowError("El campo sales person no puede estar vacío. Seleccione una opción válida");
+            toastService.ShowError("El campo Sales Person no puede estar vacío. Seleccione una opción válida.");
             return;
         }
 
+        // Convertimos el DTO a XML antes de guardar
+        Store.Demographics = XmlHelper.SerializarAXml(demographicsDto);
         Store.ModifiedDate = DateTime.Now;
 
-        bool guardado = await storeService.Guardar(Store);
-        if (guardado)
+        try
         {
-            toastService.ShowSuccess("La tienda se ha guardado correctamente.");
-            navigationManager.NavigateTo("/Store/Index");
+            bool guardado = await storeService.Guardar(Store);
+            if (guardado)
+            {
+                toastService.ShowSuccess("La tienda se ha guardado correctamente.");
+                navigationManager.NavigateTo("/Store/Index");
+            }
+            else
+            {
+                toastService.ShowError("No se pudo guardar la tienda.");
+            }
         }
-        else
+        catch (Exception ex)
         {
-            toastService.ShowError("No se pudo guardar la tienda.");
+            toastService.ShowError($"Error al guardar: {ex.Message}");
+            if (ex.InnerException != null)
+            {
+                toastService.ShowError($"Detalle técnico: {ex.InnerException.Message}");
+                Console.WriteLine(ex.InnerException.Message);
+            }
         }
     }
 

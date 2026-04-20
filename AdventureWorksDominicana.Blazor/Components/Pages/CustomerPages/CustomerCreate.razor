@@ -8,6 +8,7 @@
 @inject ToastService toastService
 @inject NavigationManager navigationManager
 @inject Contexto contexto
+@rendermode InteractiveServer
 
 <div class="customer-form-container">
 
@@ -22,7 +23,7 @@
     <!-- FORM -->
     <div class="customer-form">
 
-        <EditForm Model="customer" OnValidSubmit="Guardar">
+        <EditForm Model="customer" FormName="FormularioCostumer" OnValidSubmit="Guardar">
             <DataAnnotationsValidator />
 
             <div class="card shadow-lg">

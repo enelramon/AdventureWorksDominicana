@@ -157,7 +157,16 @@
                             <ValidationMessage For="(() => Employee.BankAccountNumber)" class="text-danger" />
                         </div>
                     </div>
-
+                    <div class="row mt-4 mb-2 border-top pt-3">
+                        <div class="col-md-6 mt-2">
+                            <div class="form-check form-switch p-2 rounded" style="background-color: #f8f9fa; border: 1px dashed #dee2e6;">
+                                <InputCheckbox class="form-check-input ms-0 me-2" @bind-Value="EsVendedorCorporativo" id="vendedorCheckCreate" />
+                                <label class="form-check-label fw-bold text-primary" for="vendedorCheckCreate">
+                                    <i class="bi bi-briefcase-fill me-1"></i> ¿Actúa como Representante de Ventas B2B?
+                                </label>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
                 <div class="card-footer d-flex justify-content-center gap-2">
@@ -184,6 +193,7 @@
     private bool errorDepartamento = false;
     private bool errorTanda = false;
     private bool errorCuenta = false;
+    private bool EsVendedorCorporativo = false;
 
     private short SelectedDepartmentId = 0;
     private byte SelectedShiftId = 0;
@@ -304,7 +314,20 @@
             StartDate = Employee.HireDate,
             ModifiedDate = DateTime.Now
         });
-
+        // Si marcaron el checkbox, le construimos su perfil limpio de Vendedor Corporativo
+        if (EsVendedorCorporativo)
+        {
+            Employee.SalesPerson = new SalesPerson
+            {
+                SalesQuota = null,
+                Bonus = 0.00m,
+                CommissionPct = 0.00m,
+                SalesYtd = 0.00m,
+                SalesLastYear = 0.00m,
+                Rowguid = Guid.NewGuid(),
+                ModifiedDate = DateTime.Now
+            };
+        }
         // Agrego el primer registro en el historial de sueldos
         Employee.EmployeePayHistories.Add(new EmployeePayHistory
         {

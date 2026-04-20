@@ -1,4 +1,6 @@
 ﻿@page "/ProductModel/Create"
+@using AdventureWorksDominicana.Blazor.Helpers
+@using AdventureWorksDominicana.Data.Models.DTOs
 @attribute [Authorize(Roles = "Admin, ProductionManager")]
 @inject NavigationManager navigationManager
 @inject ToastService toastService
@@ -25,12 +27,14 @@
                 </div>
                 <div class="row mb-3">
                     <div class="col-md-6">
-                        <label class="form-label fw-bold">Catálogo (XML)</label>
-                        <InputTextArea class="form-control" @bind-Value="model.CatalogDescription" rows="2" />
+                        <!-- Cambiamos la etiqueta visual y el @bind-Value -->
+                        <label class="form-label fw-bold">Resumen de Catálogo</label>
+                        <InputText class="form-control" @bind-Value="catalogDto.Summary" placeholder="Ej: Bicicleta de montaña premium..." />
                     </div>
                     <div class="col-md-6">
-                        <label class="form-label fw-bold">Instrucciones (XML)</label>
-                        <InputTextArea class="form-control" @bind-Value="model.Instructions" rows="2" />
+                        <label class="form-label fw-bold">Instrucciones</label>
+                        <!-- Apoyándonos en el DTO anidado -->
+                        <InputText class="form-control" @bind-Value="instructionsDto.Location.Step" placeholder="Ej: Ajustar tuercas B primero" />
                     </div>
                 </div>
                 <!-- DETALLE: Descripciones (Mismo patrón que ProductCategoryCreate) -->
@@ -84,6 +88,9 @@
     private List<Culture> ListaCulturas = new();
     private string nuevaCulturaId = "", nuevoTexto = "";
 
+    private CatalogDto catalogDto = new();
+    private InstructionsDto instructionsDto = new();
+
     protected override async Task OnInitializedAsync()
     {
         ListaCulturas = await cultureService.GetList(c => true);
@@ -116,10 +123,39 @@
 
     private async Task Guardar()
     {
-        if (await modelService.Guardar(model))
+        try
         {
-            toastService.ShowSuccess("Modelo de producto creado exitosamente.");
-            navigationManager.NavigateTo("/ProductModel/Index");
+            // OJO AQUÍ: Si el usuario dejó la casilla en blanco, enviamos NULL a la BD.
+            // Si la llenó, generamos el XML correctamente.
+            model.CatalogDescription = !string.IsNullOrWhiteSpace(catalogDto.Summary)
+                                        ? XmlHelper.SerializarAXml(catalogDto)
+                                        : null;
+                                        
+            model.Instructions = !string.IsNullOrWhiteSpace(instructionsDto.Location.Step)
+                                         ? XmlHelper.SerializarAXml(instructionsDto)
+                                         : null;
+
+            if (await modelService.Guardar(model))
+            {
+                toastService.ShowSuccess("Modelo de producto creado exitosamente.");
+                navigationManager.NavigateTo("/ProductModel/Index");
+            }
+            else
+            {
+                toastService.ShowError("No se pudo guardar el modelo.");
+            }
+        }
+        catch (Exception ex)
+        {
+            // AQUÍ ATRAPAMOS EL ERROR REAL: Esto evitará que la página colapse y te mostrará
+            // el verdadero mensaje de por qué SQL Server rechazó tu modelo.
+            toastService.ShowError($"Error al guardar: {ex.Message}");
+            
+            if (ex.InnerException != null)
+            {
+                toastService.ShowError($"Detalle técnico: {ex.InnerException.Message}");
+                Console.WriteLine(ex.InnerException.Message);
+            }
         }
     }
 }

@@ -23,7 +23,17 @@ public class ProductModelService(IDbContextFactory<Contexto> DbContextFactory) :
         await using var contexto = await DbContextFactory.CreateDbContextAsync();
         try
         {
-            return await contexto.ProductModels.Where(pm => pm.ProductModelId == id).ExecuteDeleteAsync() > 0;
+            // Primero eliminamos las relaciones en la tabla intermedia
+            var culturas = await contexto.ProductModelProductDescriptionCultures
+                .Where(x => x.ProductModelId == id).ToListAsync();
+            contexto.ProductModelProductDescriptionCultures.RemoveRange(culturas);
+
+            // Luego eliminamos el modelo principal
+            var entidad = await contexto.ProductModels.FindAsync(id);
+            if (entidad == null) return false;
+
+            contexto.ProductModels.Remove(entidad);
+            return await contexto.SaveChangesAsync() > 0;
         }
         catch (DbUpdateException ex)
         {

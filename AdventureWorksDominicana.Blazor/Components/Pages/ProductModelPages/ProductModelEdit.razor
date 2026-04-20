@@ -1,4 +1,6 @@
 @page "/ProductModel/Edit/{Id:int}"
+@using AdventureWorksDominicana.Blazor.Helpers
+@using AdventureWorksDominicana.Data.Models.DTOs
 @attribute [Authorize(Roles = "Admin, ProductionManager")]
 @inject NavigationManager navigationManager
 @inject ToastService toastService
@@ -37,13 +39,15 @@ else
                     </div>
 
                     <div class="row mb-3">
+                        <!-- ✅ AQUÍ ARREGLAMOS EL ERROR DE COMPILACIÓN -->
                         <div class="col-md-6">
-                            <label class="form-label fw-bold">Catálogo (XML)</label>
-                            <InputTextArea class="form-control" @bind-Value="model.CatalogDescription" rows="2" />
+                            <label class="form-label fw-bold">Resumen de Catálogo</label>
+                            <InputText class="form-control" @bind-Value="catalogDto.Summary" placeholder="Ej: Bicicleta de montaña premium..." />
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label fw-bold">Instrucciones (XML)</label>
-                            <InputTextArea class="form-control" @bind-Value="model.Instructions" rows="2" />
+                            <label class="form-label fw-bold">Instrucciones</label>
+                            <!-- Apoyándonos en el DTO anidado -->
+                            <InputText class="form-control" @bind-Value="instructionsDto.Location.Step" placeholder="Ej: Ajustar tuercas B primero" />
                         </div>
                     </div>
 
@@ -121,10 +125,18 @@ else
     private string nuevaCulturaId = "", nuevoTexto = "", mensajeError = "";
     private bool confirmarEliminar = false;
 
+    private CatalogDto catalogDto = new();
+    private InstructionsDto instructionsDto = new();
+
     protected override async Task OnInitializedAsync()
     {
         model = await modelService.Buscar(Id);
         ListaCulturas = await cultureService.GetList(c => true);
+        if (model != null)
+        {
+            catalogDto = XmlHelper.DeserializarDesdeXml<CatalogDto>(model.CatalogDescription) ?? new();
+            instructionsDto = XmlHelper.DeserializarDesdeXml<InstructionsDto>(model.Instructions) ?? new();
+        }
     }
 
     private async Task AgregarDetalle()
@@ -143,7 +155,7 @@ else
             model!.ProductModelProductDescriptionCultures.Add(new ProductModelProductDescriptionCulture
             {
                 CultureId = nuevaCulturaId,
-                ProductDescriptionId = pDesc.ProductDescriptionId, 
+                ProductDescriptionId = pDesc.ProductDescriptionId,
                 ProductDescription = pDesc
             });
             nuevoTexto = "";
@@ -154,8 +166,6 @@ else
         }
     }
 
-
-
     private void RemoverDetalle(ProductModelProductDescriptionCulture item)
     {
         model!.ProductModelProductDescriptionCultures.Remove(item);
@@ -164,10 +174,36 @@ else
 
     private async Task Guardar()
     {
-        if (await modelService.Guardar(model!))
+        try
         {
-            toastService.ShowSuccess("Modelo guardado.");
-            navigationManager.NavigateTo("/ProductModel/Index");
+            // ✅ AQUÍ INTEGRAMOS LA LÓGICA DE DTOs PARA PODER GUARDAR LA EDICIÓN
+            model!.CatalogDescription = !string.IsNullOrWhiteSpace(catalogDto.Summary)
+                                        ? XmlHelper.SerializarAXml(catalogDto)
+                                        : null;
+                                        
+            model.Instructions = !string.IsNullOrWhiteSpace(instructionsDto.Location.Step)
+                                       ? XmlHelper.SerializarAXml(instructionsDto)
+                                       : null;
+
+
+            if (await modelService.Guardar(model!))
+            {
+                toastService.ShowSuccess("Modelo guardado exitosamente.");
+                navigationManager.NavigateTo("/ProductModel/Index");
+            }
+            else
+            {
+                toastService.ShowError("No se pudo guardar el modelo.");
+            }
+        }
+        catch (Exception ex)
+        {
+            toastService.ShowError($"Error al guardar: {ex.Message}");
+            if (ex.InnerException != null)
+            {
+                toastService.ShowError($"Detalle técnico: {ex.InnerException.Message}");
+                Console.WriteLine(ex.InnerException.Message);
+            }
         }
     }
 
